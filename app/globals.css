@@ -22,5 +22,87 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family intentionally not set here - the real theme stylesheet
+     (buro-modules.css) sets "Rubik, sans-serif" on body already; overriding
+     it here (even with Tailwind's default Arial stack) would win the
+     cascade since this file loads after the theme CSS. */
+}
+
+.payload-richtext img {
+  max-width: 100%;
+  height: auto;
+}
+
+.wpb-content-wrapper img:not([style*="position: absolute"]) {
+  max-width: 100%;
+  height: auto;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Buro theme's title-banner background color. On production this is
+   generated inline per-site by the theme's customizer/options panel
+   (wp_head "buro-mikado-modules-inline-css" block); we don't run that
+   options system, so the fixed value observed on production is hardcoded
+   here instead. */
+.mkd-title .mkd-title-holder h1 {
+  background: #ce1713;
+  color: #fff;
+  padding: 5px 15px;
+}
+
+/* Pure-CSS crossfade hero slider (replaces the commercial Slider
+   Revolution/SR7 plugin's JS engine). Per-instance @keyframes are injected
+   inline by wp-shortcode-render.ts; this just provides the shared layout. */
+.mkd-hero-slider {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  min-height: 420px;
+  overflow: hidden;
+}
+.mkd-hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.mkd-hero-slide-text {
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  padding: 0 2rem;
+  max-width: 900px;
+}
+
+/* Modern spacing between content sections. The theme itself has no default
+   row spacing (.mkd-section only sets position:relative) - gaps on
+   production come from each row's own vc_empty_space shortcodes. Rows that
+   already carry a custom background (e.g. the red partners banner) are
+   excluded so colored bands stay flush edge-to-edge as intended. */
+.vc_row.mkd-section:not([style*="background"]) {
+  margin-bottom: 2.5rem;
+}
+.vc_row.mkd-section:not([style*="background"]):last-child {
+  margin-bottom: 0;
+}
+
+/* Testimonial quote text: the theme's own CSS inherits the generic h2 rule
+   (55px, bold) since .mkd-testimonial-text has no dedicated desktop-size
+   rule of its own. That reads as oversized/heavy for body-copy-like quotes,
+   so scale it down and de-bold it here. */
+.mkd-testimonial-text {
+  font-size: 1.25rem !important;
+  font-weight: 400 !important;
+  line-height: 1.6 !important;
 }
