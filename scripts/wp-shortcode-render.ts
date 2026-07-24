@@ -160,8 +160,20 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
   const { tag, attrs, children } = node;
 
   switch (tag) {
-    case "vc_row":
-      return `<div class="vc_row wpb_row vc_row-fluid mkd-section"${vcCustomStyle(attrs.css)}>${renderChildren(children, ctx)}</div>`;
+    case "vc_row": {
+      // WPBakery rows render one of two inner-wrapper structures depending
+      // on content_width: the default (full width, edge-to-edge) uses
+      // .mkd-full-section-inner with no width constraint; content_width=
+      // "grid" (boxed) adds .mkd-grid-section to the row and wraps children
+      // in .mkd-section-inner (centered, 1300px) + .mkd-section-inner-margin.
+      // Matches the real theme CSS exactly, rather than an ad-hoc guess.
+      const isGrid = attrs.content_width === "grid";
+      const rowClass = `vc_row wpb_row vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
+      const inner = isGrid
+        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${renderChildren(children, ctx)}</div></div>`
+        : `<div class="clearfix mkd-full-section-inner">${renderChildren(children, ctx)}</div>`;
+      return `<div class="${rowClass}"${vcCustomStyle(attrs.css)}>${inner}</div>`;
+    }
 
     case "vc_row_inner":
       return `<div class="vc_row-inner wpb_row vc_row-fluid mkd-section"${vcCustomStyle(attrs.css)}>${renderChildren(children, ctx)}</div>`;

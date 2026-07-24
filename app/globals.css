@@ -97,6 +97,23 @@ body {
   margin-bottom: 0;
 }
 
+/* WPBakery's default (non-grid) row layout is genuinely edge-to-edge full
+   width by design on production too (.mkd-full-section-inner has no width
+   rule at all in the theme CSS) - fine for image/color bands, but it means
+   plain text content (course descriptions, curriculum lists) sprawls the
+   full browser width with only 15px of column padding, reading as "stuck in
+   the left corner" on wide screens. Give it the same centered, readable
+   treatment as WPBakery's own "boxed" (content_width="grid") rows already
+   get, while leaving rows with a custom background (color bands, banners)
+   flush edge-to-edge as intended. */
+.vc_row.mkd-section:not([style*="background"]) > .mkd-full-section-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding-left: 40px;
+  padding-right: 40px;
+  box-sizing: border-box;
+}
+
 /* Testimonial quote text: the theme's own CSS inherits the generic h2 rule
    (55px, bold) since .mkd-testimonial-text has no dedicated desktop-size
    rule of its own. That reads as oversized/heavy for body-copy-like quotes,
