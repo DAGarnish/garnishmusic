@@ -24,6 +24,10 @@ import { HeroSliders } from "./collections/HeroSliders";
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+// Migration-time Postgres/Neon config, kept separate from payload.config.ts
+// so scripts/migrate-to-neon.ts can run a SQLite-backed instance (source)
+// and a Postgres-backed instance (destination) simultaneously in the same
+// process. Collections must stay in sync with payload.config.ts by hand.
 export default buildConfig({
   admin: {
     user: Users.slug,
