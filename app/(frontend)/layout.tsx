@@ -8,7 +8,7 @@ import "../globals.css";
 // <script> tags in <head> are natively guaranteed to execute in document
 // order before the body parses, which is the same ordering guarantee the
 // jQuery plugin chain below needs, and are unaffected by Suspense/streaming.
-const themeScripts = [
+export const themeScripts = [
   "/theme/js/jquery.min.js",
   "/theme/js/jquery-migrate.min.js",
   "/theme/js/modernizr.custom.js",
@@ -41,14 +41,14 @@ const themeScripts = [
   "/theme/js/jquery.hoverdir.js",
 ];
 
-const themeScriptsAfterGlobals = ["/theme/js/buro-modules.min.js", "/theme/js/buro-like.min.js"];
+export const themeScriptsAfterGlobals = ["/theme/js/buro-modules.min.js", "/theme/js/buro-like.min.js"];
 
 // WordPress injects this via wp_localize_script() immediately before
 // modules.min.js loads; the theme's JS reads window.mkdGlobalVars /
 // mkdPerPageVars unconditionally and throws ReferenceError without it.
 // Values are static (not content-specific) - confirmed identical across
 // every production page checked.
-const MKD_GLOBAL_VARS_SCRIPT = `var mkdGlobalVars = {"vars":{"mkdAddForAdminBar":0,"mkdElementAppearAmount":-150,"mkdFinishedMessage":"No more posts","mkdLoadingMoreText":"Loading...","mkdMessage":"Loading new posts...","mkdLoadMoreText":"Show More","mkdAddingToCart":"Adding to Cart...","mkdFirstColor":"#ce1713","mkdTopBarHeight":0,"mkdStickyHeaderHeight":0,"mkdStickyHeaderTransparencyHeight":60,"mkdStickyScrollAmount":0,"mkdLogoAreaHeight":0,"mkdMenuAreaHeight":90,"mkdMobileHeaderHeight":100}};
+export const MKD_GLOBAL_VARS_SCRIPT = `var mkdGlobalVars = {"vars":{"mkdAddForAdminBar":0,"mkdElementAppearAmount":-150,"mkdFinishedMessage":"No more posts","mkdLoadingMoreText":"Loading...","mkdMessage":"Loading new posts...","mkdLoadMoreText":"Show More","mkdAddingToCart":"Adding to Cart...","mkdFirstColor":"#ce1713","mkdTopBarHeight":0,"mkdStickyHeaderHeight":0,"mkdStickyHeaderTransparencyHeight":60,"mkdStickyScrollAmount":0,"mkdLogoAreaHeight":0,"mkdMenuAreaHeight":90,"mkdMobileHeaderHeight":100}};
 var mkdPerPageVars = {"vars":{"mkdStickyScrollAmount":0,"mkdHeaderTransparencyHeight":90}};`;
 
 export const metadata: Metadata = {
@@ -56,17 +56,30 @@ export const metadata: Metadata = {
   description: "Migrated from WordPress multisite via Payload CMS",
 };
 
-const themeStylesheets = [
+// Order matches production's actual <link> sequence (verified against
+// live HTML) - matters for cascade when rules share specificity.
+// font-awesome.css (local) is deliberately omitted: CDN Font Awesome is
+// already loaded above and no icon gap has been found that traces to it;
+// adding a second, possibly version-mismatched copy risks new conflicts
+// without evidence of benefit. elegant-icons/ionicons/linea-icons/
+// linear-icons and buro-style.css were scraped but never wired in here -
+// confirmed missing by comparing against production's stylesheet list.
+export const themeStylesheets = [
+  "/theme/css/buro-style.css",
+  "/theme/css/buro-plugins.css",
   "/theme/css/buro-modules.css",
+  "/theme/css/elegant-icons.css",
+  "/theme/css/ionicons.css",
+  "/theme/css/linea-icons.css",
+  "/theme/css/linear-icons.css",
   "/theme/css/buro-blog.css",
   "/theme/css/buro-woocommerce.css",
   "/theme/css/buro-woocommerce-responsive.css",
   "/theme/css/buro-modules-responsive.css",
   "/theme/css/buro-blog-responsive.css",
-  "/theme/css/buro-dynamic.css",
   "/theme/css/buro-dynamic-responsive.css",
+  "/theme/css/buro-dynamic.css",
   "/theme/css/js-composer.css",
-  "/theme/css/buro-plugins.css",
 ];
 
 export default function RootLayout({

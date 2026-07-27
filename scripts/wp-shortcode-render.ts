@@ -55,11 +55,14 @@ function renderChildren(nodes: ShortcodeNode[], ctx: RenderContext): string {
 // !important;}" - only the declarations inside the {...} are relevant here,
 // so extract and apply them as an inline style rather than reproducing the
 // auto-generated class name and a separate <style> block.
-function vcCustomStyle(cssAttr: string | undefined): string {
+function vcCssDeclarations(cssAttr: string | undefined): string {
   if (!cssAttr) return "";
   const match = cssAttr.match(/\{([^}]*)\}/);
-  if (!match) return "";
-  const declarations = match[1].trim();
+  return match ? match[1].trim() : "";
+}
+
+function vcCustomStyle(cssAttr: string | undefined): string {
+  const declarations = vcCssDeclarations(cssAttr);
   return declarations ? ` style="${esc(declarations)}"` : "";
 }
 
@@ -174,15 +177,52 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // in .mkd-section-inner (centered, 1300px) + .mkd-section-inner-margin.
       // Matches the real theme CSS exactly, rather than an ad-hoc guess.
       const isGrid = attrs.content_width === "grid";
-      const rowClass = `vc_row wpb_row vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
+      let rowClass = `vc_row wpb_row vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
+      if (attrs.content_aligment) rowClass += ` mkd-content-aligment-${attrs.content_aligment}`;
+      if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
+      const inner = isGrid
+        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${renderChildren(children, ctx)}</div></div>`
+        : `<div class="clearfix mkd-full-section-inner">${renderChildren(children, ctx)}</div>`;
+
+      // row_type="parallax" rows carry their background as a separate
+      // parallax_background_image (media ID) attribute, not through the
+      // generic css attribute - confirmed against production's rendered
+      // markup (mkd-parallax-section-holder classes + data-mkd-parallax-speed
+      // + inline background-image), which our renderer previously ignored
+      // entirely, leaving ~49 pages' parallax hero sections blank.
+      let extraAttrs = "";
+      const declarations = [vcCssDeclarations(attrs.css)];
+      if (attrs.row_type === "parallax" && attrs.parallax_background_image) {
+        const bgUrl = ctx.resolveImage(attrs.parallax_background_image);
+        if (bgUrl) {
+          rowClass += " mkd-content-aligment-left mkd-parallax-section-holder mkd-parallax-section-holder-touch-disabled";
+          extraAttrs = ` data-mkd-parallax-speed="1"`;
+          declarations.push(`background-image:url(${bgUrl})`);
+        }
+      }
+      const style = declarations.filter(Boolean).join(";");
+
+      return `<div class="${rowClass}"${extraAttrs}${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
+    }
+
+    case "vc_row_inner": {
+      // Was previously a stub that ignored content_width="grid", el_class,
+      // and content_aligment entirely - unlike vc_row, which already
+      // handles grid boxing correctly. Nested grid rows (e.g. the "Our
+      // partners" logo grid, [vc_row_inner content_width="grid"
+      // content_aligment="center" el_class="alignment-of-images"]) rendered
+      // without the .mkd-section-inner/.mkd-grid-section wrapper the theme
+      // CSS (and per-page custom CSS keyed off el_class) requires, producing
+      // a ragged left-aligned stack instead of the real evenly-spaced grid.
+      const isGrid = attrs.content_width === "grid";
+      let rowClass = `vc_row wpb_row vc_inner vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
+      if (attrs.content_aligment) rowClass += ` mkd-content-aligment-${attrs.content_aligment}`;
+      if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
       const inner = isGrid
         ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${renderChildren(children, ctx)}</div></div>`
         : `<div class="clearfix mkd-full-section-inner">${renderChildren(children, ctx)}</div>`;
       return `<div class="${rowClass}"${vcCustomStyle(attrs.css)}>${inner}</div>`;
     }
-
-    case "vc_row_inner":
-      return `<div class="vc_row-inner wpb_row vc_row-fluid mkd-section"${vcCustomStyle(attrs.css)}>${renderChildren(children, ctx)}</div>`;
 
     case "vc_column":
     case "vc_column_inner": {

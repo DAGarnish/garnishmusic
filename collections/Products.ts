@@ -95,5 +95,17 @@ export const Products: CollectionConfig = {
         description: "Original WooCommerce product post ID",
       },
     },
+    {
+      name: "attributes",
+      type: "array",
+      admin: {
+        description:
+          "Visible WooCommerce product attributes (e.g. Registration: Full, Early Bird), for display in an Additional Information section - not tied to per-variation pricing/stock.",
+      },
+      fields: [
+        { name: "name", type: "text", required: true },
+        { name: "options", type: "text", required: true },
+      ],
+    },
   ],
 };

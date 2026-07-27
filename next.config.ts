@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 import { withPayload } from "@payloadcms/next/withPayload";
 
 const nextConfig: NextConfig = {
+  // Required for app/global-not-found.tsx: this app has two separate root
+  // layouts ((frontend) and (payload) admin), so Next.js can't compose a
+  // normal global 404 from a single layout - it needs the standalone
+  // global-not-found.js convention instead.
+  experimental: {
+    globalNotFound: true,
+  },
   // Trailing slashes are enforced manually in proxy.ts instead of via the
   // global `trailingSlash: true` option, because that option also rewrites
   // /api/* routes and breaks Payload's REST API. skipTrailingSlashRedirect

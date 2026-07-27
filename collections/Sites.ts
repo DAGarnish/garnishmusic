@@ -65,7 +65,16 @@ export const Sites: CollectionConfig = {
       name: "footerCopyright",
       type: "textarea",
       admin: {
-        description: "Site-specific footer copyright/address text, migrated from WordPress",
+        description:
+          "Site-specific footer copyright/address text (top widget), migrated from WordPress. Raw inner HTML of the textwidget div - may contain multiple <p> tags.",
+      },
+    },
+    {
+      name: "footerCopyrightBottom",
+      type: "textarea",
+      admin: {
+        description:
+          "Site-specific footer copyright/address text (bottom bar widget), migrated from WordPress. Raw inner HTML - on production this is a shared, largely uncustomized widget, so it's identical (and often stale) across most sites; migrated as-is per site rather than corrected.",
       },
     },
     {

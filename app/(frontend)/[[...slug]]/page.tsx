@@ -107,9 +107,9 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const result = await findContentCached(site, slug);
   if (!result) return {};
 
-  const { doc } = result;
+  const { type, doc } = result;
   const seo = "seo" in doc ? doc.seo : undefined;
-  const title = seo?.metaTitle || ("title" in doc ? doc.title : doc.name);
+  const rawTitle = "title" in doc ? doc.title : doc.name;
   const description =
     seo?.metaDescription ||
     ("excerpt" in doc ? doc.excerpt : undefined) ||
@@ -117,10 +117,45 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
     undefined;
   const noindex = Boolean(seo?.noindex);
 
+  // Matches RankMath's live production behavior: a custom SEO title is
+  // shown as-is with no suffix; without one, the title template
+  // "{title} - {site name}" applies (confirmed against production for
+  // both titled and untitled pages across multiple sites).
+  const title = seo?.metaTitle || `${rawTitle} - ${site.name}`;
+
+  const canonicalPath = slug.join("/");
+  const canonicalUrl = `https://${site.domain}/${canonicalPath ? `${canonicalPath}/` : ""}`;
+
+  const rawImage =
+    ("featuredImage" in doc && doc.featuredImage && typeof doc.featuredImage === "object"
+      ? doc.featuredImage
+      : undefined) ||
+    ("images" in doc && Array.isArray(doc.images) && typeof doc.images[0] === "object"
+      ? doc.images[0]
+      : undefined);
+  const ogImage = rawImage?.url
+    ? [{ url: rawImage.url, width: rawImage.width ?? undefined, height: rawImage.height ?? undefined, alt: rawImage.alt || rawTitle }]
+    : undefined;
+
   return {
     title,
     description,
     robots: noindex ? { index: false, follow: false } : undefined,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: site.name,
+      type: type === "post" ? "article" : "website",
+      images: ogImage,
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: ogImage?.map((img) => img.url),
+    },
   };
 }
 
@@ -247,7 +282,7 @@ export default async function CatchAllPage({ params }: Args) {
             </div>
           </div>
         </div>
-        <Footer />
+        <Footer site={site} />
       </>
     );
   }
@@ -264,15 +299,61 @@ export default async function CatchAllPage({ params }: Args) {
             {"titleBackgroundImage" in doc &&
               doc.titleBackgroundImage &&
               typeof doc.titleBackgroundImage === "object" && (
-                <img
-                  src={doc.titleBackgroundImage.url ?? undefined}
-                  alt=""
-                  style={{
-                    width: "100%",
-                    maxHeight: 320,
-                    objectFit: "cover",
-                  }}
-                />
+                <div
+                  className="mkd-title mkd-standard-type mkd-preload-background mkd-has-background mkd-has-responsive-background mkd-content-center-alignment mkd-title-small-text-size mkd-animation-no mkd-title-image-responsive mkd-title-in-grid"
+                  style={{ height: 400 }}
+                  data-height="400"
+                >
+                  <div className="mkd-title-image">
+                    <img src={doc.titleBackgroundImage.url ?? undefined} alt="" />
+                  </div>
+                  <div className="mkd-title-holder">
+                    <div className="mkd-container clearfix">
+                      <div className="mkd-container-inner">
+                        <div className="mkd-title-subtitle-holder">
+                          <div className="mkd-title-subtitle-holder-inner">
+                            <h1>
+                              <span>{doc.title}</span>
+                            </h1>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            {/* WooCommerce single-product pages on production always show
+               this exact generic title text in the hero, regardless of the
+               product's real name (confirmed identical across many
+               products/sites) - not per-product data, so hardcoded here. */}
+            {type === "product" &&
+              "images" in doc &&
+              Array.isArray(doc.images) &&
+              typeof doc.images[0] === "object" &&
+              doc.images[0]?.url && (
+                <div
+                  className="mkd-title mkd-standard-type mkd-preload-background mkd-has-background mkd-has-responsive-background mkd-content-center-alignment mkd-title-small-text-size mkd-animation-no mkd-title-image-responsive mkd-title-in-grid"
+                  style={{ height: 400 }}
+                  data-height="400"
+                >
+                  <div className="mkd-title-image">
+                    <img src={doc.images[0].url} alt="" />
+                  </div>
+                  <div className="mkd-title-holder">
+                    <div className="mkd-container clearfix">
+                      <div className="mkd-container-inner">
+                        <div className="mkd-title-subtitle-holder">
+                          <div className="mkd-title-subtitle-holder-inner">
+                            <h1>
+                              <span>Book Your Course Below</span>
+                            </h1>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
             {styledHtml ? (
@@ -317,12 +398,34 @@ export default async function CatchAllPage({ params }: Args) {
                         : undefined) || EMPTY_RICHTEXT
                   }
                 />
+                {type === "product" &&
+                  "attributes" in doc &&
+                  Array.isArray(doc.attributes) &&
+                  doc.attributes.length > 0 && (
+                    <div className="mkd-tab-container panel entry-content wc-tab" style={{ marginTop: "2rem" }}>
+                      <h2>Additional information</h2>
+                      <table className="woocommerce-product-attributes shop_attributes" aria-label="Product Details">
+                        <tbody>
+                          {doc.attributes.map((attr: any, i: number) => (
+                            <tr key={i} className="woocommerce-product-attributes-item">
+                              <th className="woocommerce-product-attributes-item__label" scope="row">
+                                {attr.name}
+                              </th>
+                              <td className="woocommerce-product-attributes-item__value">
+                                <p>{attr.options}</p>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
               </article>
             )}
           </div>
         </div>
       </div>
-      <Footer />
+      <Footer site={site} />
     </>
   );
 }

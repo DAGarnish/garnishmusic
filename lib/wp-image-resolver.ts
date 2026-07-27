@@ -5,8 +5,14 @@ export async function buildImageResolver(
   siteId: number | string,
   rawContent: string
 ): Promise<ImageUrlResolver> {
+  // Matches any attribute ending in "image" (image=, background_image=,
+  // parallax_background_image=, ...). A stricter alternation with \b missed
+  // parallax_background_image= entirely: \b requires a boundary before
+  // "background_image", but "_" is a word character, so there's no boundary
+  // between "parallax_" and "background_image" - that id was never even
+  // queried, silently dropping every parallax row's background image.
   const ids = new Set<string>();
-  for (const m of (rawContent || "").matchAll(/\b(?:image|background_image)="(\d+)"/g)) {
+  for (const m of (rawContent || "").matchAll(/\w*image="(\d+)"/g)) {
     ids.add(m[1]);
   }
 

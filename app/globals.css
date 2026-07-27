@@ -131,3 +131,35 @@ body {
   box-sizing: border-box;
 }
 
+/* The hero slider row (and the title row immediately after it, e.g. "World-
+   class Music Production Courses in London") are meant to be full-bleed,
+   edge-to-edge banners, not boxed article content - exclude them from the
+   max-width rule above. The title row keeps its own natural content height
+   (its own vc_empty_space shortcodes already pad it, ~100px on production -
+   confirmed live; it does NOT match the hero's height, that was a
+   misreading of an earlier request). */
+.vc_row.mkd-section:has(> .mkd-full-section-inner .mkd-hero-slider),
+.vc_row.mkd-section:has(> .mkd-full-section-inner .mkd-hero-slider) + .vc_row.mkd-section {
+  margin-bottom: 0;
+}
+.vc_row.mkd-section:has(> .mkd-full-section-inner .mkd-hero-slider) > .mkd-full-section-inner,
+.vc_row.mkd-section:has(> .mkd-full-section-inner .mkd-hero-slider) + .vc_row.mkd-section > .mkd-full-section-inner {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* On production this comes from Mikado Core's per-page dynamically-generated
+   "used modules" inline <style> block (rebuilt server-side per request from
+   whichever shortcodes appear on that page), which isn't part of any static
+   theme CSS file we scraped - so it's missing entirely unless added here by
+   hand. This is the page title's red background badge. */
+div.mkd-title .mkd-title-holder h1 {
+  background: #ce1713;
+  color: #fff;
+  padding: 5px 15px;
+}
+.mkd-title {
+  background-size: cover;
+}
+

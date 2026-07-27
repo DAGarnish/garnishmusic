@@ -12,7 +12,7 @@ export default async function NotFound() {
         <h1>404</h1>
         <p>This page could not be found.</p>
       </main>
-      <Footer />
+      <Footer site={site} />
     </>
   );
 }
