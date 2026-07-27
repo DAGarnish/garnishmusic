@@ -1,0 +1,1282 @@
+{
+    "plugin": {
+        "version": "5.8.1",
+        "date": "Mon, 13 Jul 2026 02:57:07 +0000"
+    },
+    "groups": [
+        {
+            "id": 1,
+            "name": "Redirections",
+            "redirects": 48,
+            "module_id": 1,
+            "moduleName": "WordPress",
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "name": "Modified Posts",
+            "redirects": 0,
+            "module_id": 1,
+            "moduleName": "WordPress",
+            "enabled": true
+        }
+    ],
+    "redirects": [
+        {
+            "id": 1,
+            "url": "/training/ableton-course-london",
+            "match_url": "/training/ableton-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/ableton-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1907,
+            "regex": false,
+            "group_id": 1,
+            "position": 0,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "url": "/training/songwriting-course-london",
+            "match_url": "/training/songwriting-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/songwriting-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 2016,
+            "regex": false,
+            "group_id": 1,
+            "position": 1,
+            "last_access": "July 12, 2026",
+            "enabled": true
+        },
+        {
+            "id": 3,
+            "url": "/training/summer-camp-school",
+            "match_url": "/training/summer-camp-school",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/summer-camp-school/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1775,
+            "regex": false,
+            "group_id": 1,
+            "position": 2,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 4,
+            "url": "/training/sound-design-course",
+            "match_url": "/training/sound-design-course",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/electronic-emp"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 2123,
+            "regex": false,
+            "group_id": 1,
+            "position": 3,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 5,
+            "url": "/training/logic-course-london",
+            "match_url": "/training/logic-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/logic-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 2404,
+            "regex": false,
+            "group_id": 1,
+            "position": 4,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 6,
+            "url": "/training/mixing-and-mastering-course-london",
+            "match_url": "/training/mixing-and-mastering-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/mixing-and-mastering-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 2074,
+            "regex": false,
+            "group_id": 1,
+            "position": 5,
+            "last_access": "July 9, 2026",
+            "enabled": true
+        },
+        {
+            "id": 7,
+            "url": "/music-production-school-contact",
+            "match_url": "/music-production-school-contact",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/contact-map/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 3159,
+            "regex": false,
+            "group_id": 1,
+            "position": 6,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 8,
+            "url": "/private-tuition-one-one",
+            "match_url": "/private-tuition-one-one",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/private-tuition"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 165,
+            "regex": false,
+            "group_id": 1,
+            "position": 7,
+            "last_access": "December 11, 2022",
+            "enabled": true
+        },
+        {
+            "id": 11,
+            "url": "/ableton-course-london/",
+            "match_url": "/ableton-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/ableton-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 458,
+            "regex": false,
+            "group_id": 1,
+            "position": 10,
+            "last_access": "June 30, 2026",
+            "enabled": true
+        },
+        {
+            "id": 12,
+            "url": "/courses/major-minor-and-extended-chords-on-the-keyboard-and-piano/#",
+            "match_url": "/courses/major-minor-and-extended-chords-on-the-keyboard-and-piano/#",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 11,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 13,
+            "url": "/courses/major-minor-and-extended-chords-on-the-keyboard-and-piano/",
+            "match_url": "/courses/major-minor-and-extended-chords-on-the-keyboard-and-piano",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 451,
+            "regex": false,
+            "group_id": 1,
+            "position": 12,
+            "last_access": "June 30, 2026",
+            "enabled": true
+        },
+        {
+            "id": 14,
+            "url": "/courses/electronic-music-production-sound-design-classes-in-london-1/",
+            "match_url": "/courses/electronic-music-production-sound-design-classes-in-london-1",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/programs/ableton-producer/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 371,
+            "regex": false,
+            "group_id": 1,
+            "position": 13,
+            "last_access": "May 15, 2026",
+            "enabled": true
+        },
+        {
+            "id": 15,
+            "url": "/courses/edm-electronic-dance-music-production-oscillator-waveforms/",
+            "match_url": "/courses/edm-electronic-dance-music-production-oscillator-waveforms",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/academy/electronic-music-producer/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 432,
+            "regex": false,
+            "group_id": 1,
+            "position": 14,
+            "last_access": "June 7, 2026",
+            "enabled": true
+        },
+        {
+            "id": 16,
+            "url": "/courses/logic-pro-training-logic-pro-training-london/",
+            "match_url": "/courses/logic-pro-training-logic-pro-training-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/logic-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 540,
+            "regex": false,
+            "group_id": 1,
+            "position": 15,
+            "last_access": "April 23, 2026",
+            "enabled": true
+        },
+        {
+            "id": 17,
+            "url": "/courses/complete-music-production-program/",
+            "match_url": "/courses/complete-music-production-program",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/academy/songwriting-music-producer/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 416,
+            "regex": false,
+            "group_id": 1,
+            "position": 16,
+            "last_access": "January 18, 2026",
+            "enabled": true
+        },
+        {
+            "id": 18,
+            "url": "/courses/sound-engineering-courses-london/",
+            "match_url": "/courses/sound-engineering-courses-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/electronic-emp/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 459,
+            "regex": false,
+            "group_id": 1,
+            "position": 17,
+            "last_access": "April 21, 2026",
+            "enabled": true
+        },
+        {
+            "id": 19,
+            "url": "/courses/computer-games-a-new-era-for-sound-design-and-music/",
+            "match_url": "/courses/computer-games-a-new-era-for-sound-design-and-music",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/electronic-emp/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 466,
+            "regex": false,
+            "group_id": 1,
+            "position": 18,
+            "last_access": "January 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 20,
+            "url": "/courses/download-reaktor-5-synth-ensembles-from-edm-course-free/",
+            "match_url": "/courses/download-reaktor-5-synth-ensembles-from-edm-course-free",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 364,
+            "regex": false,
+            "group_id": 1,
+            "position": 19,
+            "last_access": "May 17, 2026",
+            "enabled": true
+        },
+        {
+            "id": 21,
+            "url": "/courses/music-theory-practice-chord-progressions-keys-and-scales/",
+            "match_url": "/courses/music-theory-practice-chord-progressions-keys-and-scales",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1686,
+            "regex": false,
+            "group_id": 1,
+            "position": 20,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 22,
+            "url": "/test/",
+            "match_url": "/test",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1309,
+            "regex": false,
+            "group_id": 1,
+            "position": 21,
+            "last_access": "July 12, 2026",
+            "enabled": true
+        },
+        {
+            "id": 23,
+            "url": "/courses/music-production-schools-student-from-copenhagen-denmark/",
+            "match_url": "/courses/music-production-schools-student-from-copenhagen-denmark",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 448,
+            "regex": false,
+            "group_id": 1,
+            "position": 22,
+            "last_access": "May 15, 2026",
+            "enabled": true
+        },
+        {
+            "id": 24,
+            "url": "/courses/edm-electronic-dance-music-production-envelopes-and-adsr/",
+            "match_url": "/courses/edm-electronic-dance-music-production-envelopes-and-adsr",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/academy/electronic-music-producer/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 409,
+            "regex": false,
+            "group_id": 1,
+            "position": 23,
+            "last_access": "June 30, 2026",
+            "enabled": true
+        },
+        {
+            "id": 25,
+            "url": "/courses/logic-pro-training-logic-pro-training-london/",
+            "match_url": "/courses/logic-pro-training-logic-pro-training-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/logic-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 24,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 26,
+            "url": "/courses/download-reaktor-5-synth-ensembles-from-edm-course-free/",
+            "match_url": "/courses/download-reaktor-5-synth-ensembles-from-edm-course-free",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 25,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 27,
+            "url": "/courses/music-theory-practice-chord-progressions-keys-and-scales/",
+            "match_url": "/courses/music-theory-practice-chord-progressions-keys-and-scales",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 26,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 28,
+            "url": "/courses/music-production-schools-student-from-copenhagen-denmark/ ",
+            "match_url": "/courses/music-production-schools-student-from-copenhagen-denmark/%20",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 27,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 29,
+            "url": "/courses/major-minor-and-extended-chords-on-the-keyboard-and-piano/",
+            "match_url": "/courses/major-minor-and-extended-chords-on-the-keyboard-and-piano",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 28,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 33,
+            "url": "/contact-dg",
+            "match_url": "/contact-dg",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://edu.garnishmusicproduction.com/contact-mgmt"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 318,
+            "regex": false,
+            "group_id": 1,
+            "position": 29,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 34,
+            "url": "/online-school",
+            "match_url": "/online-school",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://edu.garnishmusicproduction.com/live-online/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 102,
+            "regex": false,
+            "group_id": 1,
+            "position": 29,
+            "last_access": "December 8, 2025",
+            "enabled": true
+        },
+        {
+            "id": 36,
+            "url": "/feedback",
+            "match_url": "/feedback",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://edu.garnishmusicproduction.com/feedback-new"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 817,
+            "regex": false,
+            "group_id": 1,
+            "position": 30,
+            "last_access": "July 11, 2026",
+            "enabled": true
+        },
+        {
+            "id": 32,
+            "url": "/schedule",
+            "match_url": "/schedule",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://edu.garnishmusicproduction.com/connect/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 398,
+            "regex": false,
+            "group_id": 1,
+            "position": 31,
+            "last_access": "July 8, 2026",
+            "enabled": true
+        },
+        {
+            "id": 37,
+            "url": "/\" \\t \"_blank",
+            "match_url": "/%22%20%5ct%20%22_blank",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 447,
+            "regex": false,
+            "group_id": 1,
+            "position": 31,
+            "last_access": "July 11, 2026",
+            "enabled": true
+        },
+        {
+            "id": 38,
+            "url": "/training/ableton-course-london/",
+            "match_url": "/training/ableton-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/ableton-live-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1818,
+            "regex": false,
+            "group_id": 1,
+            "position": 32,
+            "last_access": "July 11, 2026",
+            "enabled": true
+        },
+        {
+            "id": 39,
+            "url": "/training/logic-course-london/",
+            "match_url": "/training/logic-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/logic-pro-x-course-london/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1731,
+            "regex": false,
+            "group_id": 1,
+            "position": 33,
+            "last_access": "July 12, 2026",
+            "enabled": true
+        },
+        {
+            "id": 40,
+            "url": "/training/summer-camp-school/",
+            "match_url": "/training/summer-camp-school",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/school-summer-camp/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1617,
+            "regex": false,
+            "group_id": 1,
+            "position": 34,
+            "last_access": "July 11, 2026",
+            "enabled": true
+        },
+        {
+            "id": 41,
+            "url": "/training/sound-design-course/",
+            "match_url": "/training/sound-design-course",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/courses/sound-design-and-synthesis/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1343,
+            "regex": false,
+            "group_id": 1,
+            "position": 35,
+            "last_access": "July 10, 2026",
+            "enabled": true
+        },
+        {
+            "id": 42,
+            "url": "/grades/",
+            "match_url": "/grades",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/music-production-grades/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 4796,
+            "regex": false,
+            "group_id": 1,
+            "position": 36,
+            "last_access": "July 12, 2026",
+            "enabled": true
+        },
+        {
+            "id": 43,
+            "url": "/academy/electronic-music-producer/",
+            "match_url": "/academy/electronic-music-producer",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/academy/electronic-music-production/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 4724,
+            "regex": false,
+            "group_id": 1,
+            "position": 37,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 44,
+            "url": "/courses/music-production-school-contact/",
+            "match_url": "/courses/music-production-school-contact",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/contact-map/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 480,
+            "regex": false,
+            "group_id": 1,
+            "position": 38,
+            "last_access": "July 13, 2026",
+            "enabled": true
+        },
+        {
+            "id": 45,
+            "url": "/training/ableton-course-london/",
+            "match_url": "/training/ableton-course-london",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "server": "https://garnishmusicproduction.com",
+                "url_from": "https://www.garnishmusicproduction.com/courses/ableton-live-course-london/",
+                "url_notfrom": ""
+            },
+            "match_type": "server",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 39,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 46,
+            "url": "/training/summer-camp-school/",
+            "match_url": "/training/summer-camp-school",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "server": "https://garnishmusicproduction.com",
+                "url_from": "https://www.garnishmusicproduction.com/courses/school-summer-camp/",
+                "url_notfrom": ""
+            },
+            "match_type": "server",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 40,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 47,
+            "url": "/academy/electronic-music-producer/",
+            "match_url": "/academy/electronic-music-producer",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/academy/electronic-music-production/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 41,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 49,
+            "url": "/wp-signup.php?new=la-1.garnishmusicproduction.com",
+            "match_url": "/wp-signup.php",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://la.garnishmusicproduction.com"
+            },
+            "match_type": "url",
+            "title": "la.garnishmusicproduction.com",
+            "hits": 11443,
+            "regex": false,
+            "group_id": 1,
+            "position": 42,
+            "last_access": "June 26, 2026",
+            "enabled": true
+        },
+        {
+            "id": 51,
+            "url": "/courses/underground-dj-course/",
+            "match_url": "/courses/underground-dj-course",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "server": "https://ny.garnishmusicproduction.com",
+                "url_from": "https://ny.garnishmusicproduction.com/courses/electronic-dj-course/",
+                "url_notfrom": ""
+            },
+            "match_type": "server",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 43,
+            "last_access": "-",
+            "enabled": true
+        },
+        {
+            "id": 52,
+            "url": "/courses/dave-garnish/",
+            "match_url": "/courses/dave-garnish",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://edu.garnishmusicproduction.com/music/dave-garnish/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 1063,
+            "regex": false,
+            "group_id": 1,
+            "position": 44,
+            "last_access": "July 11, 2026",
+            "enabled": true
+        },
+        {
+            "id": 53,
+            "url": "/contact-dg/",
+            "match_url": "/contact-dg",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://edu.garnishmusicproduction.com/contact-mgmt/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 9848,
+            "regex": false,
+            "group_id": 1,
+            "position": 45,
+            "last_access": "July 12, 2026",
+            "enabled": true
+        },
+        {
+            "id": 54,
+            "url": "/music-production-private-tuition/",
+            "match_url": "/music-production-private-tuition",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://www.garnishmusicproduction.com/bespoke-private-tuition/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 262,
+            "regex": false,
+            "group_id": 1,
+            "position": 46,
+            "last_access": "July 12, 2026",
+            "enabled": true
+        },
+        {
+            "id": 56,
+            "url": "/contact-us-manhattan",
+            "match_url": "/contact-us-manhattan",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "server": "https://ny.garnishmusicproduction.com",
+                "url_from": "https://ny.garnishmusicproduction.com/contact-map/",
+                "url_notfrom": ""
+            },
+            "match_type": "server",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 47,
+            "last_access": "-",
+            "enabled": true
+        }
+    ]
+}

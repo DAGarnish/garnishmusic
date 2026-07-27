@@ -1,0 +1,130 @@
+{
+    "plugin": {
+        "version": "5.8.1",
+        "date": "Mon, 13 Jul 2026 03:01:08 +0000"
+    },
+    "groups": [
+        {
+            "id": 1,
+            "name": "Redirections",
+            "redirects": 4,
+            "module_id": 1,
+            "moduleName": "WordPress",
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "name": "Modified Posts",
+            "redirects": 0,
+            "module_id": 1,
+            "moduleName": "WordPress",
+            "enabled": true
+        }
+    ],
+    "redirects": [
+        {
+            "id": 1,
+            "url": "/training/",
+            "match_url": "/training",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "/courses/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 429,
+            "regex": false,
+            "group_id": 1,
+            "position": 0,
+            "last_access": "July 5, 2026",
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "url": "/courses/emp-electronic-music-production/",
+            "match_url": "/courses/emp-electronic-music-production",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://nsh.garnishmusicproduction.com/courses/sound-design-synthesis/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 14732,
+            "regex": false,
+            "group_id": 1,
+            "position": 1,
+            "last_access": "July 11, 2026",
+            "enabled": true
+        },
+        {
+            "id": 3,
+            "url": "/private-tuition",
+            "match_url": "/private-tuition",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://nsh.garnishmusicproduction.com/private-instruction/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 43,
+            "regex": false,
+            "group_id": 1,
+            "position": 2,
+            "last_access": "September 3, 2025",
+            "enabled": true
+        },
+        {
+            "id": 4,
+            "url": "/schedule",
+            "match_url": "/schedule",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://edu.garnishmusicproduction.com/connect/"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 2035,
+            "regex": false,
+            "group_id": 1,
+            "position": 3,
+            "last_access": "July 12, 2026",
+            "enabled": true
+        }
+    ]
+}

@@ -116,9 +116,15 @@ function renderTestimonials(categorySlug: string | undefined, ctx: RenderContext
 
 // A pure-CSS crossfade carousel (no JS dependency) using @keyframes with a
 // per-slide animation-delay, replacing the commercial Slider Revolution/SR7
-// JS engine this content was originally built with. Keyframe percentages
-// depend on slide count, and CSS custom properties can't drive keyframe
-// step positions, so we embed a small scoped <style> block per instance.
+// JS engine this content was originally built with. On production the SR7
+// module is deferred by WP Rocket until the first user interaction (or a
+// long fallback timeout), so a fresh pageview often shows nothing here for
+// several seconds - but real visitors do eventually see it, with the exact
+// images/text captured in the migrated hero-sliders collection, so it
+// renders immediately here rather than trying to reproduce that delay.
+// Keyframe percentages depend on slide count, and CSS custom properties
+// can't drive keyframe step positions, so we embed a small scoped <style>
+// block per instance.
 function renderHeroSlider(alias: string | undefined, ctx: RenderContext): string {
   if (!alias) return "";
   const slides = ctx.resolveHeroSlider(alias).filter((s) => s.imageUrl);
@@ -226,25 +232,37 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       return wrapped;
     }
 
-    case "mkd_elements_holder":
-      return `<div class="mkd-elements-holder" style="display: flex; flex-wrap: wrap;">${renderChildren(
-        children,
-        ctx
-      )}</div>`;
+    case "mkd_elements_holder": {
+      // buro-modules.css natively styles this shortcode as display:table /
+      // table-cell (not flex) keyed off a mkd-{number_of_columns} modifier
+      // class (e.g. "two-columns" -> "mkd-two-columns") - that's what makes
+      // columns stretch to equal height for free. No inline style needed;
+      // adding our own flex layout here just fights the theme's own rule.
+      const colClass = attrs.number_of_columns ? ` mkd-${esc(attrs.number_of_columns)}` : "";
+      return `<div class="mkd-elements-holder${colClass}">${renderChildren(children, ctx)}</div>`;
+    }
 
     case "mkd_elements_holder_item": {
+      // The theme sets background-size:cover directly on this element via
+      // .mkd-elements-holder-item{background-size:cover} - background_image
+      // is meant to be a CSS background-image on the div itself (table-cell
+      // display), not an absolutely-positioned <img> child.
       const bgId = attrs.background_image;
-      const bgImg = bgId
-        ? (() => {
-            const url = ctx.resolveImage(bgId);
-            return url
-              ? `<img src="${esc(url)}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;"/>`
-              : "";
-          })()
-        : "";
-      return `<div class="mkd-elements-holder-item" style="position: relative; flex: 1 1 320px; min-width: 0; overflow: hidden; min-height: ${
-        bgId ? "320px" : "auto"
-      };">${bgImg}${renderChildren(children, ctx)}</div>`;
+      const bgUrl = bgId ? ctx.resolveImage(bgId) : undefined;
+      const bgStyle = bgUrl ? ` style="background-image: url(${esc(bgUrl)}); background-position: center;"` : "";
+      // item_padding is "top right bottom left" in percent (WPBakery/Mikado
+      // convention - percentages are of the column's own width, giving the
+      // generous, viewport-scaling gutters production actually has). Only
+      // the desktop value is handled; the responsive item_padding_W_H
+      // variants would need real media queries to do properly, so at
+      // narrower widths content just falls back to no padding rather than
+      // the wrong desktop spacing.
+      const padding = attrs.item_padding;
+      const content = renderChildren(children, ctx);
+      const paddedContent = padding
+        ? `<div style="padding: ${esc(padding)};">${content}</div>`
+        : content;
+      return `<div class="mkd-elements-holder-item"${bgStyle}>${paddedContent}</div>`;
     }
 
     case "vc_raw_html": {

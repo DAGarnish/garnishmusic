@@ -1,0 +1,86 @@
+{
+    "plugin": {
+        "version": "5.8.1",
+        "date": "Mon, 13 Jul 2026 03:26:43 +0000"
+    },
+    "groups": [
+        {
+            "id": 1,
+            "name": "Redirections",
+            "redirects": 2,
+            "module_id": 1,
+            "moduleName": "WordPress",
+            "enabled": true
+        },
+        {
+            "id": 2,
+            "name": "Modified Posts",
+            "redirects": 0,
+            "module_id": 1,
+            "moduleName": "WordPress",
+            "enabled": true
+        },
+        {
+            "id": 3,
+            "name": "Archived Portfolio Products",
+            "redirects": 0,
+            "module_id": 1,
+            "moduleName": "WordPress",
+            "enabled": true
+        }
+    ],
+    "redirects": [
+        {
+            "id": 40,
+            "url": "/workshops",
+            "match_url": "/workshops",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "/special-workshops"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 64,
+            "regex": false,
+            "group_id": 1,
+            "position": 20,
+            "last_access": "September 5, 2025",
+            "enabled": true
+        },
+        {
+            "id": 41,
+            "url": "/schedule",
+            "match_url": "/schedule",
+            "match_data": {
+                "source": {
+                    "flag_query": "exact",
+                    "flag_case": false,
+                    "flag_trailing": false,
+                    "flag_regex": false
+                }
+            },
+            "action_code": 301,
+            "action_type": "url",
+            "action_data": {
+                "url": "https://docs.google.com/forms/d/e/1FAIpQLSd7XqCr9T2qcphZmiHlS_tlcaRqWfNUREOdaI5JXGMEBMFkfQ/viewform?usp=pp_url&entry.1273755747=San+Francisco&entry.1966647463=SF&entry.777722302=sub%3DSF"
+            },
+            "match_type": "url",
+            "title": "",
+            "hits": 0,
+            "regex": false,
+            "group_id": 1,
+            "position": 21,
+            "last_access": "-",
+            "enabled": true
+        }
+    ]
+}

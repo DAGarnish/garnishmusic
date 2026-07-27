@@ -100,5 +100,13 @@ export const Pages: CollectionConfig = {
           "Raw WordPress post_content (with WPBakery shortcodes) preserved for reference/reprocessing",
       },
     },
+    {
+      name: "customCss",
+      type: "textarea",
+      admin: {
+        description:
+          "WPBakery page-level 'Custom CSS' field (_wpb_post_custom_css postmeta) - drives visible sizing/spacing on production that isn't otherwise in the shortcode content",
+      },
+    },
   ],
 };

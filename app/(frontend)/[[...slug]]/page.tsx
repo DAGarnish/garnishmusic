@@ -252,8 +252,11 @@ export default async function CatchAllPage({ params }: Args) {
     );
   }
 
+  const customCss = "customCss" in doc && doc.customCss ? doc.customCss : null;
+
   return (
     <>
+      {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
       <Header menu={site.mainMenu as any} />
       <div className="mkd-full-width mkd-full-width-shift">
         <div className="mkd-full-width-inner">

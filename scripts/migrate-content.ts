@@ -94,7 +94,7 @@ async function main() {
       const [metaRows] = await conn.query<any[]>(
         `SELECT post_id, meta_key, meta_value FROM ${prefix}postmeta
          WHERE post_id IN (${pageIds.join(",")}) AND meta_key IN
-         ('_thumbnail_id','_yoast_wpseo_title','_yoast_wpseo_metadesc','rank_math_title','rank_math_description','mkd_title_area_background_image_meta','edgtf_title_area_background_image_meta','rank_math_robots','_yoast_wpseo_meta-robots-noindex');`
+         ('_thumbnail_id','_yoast_wpseo_title','_yoast_wpseo_metadesc','rank_math_title','rank_math_description','mkd_title_area_background_image_meta','edgtf_title_area_background_image_meta','rank_math_robots','_yoast_wpseo_meta-robots-noindex','_wpb_post_custom_css');`
       );
       pageMeta = metaRows as any[];
     }
@@ -145,6 +145,7 @@ async function main() {
       const rankMathRobots = getMetaValue(pageMeta, p.ID, "rank_math_robots");
       const yoastNoindex = getMetaValue(pageMeta, p.ID, "_yoast_wpseo_meta-robots-noindex");
       const noindex = Boolean(rankMathRobots?.includes("noindex") || yoastNoindex === "1");
+      const customCss = getMetaValue(pageMeta, p.ID, "_wpb_post_custom_css");
 
       const content = wpContentToLexical(p.post_content, mediaResolver);
       const excerpt = decodeHTML(p.post_excerpt?.trim() || "") || htmlToPlainText(p.post_content).slice(0, 300);
@@ -162,6 +163,7 @@ async function main() {
         seo: { metaTitle, metaDescription, noindex },
         wpPostId: p.ID,
         wpRawContent: p.post_content,
+        customCss: customCss ?? undefined,
       };
 
       try {

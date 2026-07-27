@@ -54,14 +54,31 @@ body {
 }
 
 /* Pure-CSS crossfade hero slider (replaces the commercial Slider
-   Revolution/SR7 plugin's JS engine). Per-instance @keyframes are injected
-   inline by wp-shortcode-render.ts; this just provides the shared layout. */
+   Revolution/SR7 plugin's JS engine). Heights match the real SR7 config's
+   own breakpoints (1440/800/600/300px wide -> 810/700/500/300px tall)
+   rather than a viewport-relative guess. Per-instance @keyframes are
+   injected inline by wp-shortcode-render.ts; this just provides the shared
+   layout. */
 .mkd-hero-slider {
   position: relative;
   width: 100%;
-  height: 70vh;
-  min-height: 420px;
+  height: 810px;
   overflow: hidden;
+}
+@media (max-width: 1280px) {
+  .mkd-hero-slider {
+    height: 700px;
+  }
+}
+@media (max-width: 800px) {
+  .mkd-hero-slider {
+    height: 500px;
+  }
+}
+@media (max-width: 600px) {
+  .mkd-hero-slider {
+    height: 300px;
+  }
 }
 .mkd-hero-slide {
   position: absolute;
@@ -114,12 +131,3 @@ body {
   box-sizing: border-box;
 }
 
-/* Testimonial quote text: the theme's own CSS inherits the generic h2 rule
-   (55px, bold) since .mkd-testimonial-text has no dedicated desktop-size
-   rule of its own. That reads as oversized/heavy for body-copy-like quotes,
-   so scale it down and de-bold it here. */
-.mkd-testimonial-text {
-  font-size: 1.25rem !important;
-  font-weight: 400 !important;
-  line-height: 1.6 !important;
-}
