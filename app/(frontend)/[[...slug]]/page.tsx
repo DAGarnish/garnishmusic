@@ -296,32 +296,53 @@ export default async function CatchAllPage({ params }: Args) {
       <div className="mkd-full-width mkd-full-width-shift">
         <div className="mkd-full-width-inner">
           <div className="wpb-content-wrapper">
-            {"titleBackgroundImage" in doc &&
-              doc.titleBackgroundImage &&
-              typeof doc.titleBackgroundImage === "object" && (
-                <div
-                  className="mkd-title mkd-standard-type mkd-preload-background mkd-has-background mkd-has-responsive-background mkd-content-center-alignment mkd-title-small-text-size mkd-animation-no mkd-title-image-responsive mkd-title-in-grid"
-                  style={{ height: 400 }}
-                  data-height="400"
-                >
-                  <div className="mkd-title-image">
-                    <img src={doc.titleBackgroundImage.url ?? undefined} alt="" />
-                  </div>
-                  <div className="mkd-title-holder">
-                    <div className="mkd-container clearfix">
-                      <div className="mkd-container-inner">
-                        <div className="mkd-title-subtitle-holder">
-                          <div className="mkd-title-subtitle-holder-inner">
-                            <h1>
-                              <span>{doc.title}</span>
-                            </h1>
+            {/* The theme never shows a page's own title bar when that page
+               is being served as the site's front page (confirmed on
+               production: the "Locations" page has its title area enabled
+               for its own /locations/ permalink, but the homepage - which is
+               that same underlying doc - shows no title bar at all) - so
+               this is gated on slug.length, not just showTitleArea. */}
+            {type === "page" &&
+              slug.length > 0 &&
+              "showTitleArea" in doc &&
+              doc.showTitleArea !== false &&
+              (() => {
+                const hasImage =
+                  "titleBackgroundImage" in doc &&
+                  doc.titleBackgroundImage &&
+                  typeof doc.titleBackgroundImage === "object";
+                // With a background image, production adds the
+                // background/parallax classes and uses a taller (400px)
+                // banner; without one, mkd-title-image renders as an empty
+                // div and the banner is a shorter (200px) bare title bar -
+                // confirmed against production for both cases (e.g.
+                // courses/ableton-live has an image, academy pages like
+                // www's /academy/ don't).
+                const className = hasImage
+                  ? "mkd-title mkd-standard-type mkd-preload-background mkd-has-background mkd-has-responsive-background mkd-content-center-alignment mkd-title-small-text-size mkd-animation-no mkd-title-image-responsive mkd-title-in-grid"
+                  : "mkd-title mkd-standard-type mkd-content-center-alignment mkd-title-small-text-size mkd-animation-no mkd-title-in-grid";
+                const height = hasImage ? 400 : 200;
+                return (
+                  <div className={className} style={{ height }} data-height={height}>
+                    <div className="mkd-title-image">
+                      {hasImage && <img src={doc.titleBackgroundImage.url ?? undefined} alt="" />}
+                    </div>
+                    <div className="mkd-title-holder" style={{ height }}>
+                      <div className="mkd-container clearfix">
+                        <div className="mkd-container-inner">
+                          <div className="mkd-title-subtitle-holder">
+                            <div className="mkd-title-subtitle-holder-inner">
+                              <h1>
+                                <span>{doc.title}</span>
+                              </h1>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
             {/* WooCommerce single-product pages on production always show
                this exact generic title text in the hero, regardless of the
@@ -357,7 +378,79 @@ export default async function CatchAllPage({ params }: Args) {
               )}
 
             {styledHtml ? (
-              <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+              "featuredImage" in doc &&
+              doc.featuredImage &&
+              typeof doc.featuredImage === "object" &&
+              "portfolioCategories" in doc &&
+              Array.isArray(doc.portfolioCategories) &&
+              // Specifically the "instructors" category, not just any -
+              // confirmed against production that course pages (categories
+              // like "Production Courses"/courses or "Short Courses"/
+              // short-courses) have a real featuredImage set too but still
+              // render with an empty column1 (no image at all), while
+              // instructor bio pages (category "Instructor"/instructors) are
+              // the only ones that show it there. Showing it unconditionally
+              // for anything with a featuredImage duplicated the hero photo
+              // as a second, redundant image on course pages.
+              doc.portfolioCategories.some(
+                (cat: any) => typeof cat === "object" && cat?.slug === "instructors"
+              ) ? (
+                // Portfolio-item (course/instructor) singular template: the
+                // theme renders the featured image and post content as two
+                // template-level columns, entirely outside post_content -
+                // wpContentToStyledHtml only ever sees the raw shortcode
+                // content, so it can't produce this wrapper itself (confirmed
+                // against production's DOM for courses/dave-garnish, e.g.
+                // .mkd-two-columns-75-25 > .mkd-column1 .mkd-portfolio-media
+                // for the image, .mkd-column2 .mkd-portfolio-content for the
+                // content). The h3.mkd-portfolio-title the theme also renders
+                // here is display:none on production (network-wide "modules"
+                // CSS this app doesn't replicate), so it's omitted rather
+                // than shown unstyled.
+                // Matches production's full ancestor chain (confirmed
+                // against courses/dave-garnish): without .mkd-container's
+                // max-width, the two columns stretch full-bleed edge to edge
+                // instead of sitting in the theme's normal centered content
+                // width, at the wrong 75/25 pixel ratio despite already
+                // being the correct proportion.
+                <div className="small-images mkd-portfolio-single-holder">
+                  <div className="mkd-container clearfix">
+                    <div className="mkd-container-inner clearfix">
+                      <div className="mkd-two-columns-75-25 clearfix">
+                        <div className="mkd-column1">
+                          <div className="mkd-column-inner">
+                            <div className="mkd-portfolio-media">
+                              <div className="mkd-portfolio-single-media">
+                                <img
+                                  src={doc.featuredImage.url ?? undefined}
+                                  alt={doc.featuredImage.alt || ""}
+                                  width={doc.featuredImage.width ?? undefined}
+                                  height={doc.featuredImage.height ?? undefined}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mkd-column2">
+                          <div className="mkd-column-inner">
+                            <div className="mkd-portfolio-info-holder">
+                              <div className="mkd-portfolio-info-item mkd-content-item">
+                                <div
+                                  className="mkd-portfolio-content"
+                                  suppressHydrationWarning
+                                  dangerouslySetInnerHTML={{ __html: styledHtml }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+              )
             ) : (
               <article style={{ padding: "3rem 2rem", maxWidth: 900, margin: "0 auto" }}>
                 <h1>{"title" in doc ? doc.title : doc.name}</h1>

@@ -54,6 +54,15 @@ export const Pages: CollectionConfig = {
       },
     },
     {
+      name: "showTitleArea",
+      type: "checkbox",
+      defaultValue: true,
+      admin: {
+        description:
+          "WordPress theme's mkd_show_title_area_meta - whether the title/hero bar renders at all, independent of whether a background image is set (a page can show a bare title badge with no image, or hide the title bar entirely even with an image configured)",
+      },
+    },
+    {
       name: "content",
       type: "richText",
       editor: lexicalEditor(),

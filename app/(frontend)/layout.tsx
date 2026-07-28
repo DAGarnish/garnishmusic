@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "../globals.css";
+import { getCurrentSite } from "../../lib/current-site";
 
 // Loaded as plain blocking <script> tags in <head> (not next/script's
 // beforeInteractive strategy) because that strategy's SSR-injection
@@ -82,11 +83,13 @@ export const themeStylesheets = [
   "/theme/css/js-composer.css",
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const site = await getCurrentSite();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -105,6 +108,15 @@ export default function RootLayout({
         {themeStylesheets.map((href) => (
           <link key={href} rel="stylesheet" href={href} />
         ))}
+        {/* WordPress Customizer "Additional CSS" (theme_mods custom_css),
+           rendered live as <style id="wp-custom-css"> - a per-site, network-
+           wide override (e.g. reduced in-content heading sizes: h1-h4) that
+           isn't part of any page's own content, so it can't come from
+           wp-shortcode-render.ts. Placed right after the theme stylesheets
+           to match production's own cascade position. */}
+        {site?.customCss && (
+          <style id="wp-custom-css" dangerouslySetInnerHTML={{ __html: site.customCss }} />
+        )}
         {themeScripts.map((src) => (
           <script key={src} src={src} />
         ))}
@@ -115,6 +127,19 @@ export default function RootLayout({
       </head>
       <body className="mkd-header-centered mkd-fixed-on-scroll mkd-default-mobile-header mkd-sticky-up-mobile-header mkd-dropdown-default mkd-dark-header mkd-header-style-on-scroll mkd-side-menu-slide-from-right">
         {children}
+        {/* Global, persistent element on every production page (not
+           content-driven) - buro-modules.min.js already loaded above binds
+           its show/hide-on-scroll and click-to-scroll-to-top behavior to
+           this id, so only the markup itself was missing. suppressHydrationWarning
+           because that same script toggles the "on" class based on scroll
+           position as soon as it runs, which can race React's hydration of
+           this element - the mismatch is the external script doing exactly
+           what it's supposed to, not a real bug. */}
+        <a id="mkd-back-to-top" href="#" suppressHydrationWarning>
+          <span className="mkd-icon-stack">
+            <span aria-hidden="true" className="mkd-icon-font-elegant arrow_carrot-up"></span>
+          </span>
+        </a>
       </body>
     </html>
   );

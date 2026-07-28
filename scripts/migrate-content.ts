@@ -94,7 +94,7 @@ async function main() {
       const [metaRows] = await conn.query<any[]>(
         `SELECT post_id, meta_key, meta_value FROM ${prefix}postmeta
          WHERE post_id IN (${pageIds.join(",")}) AND meta_key IN
-         ('_thumbnail_id','_yoast_wpseo_title','_yoast_wpseo_metadesc','rank_math_title','rank_math_description','mkd_title_area_background_image_meta','edgtf_title_area_background_image_meta','rank_math_robots','_yoast_wpseo_meta-robots-noindex','_wpb_post_custom_css');`
+         ('_thumbnail_id','_yoast_wpseo_title','_yoast_wpseo_metadesc','rank_math_title','rank_math_description','mkd_title_area_background_image_meta','edgtf_title_area_background_image_meta','rank_math_robots','_yoast_wpseo_meta-robots-noindex','_wpb_post_custom_css','mkd_show_title_area_meta');`
       );
       pageMeta = metaRows as any[];
     }
@@ -136,28 +136,51 @@ async function main() {
       const titleBgUrl = getMetaValue(pageMeta, p.ID, "mkd_title_area_background_image_meta") || getMetaValue(pageMeta, p.ID, "edgtf_title_area_background_image_meta");
       const titleBgWpId = titleBgUrl ? resolveAttachmentIdFromUrl(titleBgUrl, byFilenameKey) : undefined;
       const titleBackgroundImage = titleBgWpId !== undefined ? siteMediaMap[titleBgWpId] : undefined;
+      const decodedTitle = decodeHTML(p.post_title?.trim() || "") || p.post_name || `page-${p.ID}`;
+      const excerpt = decodeHTML(p.post_excerpt?.trim() || "") || htmlToPlainText(p.post_content).slice(0, 300);
+      // RankMath (the network's actual active SEO plugin) only stores
+      // rank_math_title/_description when a page's SEO tab was manually
+      // edited - otherwise it renders its own dynamic default at request
+      // time ("{title} - {sitename}" / "{excerpt}", per this network's own
+      // Titles & Meta settings) and never touches the post's meta table.
+      // _yoast_wpseo_title/_metadesc are leftovers from a since-replaced
+      // plugin: WordPress no longer reads them for anything, so falling
+      // back to them (as this migration used to) surfaces stale, sometimes
+      // wrong-site copy - confirmed on Sydney's homepage, whose leftover
+      // Yoast title still says "Berlin" from the site it was cloned from,
+      // while the live page (using RankMath's dynamic default) correctly
+      // says "Sydney". Reproducing RankMath's own default is more faithful
+      // to what's actually live than trusting dead plugin data.
       const metaTitle =
         getMetaValue(pageMeta, p.ID, "rank_math_title") ||
-        getMetaValue(pageMeta, p.ID, "_yoast_wpseo_title");
+        `${decodedTitle} - ${site.name}`;
       const metaDescription =
-        getMetaValue(pageMeta, p.ID, "rank_math_description") ||
-        getMetaValue(pageMeta, p.ID, "_yoast_wpseo_metadesc");
+        getMetaValue(pageMeta, p.ID, "rank_math_description") || excerpt;
       const rankMathRobots = getMetaValue(pageMeta, p.ID, "rank_math_robots");
       const yoastNoindex = getMetaValue(pageMeta, p.ID, "_yoast_wpseo_meta-robots-noindex");
       const noindex = Boolean(rankMathRobots?.includes("noindex") || yoastNoindex === "1");
       const customCss = getMetaValue(pageMeta, p.ID, "_wpb_post_custom_css");
+      // Independent of whether a background image is configured - a page
+      // can show a bare title badge with no image (mkd-title-image renders
+      // an empty div), or hide the title bar entirely even with an image
+      // set (confirmed on production: "tc" has a background image meta
+      // value but mkd_show_title_area_meta=no, and the whole title area is
+      // absent from the rendered page). Absent this meta entirely defaults
+      // to shown, matching the theme's own default.
+      const showTitleAreaMeta = getMetaValue(pageMeta, p.ID, "mkd_show_title_area_meta");
+      const showTitleArea = showTitleAreaMeta !== "no";
 
       const content = wpContentToLexical(p.post_content, mediaResolver);
-      const excerpt = decodeHTML(p.post_excerpt?.trim() || "") || htmlToPlainText(p.post_content).slice(0, 300);
       const fullPath = computeFullPath(p);
 
       const data = {
-        title: decodeHTML(p.post_title?.trim() || "") || p.post_name || `page-${p.ID}`,
+        title: decodedTitle,
         slug: fullPath,
         site: site.id,
         status: "published" as const,
         featuredImage: featuredImage ?? undefined,
         titleBackgroundImage: titleBackgroundImage ?? undefined,
+        showTitleArea,
         content,
         excerpt,
         seo: { metaTitle, metaDescription, noindex },
@@ -214,12 +237,16 @@ async function main() {
       const titleBgUrl = getMetaValue(postMeta, p.ID, "mkd_title_area_background_image_meta") || getMetaValue(postMeta, p.ID, "edgtf_title_area_background_image_meta");
       const titleBgWpId = titleBgUrl ? resolveAttachmentIdFromUrl(titleBgUrl, byFilenameKey) : undefined;
       const titleBackgroundImage = titleBgWpId !== undefined ? siteMediaMap[titleBgWpId] : undefined;
+      const decodedTitle = decodeHTML(p.post_title?.trim() || "") || p.post_name || `post-${p.ID}`;
+      const excerpt = decodeHTML(p.post_excerpt?.trim() || "") || htmlToPlainText(p.post_content).slice(0, 300);
+      // See the matching comment in the pages loop above: reproduces
+      // RankMath's own dynamic default instead of falling back to dead
+      // Yoast meta.
       const metaTitle =
         getMetaValue(postMeta, p.ID, "rank_math_title") ||
-        getMetaValue(postMeta, p.ID, "_yoast_wpseo_title");
+        `${decodedTitle} - ${site.name}`;
       const metaDescription =
-        getMetaValue(postMeta, p.ID, "rank_math_description") ||
-        getMetaValue(postMeta, p.ID, "_yoast_wpseo_metadesc");
+        getMetaValue(postMeta, p.ID, "rank_math_description") || excerpt;
       const rankMathRobots = getMetaValue(postMeta, p.ID, "rank_math_robots");
       const yoastNoindex = getMetaValue(postMeta, p.ID, "_yoast_wpseo_meta-robots-noindex");
       const noindex = Boolean(rankMathRobots?.includes("noindex") || yoastNoindex === "1");
@@ -234,10 +261,9 @@ async function main() {
         .filter((id): id is number | string => id !== undefined);
 
       const content = wpContentToLexical(p.post_content, mediaResolver);
-      const excerpt = decodeHTML(p.post_excerpt?.trim() || "") || htmlToPlainText(p.post_content).slice(0, 300);
 
       const data = {
-        title: decodeHTML(p.post_title?.trim() || "") || p.post_name || `post-${p.ID}`,
+        title: decodedTitle,
         slug: p.post_name || `post-${p.ID}`,
         site: site.id,
         status: "published" as const,

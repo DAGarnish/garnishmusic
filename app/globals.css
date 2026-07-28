@@ -38,6 +38,22 @@ body {
   height: auto;
 }
 
+/* WordPress's own "size-full" class (meaning "this attachment's original
+   registered size was used", carried over verbatim from migrated content)
+   collides with Tailwind v4's auto-generated `size-full` utility (width:
+   100%; height: 100%) - Tailwind's content scanner picks up the literal
+   string wherever it appears in source, including inside the raw HTML
+   strings this app builds in scripts/wp-shortcode-render.ts. That utility
+   sits in Tailwind's @layer utilities, so an unlayered rule here
+   unconditionally wins and restores WordPress's actual (harmless) meaning -
+   confirmed against production, where images like the course-page "CONNECT"
+   button render at their natural size instead of stretching to fill their
+   container. */
+.size-full {
+  width: auto;
+  height: auto;
+}
+
 body {
   overflow-x: hidden;
 }
@@ -149,6 +165,16 @@ body {
   padding-right: 0;
 }
 
+/* Same reasoning as the hero slider above: photo galleries (e.g. the
+   homepage's "locations" mkd_portfolio_list grid) are meant to fill the
+   viewport edge-to-edge on production, not read as boxed article text -
+   exclude them from the readability max-width too. */
+.vc_row.mkd-section:has(> .mkd-full-section-inner .mkd-portfolio-list-holder) > .mkd-full-section-inner {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* On production this comes from Mikado Core's per-page dynamically-generated
    "used modules" inline <style> block (rebuilt server-side per request from
    whichever shortcodes appear on that page), which isn't part of any static
@@ -161,5 +187,29 @@ div.mkd-title .mkd-title-holder h1 {
 }
 .mkd-title {
   background-size: cover;
+}
+
+/* On production, WordPress generates a pre-cropped *square* thumbnail size
+   (e.g. "ableton_live-300x300.jpg") for every mkd_portfolio_list grid image,
+   so a row of cards is always uniform height regardless of each source
+   photo's original aspect ratio. This app doesn't run WordPress's image
+   pipeline, so it only ever has the original, uncropped upload (whatever
+   aspect ratio that happens to be) - confirmed against production's raw HTML
+   for the homepage's "Shorter Music Production Courses" grid, where four
+   cards use four different original aspect ratios (800x800, 1000x667,
+   4000x1682, 800x800) but production still shows a uniform-height row.
+   Force the same square crop here rather than relying on source dimensions. */
+.mkd-portfolio-list-holder .mkd-item-image-holder-inner {
+  aspect-ratio: 1 / 1;
+}
+/* !important: buro-modules.css's own
+   ".mkd-portfolio-list-holder article .mkd-item-image-holder img{height:auto}"
+   outranks this on specificity alone (its extra "article" type selector
+   beats this rule's extra class) - not solvable by rewriting the selector
+   without duplicating the theme's own "article" ancestor. */
+.mkd-portfolio-list-holder .mkd-item-image-holder-inner img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
 }
 

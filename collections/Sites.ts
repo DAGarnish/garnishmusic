@@ -85,5 +85,13 @@ export const Sites: CollectionConfig = {
           "WordPress page_on_front option value for this blog. The Page with matching wpPostId is this site's homepage.",
       },
     },
+    {
+      name: "customCss",
+      type: "textarea",
+      admin: {
+        description:
+          "This site's WordPress Customizer \"Additional CSS\" (theme_mods custom_css, rendered live as <style id=\"wp-custom-css\">) - applies network-wide overrides (e.g. reduced in-content heading sizes) that aren't in any page's own content. Scraped from the live site rather than the custom_css post type table, which can hold multiple stale/duplicate revisions.",
+      },
+    },
   ],
 };

@@ -61,6 +61,25 @@ function vcCssDeclarations(cssAttr: string | undefined): string {
   return match ? match[1].trim() : "";
 }
 
+// Shared by mkd_icon and mkd_icon_with_text - both wrap a font-awesome icon
+// in the same .mkd-icon-shortcode/<i> markup, just with different attribute
+// names for size/type (mkd_icon: size/type; mkd_icon_with_text:
+// icon_size/icon_type) and mkd_icon alone supports icon_color (rendered as
+// both a style and a data-color attribute - confirmed against production's
+// /ba-pathway-courses/ arrow-icon bullets).
+function renderIconMarkup(attrs: Record<string, string>, sizeAttr: string, typeAttr: string): string {
+  const iconPack = attrs.icon_pack === "font_awesome" ? "mkd-icon-font-awesome" : "";
+  const size = attrs[sizeAttr] || "mkd-icon-medium";
+  const type = attrs[typeAttr] || "normal";
+  const color = attrs.icon_color;
+  const dataColor = color ? ` data-color="${esc(color)}"` : "";
+  const iconStyle = color ? `color: ${esc(color)}` : "";
+  return `<span class="mkd-icon-shortcode ${esc(type)} ${esc(size)}" ${dataColor}>
+
+        <i class="${iconPack} fa ${esc(attrs.fa_icon || "")} mkd-icon-element" style="${iconStyle}"></i>
+            </span>`;
+}
+
 function vcCustomStyle(cssAttr: string | undefined): string {
   const declarations = vcCssDeclarations(cssAttr);
   return declarations ? ` style="${esc(declarations)}"` : "";
@@ -99,22 +118,29 @@ function renderTestimonials(categorySlug: string | undefined, ctx: RenderContext
   const items = ctx.resolveTestimonials(categorySlug || "");
   if (items.length === 0) return "";
 
+  // Previously used the wrong heading tag (h2, which inherits the theme's
+  // generic 55px heading size instead of h4's ~22px body-copy size) and the
+  // wrong wrapper class (.mkd-testimonial-text-outer, which matches no real
+  // CSS rule) - confirmed against production's real markup, which renders
+  // testimonial quotes as unassumingly-sized body text, not giant headings.
   const slides = items
     .map(
       (item, i) => `<div class="mkd-testimonial-content mkd-testimonials${i}">
     <div class="mkd-testimonial-content-inner">
-        <div class="mkd-testimonial-text-outer">
-            <h2 class="mkd-testimonial-text">${esc(item.text)}</h2>
+        <div class="mkd-testimonial-text-holder">
+            <div class="mkd-testimonial-text-inner">
+                <h4 class="mkd-testimonial-text">${esc(item.text)}</h4>
+                <div class="mkd-testimonial-author">
+                    <h5 class="mkd-testimonial-author-text">${esc(item.author)}</h5>
+                </div>
+            </div>
         </div>
-        <h5 class="mkd-testimonial-author">
-            - <span class="mkd-testimonial-author-text"> ${esc(item.author)} </span>
-        </h5>
     </div>
 </div>`
     )
     .join("");
 
-  return `<div class="mkd-testimonials-holder clearfix"><div class="mkd-slick-slider-navigation-style mkd-testimonials mkd-testimonials-type-buro" data-dots-navigation="false">${slides}</div></div>`;
+  return `<div class="mkd-testimonials-holder clearfix"><div class="mkd-slick-slider-navigation-style mkd-testimonials mkd-testimonials-type-standard" data-arrows-navigation="false">${slides}</div></div>`;
 }
 
 // A pure-CSS crossfade carousel (no JS dependency) using @keyframes with a
@@ -168,6 +194,15 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
 
   const { tag, attrs, children } = node;
 
+  // WPBakery's "Disable this element" toggle keeps the shortcode in
+  // post_content (so the client can re-enable it later) but hides it from
+  // the live render entirely - confirmed against production, where e.g. the
+  // edu homepage's "Categories by Topic" [vc_row disable_element="yes"]
+  // gallery block never appears, even though it's still in wpRawContent.
+  if (attrs.disable_element === "yes") {
+    return "";
+  }
+
   switch (tag) {
     case "vc_row": {
       // WPBakery rows render one of two inner-wrapper structures depending
@@ -178,7 +213,14 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // Matches the real theme CSS exactly, rather than an ad-hoc guess.
       const isGrid = attrs.content_width === "grid";
       let rowClass = `vc_row wpb_row vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
-      if (attrs.content_aligment) rowClass += ` mkd-content-aligment-${attrs.content_aligment}`;
+      // Visual Composer/WPBakery defaults content_aligment to "left" when the
+      // attribute is omitted from the shortcode entirely (confirmed against
+      // production: /tc/'s [vc_row] has no content_aligment attribute at all,
+      // yet still renders with .mkd-content-aligment-left) - omitting the
+      // class outright here left the theme's in-content type scale
+      // (h1/h3 sized for a heading badge, not a hero) unapplied, so page
+      // headings rendered at the global default hero size instead.
+      rowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
       if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
       const inner = isGrid
         ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${renderChildren(children, ctx)}</div></div>`
@@ -216,7 +258,9 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // a ragged left-aligned stack instead of the real evenly-spaced grid.
       const isGrid = attrs.content_width === "grid";
       let rowClass = `vc_row wpb_row vc_inner vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
-      if (attrs.content_aligment) rowClass += ` mkd-content-aligment-${attrs.content_aligment}`;
+      // Same default as vc_row above - VC/WPBakery defaults to "left" when
+      // content_aligment is omitted, it isn't a signal for "no class".
+      rowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
       if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
       const inner = isGrid
         ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${renderChildren(children, ctx)}</div></div>`
@@ -233,8 +277,23 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       )}</div></div></div>`;
     }
 
-    case "vc_column_text":
-      return attrs.css ? `<div${vcCustomStyle(attrs.css)}>${renderChildren(children, ctx)}</div>` : renderChildren(children, ctx);
+    case "vc_column_text": {
+      // Real WPBakery output always wraps column text in
+      // .wpb_text_column.wpb_content_element > .wpb_wrapper - the theme's
+      // CSS keys sizing rules (e.g. img.aligncenter.size-full width) off
+      // this wrapper specifically. Previously this rendered bare children
+      // with no wrapper at all, so any image dropped straight into a
+      // vc_column_text (e.g. the "CONNECT" button on course pages) fell
+      // back to a generic img rule that stretches it to 100% of the
+      // column's width instead of its natural size - confirmed against
+      // production, where the wrapper is always present.
+      let cls = "wpb_text_column wpb_content_element";
+      if (attrs.el_class) cls += ` ${attrs.el_class}`;
+      return `<div class="${cls}"${vcCustomStyle(attrs.css)}><div class="wpb_wrapper">${renderChildren(
+        children,
+        ctx
+      )}</div></div>`;
+    }
 
     case "vc_empty_space": {
       const height = attrs.height || "20px";
@@ -315,11 +374,84 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       }
     }
 
+    case "mkd_icon": {
+      // Standalone icon (e.g. the red arrow bullets on /ba-pathway-courses/)
+      // - previously unhandled and fell to the default case, which renders
+      // no children for a void tag, so every one of these ~4,400 icons
+      // sitewide simply vanished. Optionally wrapped in a link, per the
+      // shortcode's own "link" attribute.
+      const icon = renderIconMarkup(attrs, "size", "type");
+      return attrs.link
+        ? `<a href="${esc(attrs.link)}"${attrs.target === "_blank" ? ' target="_blank" rel="noopener noreferrer"' : ""}>${icon}</a>`
+        : icon;
+    }
+
     case "mkd_icon_with_text": {
-      const iconClass = attrs.fa_icon ? `fa ${attrs.fa_icon}` : "";
-      return iconClass
-        ? `<div class="mkd-icon-with-text-holder"><i class="${esc(iconClass)}"></i></div>`
-        : "";
+      // Previously dropped everything but the bare icon - title, the
+      // icon's containing markup, and the entire text/bullet-list body
+      // (WPBakery stores it as a single "text" attribute with "\n"-joined
+      // "• "-prefixed lines, not real <ul><li> children) were all silently
+      // lost. Confirmed against production's real markup (e.g. the "Private
+      // Instruction" / "In person option" pricing callouts on
+      // /private-instruction/) - mkd-iwt-* class suffixes come directly
+      // from the icon_position and icon_size attributes.
+      const iconSizeSuffix = (attrs.icon_size || "mkd-icon-medium").replace(/^mkd-/, "");
+      const positionClass = attrs.icon_position ? ` mkd-iwt-${attrs.icon_position}` : "";
+      const text = (attrs.text || "")
+        .split("\n")
+        .map((line) => esc(line))
+        .join("<br />\n");
+      return `<div class="mkd-iwt clearfix${positionClass} mkd-iwt-${iconSizeSuffix}">
+    <div class="mkd-iwt-content-holder">
+        <div class="mkd-iwt-icon-title-holder">
+            <div class="mkd-iwt-icon-holder">
+    ${renderIconMarkup(attrs, "icon_size", "icon_type")}
+            </div>
+            <div class="mkd-iwt-title-holder">
+                <h5>${esc(attrs.title || "")}</h5>
+            </div>
+        </div>
+        <div class="mkd-iwt-text-holder">
+            <p>${text}</p>
+        </div>
+    </div>
+</div>`;
+    }
+
+    // Real WPBakery output is a flat run of sibling <h5>/.mkd-accordion-content
+    // pairs inside one .mkd-accordion-holder wrapper (not one wrapper per
+    // tab) - the theme's own accordion JS (already loaded via
+    // buro-modules.min.js) toggles siblings on click by class, so matching
+    // this exact structure is enough to get working click-to-expand
+    // behavior with no custom JS of our own. Previously mkd_accordion and
+    // mkd_accordion_tab were unhandled, so they fell through to the default
+    // case (render children, drop the tag) - the tab body text still
+    // rendered, but the clickable title header and expand/collapse markup
+    // were silently dropped entirely (confirmed on e.g. the academy page's
+    // 9-tab curriculum accordion).
+    case "mkd_accordion":
+      return `<div class="mkd-accordion-holder clearfix mkd-accordion mkd-initial ">${renderChildren(
+        children,
+        ctx
+      )}</div>`;
+
+    case "mkd_accordion_tab": {
+      const titleTag = /^h[1-6]$/.test(attrs.title_tag || "") ? attrs.title_tag : "h5";
+      return `<${titleTag} class="clearfix mkd-title-holder">
+	<span class="mkd-tab-title">
+		<span class="mkd-tab-title-inner">
+			${esc(attrs.title || "")}		</span>
+	</span>
+	<span class="mkd-accordion-mark">
+		<span class="mkd-accordion-mark-icon">
+			<span class="icon_plus"></span>
+			<span class="icon_minus-06"></span>
+		</span>
+	</span>
+</${titleTag}><div class="mkd-accordion-content"><div class="mkd-accordion-content-inner">${renderChildren(
+        children,
+        ctx
+      )}</div></div>`;
     }
 
     case "mkd_portfolio_list":
