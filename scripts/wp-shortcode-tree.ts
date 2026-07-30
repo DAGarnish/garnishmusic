@@ -22,6 +22,23 @@ const VOID_TAGS = new Set([
   "mkd_icon_with_text",
   "rev_slider",
   "sr7",
+  // Confirmed via a network-wide scan of raw post_content: none of these
+  // ever appear with a matching [/tag] anywhere, so - like the tags
+  // above - they're always self-closing in this theme's actual usage.
+  // Not flagging them left the parser treating them as open containers,
+  // silently absorbing whatever content came next (up to the next
+  // enclosing row/column's close) as their own unrendered children -
+  // vc_btn alone appears 5,144 times network-wide, so this was swallowing
+  // real page content far more often than any single symptom made obvious.
+  "vc_btn",
+  "mkd_portfolio_slider",
+  "mkd_icon_list_item",
+  "mkd_banner",
+  "mkd_progress_bar",
+  "mkd_carousel",
+  "mkd_custom_font",
+  "mkd_section_subtitle",
+  "vc_zigzag",
 ]);
 
 function parseAttrs(attrString: string): Record<string, string> {

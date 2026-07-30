@@ -41,6 +41,25 @@ type RenderContext = {
   resolveBlogList: BlogListResolver;
 };
 
+// WPBakery's link-picker widget (used by vc_btn and others) stores its
+// value as "url:ENCODED|title:ENCODED|target:VALUE", not a bare URL.
+function parseWpLink(link: string | undefined): { url?: string; title?: string; target?: string } {
+  if (!link) return {};
+  const result: Record<string, string> = {};
+  for (const part of link.split("|")) {
+    const i = part.indexOf(":");
+    if (i === -1) continue;
+    const key = part.slice(0, i);
+    const value = part.slice(i + 1);
+    try {
+      result[key] = decodeURIComponent(value);
+    } catch {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 function widthAttrToCols(width: string | undefined): number {
   if (!width) return 12;
   const m = width.match(/^(\d+)\/(\d+)$/);
@@ -479,6 +498,30 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       )}?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div></div>`;
     }
 
+    case "vc_btn": {
+      // Was entirely unhandled and, worse, not in VOID_TAGS - since vc_btn
+      // never has a real closing tag in this theme's usage (its label
+      // lives in the "title" attribute, not child content), the parser
+      // treated it as an open container, silently absorbing whatever
+      // content followed as its own unrendered children until the next
+      // enclosing row/column closed. 5,144 uses network-wide - by far the
+      // most common shortcode gap found in the whole migration.
+      const link = parseWpLink(attrs.link);
+      const size = attrs.size || "md";
+      const shape = attrs.shape || "rounded";
+      const style = attrs.style || "modern";
+      const color = attrs.color || "default";
+      const target = link.target === "_blank" ? ' target="_blank" rel="noopener noreferrer"' : "";
+      const title = link.title || attrs.title || "";
+      return `<div class="vc_btn3-container vc_btn3-inline vc_do_btn"><a class="vc_general vc_btn3 vc_btn3-size-${esc(
+        size
+      )} vc_btn3-shape-${esc(shape)} vc_btn3-style-${esc(style)} vc_btn3-color-${esc(
+        color
+      )}" href="${esc(link.url || "#")}" title="${esc(title)}"${target}>${esc(
+        attrs.title || link.title || ""
+      )}</a></div>`;
+    }
+
     case "mkd_button": {
       const bg = attrs.background_color ? ` style="background-color: ${esc(attrs.background_color)}"` : "";
       const target = attrs.target === "_blank" ? ' target="_blank" rel="noopener noreferrer"' : "";
@@ -596,6 +639,129 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     </div>
 </div>`;
     }
+
+    case "mkd_icon_list_item": {
+      // Unlike mkd_icon/mkd_icon_with_text's renderIconMarkup, this
+      // shortcode's icon is a single bare <span> (no nested <i>, no
+      // "mkd-icon-shortcode" wrapper, no named size class - icon_size is a
+      // raw pixel number) - confirmed against production's real markup on
+      // www's /contact-map/ address pin icon.
+      const iconClass =
+        attrs.icon_pack === "font_awesome"
+          ? `mkd-icon-font-awesome fa ${esc(attrs.fa_icon || "")}`
+          : `mkd-icon-font-elegant ${esc(attrs.fe_icon || "")}`;
+      const styleParts: string[] = [];
+      if (attrs.icon_color) styleParts.push(`color:${attrs.icon_color}`);
+      if (attrs.icon_size) styleParts.push(`font-size:${attrs.icon_size}px`);
+      const style = styleParts.length ? ` style="${esc(styleParts.join(";"))}"` : "";
+      return `<div class="mkd-icon-list-item">
+	<div class="mkd-icon-list-icon-holder">
+        <div class="mkd-icon-list-icon-holder-inner clearfix">
+			<span aria-hidden="true" class="${iconClass} "${style}></span>		</div>
+	</div>
+	<p class="mkd-icon-list-text"  > ${esc(attrs.title || "")}</p>
+</div>`;
+    }
+
+    case "mkd_banner": {
+      // item_image is a WP attachment ID resolved the same way as every
+      // other image reference in this migration (resolveImage), not a
+      // direct URL - confirmed against production, where two of the three
+      // banners on www's /shop-home/ have a missing/deleted attachment and
+      // render with no image at all even live, so an unresolvable ID here
+      // legitimately means no image, matching that page's own real state.
+      const imageUrl = attrs.item_image ? ctx.resolveImage(attrs.item_image) : undefined;
+      const imageStyle = imageUrl ? ` style="background-image: url('${esc(imageUrl)}')"` : "";
+      const vAlign = attrs.vertical_alignment || "bottom";
+      const hAlign = attrs.horizontal_alignment || "left";
+      const hover = attrs.image_hover ? ` mkd-bih-${esc(attrs.image_hover)}` : "";
+      const titleStyle = attrs.custom_size
+        ? ` style="font-size: ${esc(attrs.custom_size)}"`
+        : "";
+      const target = attrs.link_target === "_blank" ? ' target="_blank" rel="noopener noreferrer"' : "";
+      return `<div class="mkd-banner vertical-alignment-${esc(vAlign)} horizontal-alignment-${esc(
+        hAlign
+      )}${hover}">
+			<a href="${esc(attrs.link || "#")}"${target}>
+			<div class="mkd-banner-image-inner">
+							<div class="mkd-banner-image"${imageStyle}>
+									</div>
+
+			<div class="mkd-banner-info">
+				<div class="mkd-banner-info-table">
+					<div class="mkd-banner-info-table-cell">
+													<div class="mkd-banner-title-holder">
+								<h2 class="mkd-banner-title"${titleStyle}>
+									${esc(attrs.banner_title || "")}								</h2>
+							</div>
+											</div>
+				</div>
+			</div>
+		</div>
+			</a>
+	</div>`;
+    }
+
+    case "mkd_progress_bar": {
+      const percent = parseInt(attrs.percent || "0", 10) || 0;
+      return `<div class="mkd-progress-bar mkd-progress-bar-dark">
+	<h6 class="mkd-progress-title-holder clearfix">
+		<span class="mkd-progress-title">${esc(attrs.title || "")}</span>
+		<span class="mkd-progress-number-wrapper mkd-floating " >
+			<span class="mkd-progress-number">
+				<span class="mkd-percent">0</span>
+			</span>
+		</span>
+	</h6>
+	<div class="mkd-progress-content-outer ">
+		<div data-percentage=${percent} class="mkd-progress-content" ></div>
+	</div>
+</div>`;
+    }
+
+    case "mkd_custom_font": {
+      const styleParts: string[] = [];
+      if (attrs.font_family) styleParts.push(`font-family: ${attrs.font_family}`);
+      if (attrs.font_size) styleParts.push(`font-size: ${attrs.font_size}px`);
+      if (attrs.line_height) styleParts.push(`line-height: ${attrs.line_height}px`);
+      if (attrs.font_weight) styleParts.push(`font-weight: ${attrs.font_weight}`);
+      if (attrs.text_align) styleParts.push(`text-align: ${attrs.text_align}`);
+      if (attrs.color) styleParts.push(`color: ${attrs.color}`);
+      const text = (attrs.content_custom_font || "")
+        .split("\n")
+        .map((line) => esc(line))
+        .join("<br />\n");
+      return `<div class="mkd-custom-font-holder" style="${esc(
+        styleParts.join(";")
+      )}" data-font-size=${esc(attrs.font_size || "")} data-line-height=${esc(
+        attrs.line_height || ""
+      )}>
+	${text}	</div>`;
+    }
+
+    case "mkd_section_subtitle":
+      return `<div class="mkd-section-subtitle"${
+        attrs.text_color ? ` style="color: ${esc(attrs.text_color)}"` : ""
+      }>${esc(attrs.subtitle_text || "")}</div>`;
+
+    // Static decorative divider - WPBakery's own core shortcode, not
+    // theme-specific, and its zigzag pattern SVG never varies with any
+    // shortcode attribute in this network's usage (confirmed - every
+    // instance is a bare [vc_zigzag] with no attrs), so the encoded SVG
+    // background is reproduced verbatim from production rather than
+    // rebuilt from parameters that don't exist here.
+    case "vc_zigzag":
+      return `<div class="vc-zigzag-wrapper vc-zigzag-align-center"><div class="vc-zigzag-inner" style="width: 100%;min-height: 14px;background: 0 repeat-x url('data:image/svg+xml;utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C%21DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20width%3D%2214px%22%20height%3D%2212px%22%20viewBox%3D%220%200%2018%2015%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Cpolygon%20id%3D%22Combined-Shape%22%20fill%3D%22%23ebebeb%22%20points%3D%228.98762301%200%200%209.12771969%200%2014.519983%209%205.40479869%2018%2014.519983%2018%209.12771969%22%3E%3C%2Fpolygon%3E%3C%2Fsvg%3E');"></div></div>`;
+
+    // Not implemented: this is a named, curated set of items (e.g.
+    // carousel="shop-home") with no attribute identifying WHICH
+    // products/content belong to it - unlike every other data-driven
+    // shortcode here (testimonials/portfolio/blog list), there's no
+    // category or other queryable key in the shortcode itself to resolve
+    // against, so there's no way to know what content this specific
+    // instance should show without a mapping this migration was never
+    // given. Falls through to the default case (render children, which is
+    // empty since it's void) rather than guessing.
 
     // Real WPBakery output is a flat run of sibling <h5>/.mkd-accordion-content
     // pairs inside one .mkd-accordion-holder wrapper (not one wrapper per
