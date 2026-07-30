@@ -10,6 +10,7 @@ import { buildImageResolver } from "../../../lib/wp-image-resolver";
 import { buildPortfolioListResolver } from "../../../lib/wp-portfolio-resolver";
 import { buildTestimonialsResolver } from "../../../lib/wp-testimonials-resolver";
 import { buildHeroSliderResolver } from "../../../lib/wp-hero-slider-resolver";
+import { buildBlogListResolver } from "../../../lib/wp-blog-list-resolver";
 import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
 
 const EMPTY_RICHTEXT = {
@@ -191,12 +192,14 @@ export default async function CatchAllPage({ params }: Args) {
     const resolvePortfolioList = await buildPortfolioListResolver(site.id, doc.wpRawContent as string);
     const resolveTestimonials = await buildTestimonialsResolver(site.id, doc.wpRawContent as string);
     const resolveHeroSlider = await buildHeroSliderResolver(site.id, doc.wpRawContent as string);
+    const resolveBlogList = await buildBlogListResolver(site.id, doc.wpRawContent as string);
     styledHtml = wpContentToStyledHtml(
       doc.wpRawContent as string,
       resolveImage,
       resolvePortfolioList,
       resolveTestimonials,
-      resolveHeroSlider
+      resolveHeroSlider,
+      resolveBlogList
     );
   }
 
@@ -288,21 +291,41 @@ export default async function CatchAllPage({ params }: Args) {
   }
 
   const customCss = "customCss" in doc && doc.customCss ? doc.customCss : null;
+  // The theme wraps every ordinary page in the boxed .mkd-container (fixed
+  // max-width, centered, with grid-gutter padding on its own) - only the
+  // homepage uses the edge-to-edge .mkd-full-width, for its full-bleed
+  // hero slider (confirmed against production: edu's "/" is mkd-full-width,
+  // while every other page - "/about/", "/private-instruction/", even on
+  // other sites like ny's "/private-instruction/" - is mkd-container).
+  // Getting this wrong doesn't just look different: content that isn't
+  // itself wrapped in a proper vc_row/vc_column (e.g. a page with orphaned
+  // top-level shortcodes, which WPBakery's builder can leave behind) relies
+  // entirely on .mkd-container's own padding for its left/right gap -
+  // mkd-full-width provides none at all, so that content ran edge-to-edge
+  // (confirmed against production on /private-instruction/).
+  const isHomepage = "wpPostId" in doc && doc.wpPostId === site.homepageWpId;
+  const WrapperTag = isHomepage ? "mkd-full-width mkd-full-width-shift" : "mkd-container";
+  const InnerTag = isHomepage ? "mkd-full-width-inner" : "mkd-container-inner clearfix";
 
   return (
     <>
       {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
       <Header menu={site.mainMenu as any} />
-      <div className="mkd-full-width mkd-full-width-shift">
-        <div className="mkd-full-width-inner">
-          <div className="wpb-content-wrapper">
-            {/* The theme never shows a page's own title bar when that page
-               is being served as the site's front page (confirmed on
-               production: the "Locations" page has its title area enabled
-               for its own /locations/ permalink, but the homepage - which is
-               that same underlying doc - shows no title bar at all) - so
-               this is gated on slug.length, not just showTitleArea. */}
-            {type === "page" &&
+      {/* The title bar sits BEFORE .mkd-container/.mkd-full-width in the
+         DOM, not nested inside it - it's always full-bleed regardless of
+         whether the page content below is boxed (confirmed against
+         production: /private-instruction/'s title area starts well before
+         the page's first .mkd-container div). Moving it inside the
+         container earlier constrained the hero image with the same
+         left/right margins as the boxed content, which production doesn't
+         have. */}
+      {/* The theme never shows a page's own title bar when that page
+         is being served as the site's front page (confirmed on
+         production: the "Locations" page has its title area enabled
+         for its own /locations/ permalink, but the homepage - which is
+         that same underlying doc - shows no title bar at all) - so
+         this is gated on slug.length, not just showTitleArea. */}
+      {type === "page" &&
               slug.length > 0 &&
               "showTitleArea" in doc &&
               doc.showTitleArea !== false &&
@@ -376,7 +399,9 @@ export default async function CatchAllPage({ params }: Args) {
                   </div>
                 </div>
               )}
-
+      <div className={WrapperTag}>
+        <div className={InnerTag}>
+          <div className="wpb-content-wrapper">
             {styledHtml ? (
               "featuredImage" in doc &&
               doc.featuredImage &&

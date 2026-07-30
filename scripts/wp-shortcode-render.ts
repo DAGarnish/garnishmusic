@@ -24,11 +24,21 @@ export type HeroSlide = {
 };
 export type HeroSliderResolver = (alias: string) => HeroSlide[];
 
+export type BlogListItem = {
+  title: string;
+  href: string;
+  categoryLabels: string[];
+  dateLabel?: string;
+  excerpt?: string;
+};
+export type BlogListResolver = (categoryCsv: string) => BlogListItem[];
+
 type RenderContext = {
   resolveImage: ImageUrlResolver;
   resolvePortfolioList: PortfolioListResolver;
   resolveTestimonials: TestimonialsResolver;
   resolveHeroSlider: HeroSliderResolver;
+  resolveBlogList: BlogListResolver;
 };
 
 function widthAttrToCols(width: string | undefined): number {
@@ -48,6 +58,70 @@ function esc(s: string): string {
 
 function renderChildren(nodes: ShortcodeNode[], ctx: RenderContext): string {
   return nodes.map((n) => renderNode(n, ctx)).join("");
+}
+
+// Covers every YouTube URL shape found in this network's [vc_video link=]
+// attributes: watch?v=ID, youtu.be/ID, youtube.com/embed/ID, and
+// youtube.com/shorts/ID.
+function extractYouTubeId(url: string): string | undefined {
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/
+  );
+  return m ? m[1] : undefined;
+}
+
+// Tags WordPress's own wpautop() treats as already block-level, so it
+// never wraps them (or their contents) in a <p>.
+const AUTOP_BLOCK_TAGS =
+  "table|thead|tfoot|caption|col|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|form|blockquote|address|style|p|h[1-6]|hr|fieldset|legend|section|article|aside|header|footer|nav|figure|figcaption|details|summary";
+const AUTOP_OPEN_RE = new RegExp(`<(?:${AUTOP_BLOCK_TAGS})(?:\\s[^>]*)?>`, "gi");
+const AUTOP_CLOSE_RE = new RegExp(`</(?:${AUTOP_BLOCK_TAGS})>`, "gi");
+const AUTOP_STARTS_BLOCK_RE = new RegExp(`^(?:<(?:${AUTOP_BLOCK_TAGS})(?:[\\s>])|</(?:${AUTOP_BLOCK_TAGS})>)`, "i");
+
+// A minimal port of WordPress's wpautop(): raw post_content is exactly
+// what a WP author typed in the editor - block tags they added by hand,
+// plus plain paragraphs separated by blank lines, relying on WordPress to
+// turn a blank line into a paragraph break and a lone newline into a <br>
+// at render time. Nothing in this migration replicated that, so every such
+// block collapsed into one run-on paragraph with all its internal breaks
+// lost (confirmed against production, e.g. /privacy-policy/'s numbered
+// sections and lettered sub-points, which are each their own <p> live).
+//
+// Must run on the whole raw string BEFORE shortcode parsing, exactly like
+// WordPress's own filter order (wpautop runs before do_shortcode) - not
+// per already-split text node. A single WPBakery <p> commonly wraps a run
+// of inline [mkd_icon] shortcodes with plain text between them (e.g. the
+// "Shake hands with Ableton / How to Create with MIDI..." bullet lists);
+// each in-between text fragment only sees its own tiny slice with no idea
+// it's still inside that already-open <p>, so autop'ing per-fragment wraps
+// every slice in its own nested <p>, corrupting the layout (confirmed
+// against production - courses/logic-pro's bullet list renders as one
+// flowing <p> with inline icons and <br>s, not one box per line).
+// [shortcode] brackets aren't recognized HTML tags so they never trigger
+// the block-tag isolation below, matching how they're inert text to real
+// wpautop too - do_shortcode() (i.e. parseShortcodes()) still finds and
+// expands them wherever they end up, same as WordPress.
+function wpautop(input: string): string {
+  let text = input.replace(/\r\n?/g, "\n");
+  if (text.trim().length === 0) return "";
+
+  // Blank-line-isolate existing block tags so they split into their own
+  // chunk below, instead of getting swallowed into a neighboring <p>.
+  text = text.replace(AUTOP_OPEN_RE, (m) => `\n\n${m}`);
+  text = text.replace(AUTOP_CLOSE_RE, (m) => `${m}\n\n`);
+  text = text.replace(/\n{3,}/g, "\n\n");
+
+  const chunks = text
+    .split(/\n[ \t]*\n/)
+    .map((c) => c.trim())
+    .filter((c) => c.length > 0);
+
+  return chunks
+    .map((chunk) => {
+      const withBreaks = chunk.replace(/\n/g, "<br />\n");
+      return AUTOP_STARTS_BLOCK_RE.test(chunk) ? withBreaks : `<p>${withBreaks}</p>`;
+    })
+    .join("\n");
 }
 
 // WPBakery's "css" attribute holds a full CSS rule the visual builder
@@ -141,6 +215,76 @@ function renderTestimonials(categorySlug: string | undefined, ctx: RenderContext
     .join("");
 
   return `<div class="mkd-testimonials-holder clearfix"><div class="mkd-slick-slider-navigation-style mkd-testimonials mkd-testimonials-type-standard" data-arrows-navigation="false">${slides}</div></div>`;
+}
+
+// Wasn't implemented at all - mkd_blog_list (WPBakery's "recent posts from
+// these categories" grid) fell through to the default case (render
+// children, drop the tag), and since it has no closing tag in this
+// theme's usage (it's now in VOID_TAGS, see wp-shortcode-tree.ts) it was
+// also silently swallowing whatever content came after it on the page as
+// bogus unrendered children. number_of_columns only sets the CSS grid's
+// column count - confirmed against production it does NOT cap the number
+// of posts shown, every matching post renders. Production also shows every
+// category the post itself belongs to, not just whichever one(s) matched
+// this widget's own category filter.
+function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): string {
+  const items = ctx.resolveBlogList(attrs.category || "");
+  if (items.length === 0) return "";
+
+  const order = (attrs.order || "ASC").toUpperCase() === "DESC" ? -1 : 1;
+  const orderBy = attrs.order_by || "title";
+  // WordPress's own posts_per_page default (10) applies whenever this
+  // instance doesn't set number_of_posts explicitly - confirmed against
+  // production on /courses/mixing-sound-design-film-tv/, whose widget has
+  // no number_of_posts attribute at all yet still caps at exactly 10 posts
+  // even though its category filter matches 16 in this network's content.
+  const postLimit = parseInt(attrs.number_of_posts || "10", 10) || 10;
+  const sorted = [...items]
+    .sort((a, b) => {
+      const av = orderBy === "date" ? a.dateLabel || "" : a.title;
+      const bv = orderBy === "date" ? b.dateLabel || "" : b.title;
+      return av < bv ? -order : av > bv ? order : 0;
+    })
+    .slice(0, postLimit);
+
+  const textLength = parseInt(attrs.text_length || "150", 10);
+  const columns = attrs.number_of_columns || "4";
+  const titleTag = /^h[1-6]$/.test(attrs.title_tag || "") ? attrs.title_tag : "h5";
+
+  const columnWords: Record<string, string> = { "1": "one", "2": "two", "3": "three", "4": "four" };
+
+  const listItems = sorted
+    .map((item) => {
+      const excerpt = item.excerpt || "";
+      const trimmed =
+        excerpt.length > textLength ? `${excerpt.slice(0, textLength).trimEnd()}...` : excerpt;
+      return `<li class="mkd-blog-list-item clearfix">
+	<div class="mkd-blog-list-item-inner">
+				<div class="mkd-item-text-holder">
+			<div class="mkd-item-info-section">
+				<div class="mkd-post-info-category">
+	${item.categoryLabels.map((c) => esc(c)).join(", ")}</div>				<div class="mkd-post-info-date">
+			${esc(item.dateLabel || "")}	</div>			</div>
+
+			<${titleTag} class="mkd-item-title">
+				<a href="${esc(item.href)}">
+					${esc(item.title)}				</a>
+			</${titleTag}>
+
+							<p class="mkd-excerpt">${esc(trimmed)}</p>
+
+			<div class="mkd-item-read-more">
+				<a href="${esc(item.href)}" target="_self" class="mkd-btn mkd-btn-medium mkd-btn-circled mkd-btn-icon mkd-btn-bckg-hover">	    		<span class="mkd-btn-icon-holder" >			<span aria-hidden="true" class="mkd-icon-font-elegant arrow_right " ></span>		</span>	</a>			</div>
+		</div>
+	</div>
+</li>`;
+    })
+    .join("");
+
+  return `<div class="mkd-blog-list-holder mkd-simple mkd-${columnWords[columns] || "four"}-columns">
+	<ul class="mkd-blog-list">
+	${listItems}</ul>
+</div>`;
 }
 
 // A pure-CSS crossfade carousel (no JS dependency) using @keyframes with a
@@ -271,7 +415,18 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     case "vc_column":
     case "vc_column_inner": {
       const cols = widthAttrToCols(attrs.width);
-      return `<div class="wpb_column vc_column_container vc_col-sm-${cols}"${vcCustomStyle(attrs.css)}><div class="vc_column-inner"><div class="wpb_wrapper">${renderChildren(
+      // WPBakery's "offset" attribute carries space-separated
+      // vc_hidden-xs/sm/md/lg classes for the builder's per-breakpoint
+      // "hide on this device" toggle (all four together means hidden at
+      // every breakpoint, i.e. unconditionally). This app ships the same
+      // theme CSS (js-composer.css) that defines those classes, so passing
+      // the attribute straight through as extra classes reproduces
+      // WordPress's own hiding behavior - confirmed against production,
+      // where courses/ableton-live's superseded old-copy column carries
+      // all four classes and never renders, while our migration previously
+      // dropped the attribute entirely and showed it as duplicate content.
+      const offsetClass = attrs.offset ? ` ${attrs.offset}` : "";
+      return `<div class="wpb_column vc_column_container vc_col-sm-${cols}${offsetClass}"${vcCustomStyle(attrs.css)}><div class="vc_column-inner"><div class="wpb_wrapper">${renderChildren(
         children,
         ctx
       )}</div></div></div>`;
@@ -298,6 +453,30 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     case "vc_empty_space": {
       const height = attrs.height || "20px";
       return `<div class="vc_empty_space" style="height: ${esc(height)}"><span class="vc_empty_space_inner"></span></div>`;
+    }
+
+    case "vc_video": {
+      // Wasn't handled at all - vc_video is a void tag (see
+      // wp-shortcode-tree.ts), so falling through to the default case
+      // (render children, drop the wrapper) rendered nothing whatsoever,
+      // silently dropping the video (confirmed against production -
+      // /electronic-dj-course/'s YouTube embed). WPBakery's "link" attr
+      // accepts several YouTube URL shapes (watch?v=, youtu.be/, embed/,
+      // and shorts/, seen in this network's own content) - all 553
+      // [vc_video] uses sitewide are YouTube, no Vimeo, so only that's
+      // handled.
+      const videoId = extractYouTubeId(attrs.link || "");
+      if (!videoId) return "";
+      const aspect = attrs.el_aspect || "169";
+      const widthPct = attrs.el_width || "100";
+      const align = attrs.el_align || "left";
+      return `<div class="wpb_video_widget wpb_content_element vc_clearfix   vc_video-aspect-ratio-${esc(
+        aspect
+      )} vc_video-el-width-${esc(widthPct)} vc_video-align-${esc(align)}"${vcCustomStyle(
+        attrs.css
+      )}><div class="wpb_wrapper"><div class="wpb_video_wrapper"><iframe title="YouTube video player" width="500" height="281" src="https://www.youtube.com/embed/${esc(
+        videoId
+      )}?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div></div>`;
     }
 
     case "mkd_button": {
@@ -460,6 +639,9 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     case "mkd_testimonials":
       return renderTestimonials(attrs.category, ctx);
 
+    case "mkd_blog_list":
+      return renderBlogList(attrs, ctx);
+
     case "rev_slider":
     case "sr7":
       return renderHeroSlider(attrs.alias, ctx);
@@ -471,13 +653,45 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
   }
 }
 
+// wpautop() is a blind text transform with no concept of shortcode
+// boundaries, so running it over the raw string as-is also rewrites
+// newlines that happen to fall INSIDE a shortcode tag's own attribute
+// values - e.g. mkd_icon_with_text's text="line one\nline two" attribute,
+// which that shortcode's own renderer already turns into <br /> itself.
+// Autop'ing it first turns those newlines into a literal "<br />" INSIDE
+// the attribute string, which the renderer then HTML-escapes as if it
+// were user-typed text, showing up as literal "<br />" on the page
+// (confirmed against production - /private-instruction/'s pricing lists
+// render real line breaks, not the text "<br />"). Swap every [shortcode]
+// tag out for a plain placeholder token before autop'ing, then swap the
+// real tag text back in - wpautop only ever sees content outside of tags.
+const SHORTCODE_TAG_RE = /\[[^\]]*\]/g;
+
+function wpautopPreservingShortcodes(rawContent: string): string {
+  const placeholders: string[] = [];
+  const protectedContent = rawContent.replace(SHORTCODE_TAG_RE, (match) => {
+    const token = ` SC${placeholders.length} `;
+    placeholders.push(match);
+    return token;
+  });
+  const autopped = wpautop(protectedContent);
+  return autopped.replace(/ SC(\d+) /g, (_m, idx) => placeholders[Number(idx)]);
+}
+
 export function wpContentToStyledHtml(
   rawContent: string,
   resolveImage: ImageUrlResolver,
   resolvePortfolioList: PortfolioListResolver = () => [],
   resolveTestimonials: TestimonialsResolver = () => [],
-  resolveHeroSlider: HeroSliderResolver = () => []
+  resolveHeroSlider: HeroSliderResolver = () => [],
+  resolveBlogList: BlogListResolver = () => []
 ): string {
-  const tree = parseShortcodes(rawContent || "");
-  return renderChildren(tree, { resolveImage, resolvePortfolioList, resolveTestimonials, resolveHeroSlider });
+  const tree = parseShortcodes(wpautopPreservingShortcodes(rawContent || ""));
+  return renderChildren(tree, {
+    resolveImage,
+    resolvePortfolioList,
+    resolveTestimonials,
+    resolveHeroSlider,
+    resolveBlogList,
+  });
 }

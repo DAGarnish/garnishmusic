@@ -18,6 +18,7 @@ const VOID_TAGS = new Set([
   "mkd_icon",
   "mkd_portfolio_list",
   "mkd_testimonials",
+  "mkd_blog_list",
   "mkd_icon_with_text",
   "rev_slider",
   "sr7",

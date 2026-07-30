@@ -97,9 +97,27 @@ const BLOCK_TAGS = new Set([
 
 function walkBlock(node: Node, mediaResolver: MediaResolver, out: any[]) {
   if (node.nodeType === NodeType.TEXT_NODE) {
-    const text = node.rawText.trim();
-    if (text.length > 0) {
-      out.push(paragraphNode([textNode(text)]));
+    // Loose text between block tags (e.g. inside a WPBakery vc_column_text
+    // that was typed as plain paragraphs, never wrapped in real <p>/<br>
+    // markup) relied on WordPress's wpautop() to turn a blank line into a
+    // paragraph break and a single newline into a <br> at render time.
+    // Replicate that here, or every such block collapses into one
+    // run-on paragraph with all its internal breaks lost.
+    const paragraphs = node.rawText
+      .split(/\r?\n\s*\r?\n/)
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+    for (const paragraph of paragraphs) {
+      const lines = paragraph
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      const children: any[] = [];
+      lines.forEach((line, i) => {
+        if (i > 0) children.push(linebreakNode());
+        children.push(textNode(line));
+      });
+      if (children.length > 0) out.push(paragraphNode(children));
     }
     return;
   }
