@@ -188,6 +188,15 @@ body {
   padding-right: 0;
 }
 
+/* Same reasoning again: a raw HTML embed (vc_raw_html, e.g. ny homepage's
+   full-bleed hero <video>) is meant to fill the viewport edge-to-edge like
+   the hero slider/portfolio grid above, not read as boxed article text. */
+.vc_row.mkd-section:has(> .mkd-full-section-inner .wpb_raw_html) > .mkd-full-section-inner {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* On production this comes from Mikado Core's per-page dynamically-generated
    "used modules" inline <style> block (rebuilt server-side per request from
    whichever shortcodes appear on that page), which isn't part of any static

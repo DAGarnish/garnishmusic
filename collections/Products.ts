@@ -41,6 +41,14 @@ export const Products: CollectionConfig = {
       type: "textarea",
     },
     {
+      name: "wpRawContent",
+      type: "text",
+      admin: {
+        description:
+          "Raw WPBakery shortcode markup for this product's real body content. WooCommerce products on this network store their actual content in WordPress's post_excerpt field, not post_content (post_content is empty for every product checked network-wide) - migrate-content.ts only ever converted post_content into the description field, leaving description permanently empty and this real content unrendered. Rendered the same way as Pages' wpRawContent, via wpContentToStyledHtml.",
+      },
+    },
+    {
       name: "price",
       type: "number",
     },

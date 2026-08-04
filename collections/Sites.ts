@@ -102,5 +102,14 @@ export const Sites: CollectionConfig = {
           "This site's theme-wide default title-area background image (Buro theme options -> title_area_background_image, stored in wp_options as mkd_options_buro, not per-page postmeta). Falls back for any page whose own titleBackgroundImage isn't set - confirmed against production, where pages with no page-specific title image still show this default (e.g. bcn's /uk-a-level-3-course/).",
       },
     },
+    {
+      name: "sidebarYelpImage",
+      type: "upload",
+      relationTo: "media",
+      admin: {
+        description:
+          "Image for the sidebar's Yelp review-link widget (text-26 in wp_options sidebars_widgets -> 'sidebar' area). The widget's shortcode (mkd_image_with_text, attachment id 10041) is byte-identical across every site on the network - only the resolved image URL differs per site because each site independently has its own copy of the same file in its own media library.",
+      },
+    },
   ],
 };

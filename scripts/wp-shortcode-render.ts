@@ -222,6 +222,69 @@ function renderPortfolioList(categorySlug: string | undefined, ctx: RenderContex
   return `<div class="mkd-portfolio-list-holder-outer mkd-ptf-gallery mkd-ptf-no-space mkd-ptf-hover-follow mkd-ptf-four-columns"><div class="mkd-portfolio-list-holder clearfix">${cards}</div></div>`;
 }
 
+// A distinct shortcode from mkd_portfolio_list, not a variant of it - takes
+// a comma-separated "category" list (resolved via the same
+// PortfolioListResolver, which already splits/dedupes). "portfolios_shown"
+// is NOT a total cap despite the name - it's slidesToShow for a real Slick
+// carousel: buro-modules.min.js (already loaded via themeScripts, no extra
+// wiring needed) auto-inits any ".mkd-portfolio-list-holder-outer.mkd-
+// portfolio-slider-holder" it finds, calling .slick() on its
+// ".mkd-portfolio-list-holder" child with slidesToShow read straight off
+// this wrapper's data-items attribute (confirmed by reading that function
+// directly out of the shipped, unminified-by-us buro-modules.min.js). The
+// raw shortcode's own server-rendered DOM never has slick-slider/arrow
+// markup or a wrapping-grid layout at all - those only exist post-init,
+// which is why curl/no-JS inspection of production looks like a bare list.
+// Matching that exact class+data-attribute signature is the only thing
+// needed to get the same real, working carousel here - no reimplementation.
+function renderPortfolioSlider(attrs: Record<string, string>, ctx: RenderContext): string {
+  const categoryAttr = attrs.category;
+  if (!categoryAttr) return "";
+  const slugs = categoryAttr
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (slugs.length === 0) return "";
+
+  const seen = new Set<string>();
+  const items: PortfolioItem[] = [];
+  for (const slug of slugs) {
+    for (const item of ctx.resolvePortfolioList(slug)) {
+      if (seen.has(item.href)) continue;
+      seen.add(item.href);
+      items.push(item);
+    }
+  }
+  if (items.length === 0) return "";
+
+  const cards = items
+    .map((item) => {
+      const img = item.imageUrl
+        ? `<img loading="lazy" decoding="async" class="attachment-full size-full wp-post-image" src="${esc(item.imageUrl)}" alt="${esc(item.title)}"/>`
+        : "";
+      return `<article class="mkd-portfolio-item mix">
+  <div class="mkd-portfolio-item-inner">
+    <a class="mkd-portfolio-link" href="${esc(item.href)}"></a>
+    <div class="mkd-item-image-holder"><div class="mkd-item-image-holder-inner">${img}</div></div>
+    <div class="mkd-item-text-overlay"><div class="mkd-item-text-overlay-inner"><div class="mkd-item-text-holder">
+      <h3 class="mkd-item-title"><a class="mkd-portfolio-title-link" href="${esc(item.href)}">${esc(item.title)}</a></h3>
+    </div></div></div>
+  </div>
+</article>`;
+    })
+    .join("");
+
+  // The theme's own CSS only styles the hover text-overlay background under
+  // a "-dark"/"-light" suffixed variant of this class (e.g.
+  // .mkd-ptf-hover-zoom-out-simple-dark) - production's own server HTML
+  // uses the bare, unsuffixed class and relies on the same init JS to add
+  // the suffix at runtime. Hardcoding "-dark" here means the overlay is
+  // readable even if that particular piece of JS doesn't run, without
+  // affecting the slick carousel init (a separate function) either way.
+  const items_attr = esc(String(items.length < 4 ? items.length : parseInt(attrs.portfolios_shown || "4", 10) || 4));
+  return `<div class="mkd-portfolio-list-holder-outer mkd-ptf-gallery mkd-ptf-no-space mkd-ptf-hover-zoom-out-simple-dark mkd-portfolio-slider-holder" data-items="${items_attr}"><div class="mkd-portfolio-list-holder clearfix">${cards}</div></div>`;
+}
+
 // The "Some of our partners" logo strip was copy-pasted as raw WPBakery
 // content onto 38 separate pages network-wide, all with the identical 12
 // logos/links/order (confirmed against every instance found) - meaning any
@@ -248,8 +311,28 @@ function renderPartners(ctx: RenderContext): string {
 </div></div></div>`;
 }
 
-function renderTestimonials(categorySlug: string | undefined, ctx: RenderContext): string {
-  const items = ctx.resolveTestimonials(categorySlug || "");
+function renderTestimonials(categoryAttr: string | undefined, ctx: RenderContext): string {
+  // The category attribute can itself be a comma-separated list (confirmed
+  // against production, e.g. la's /courses/fl-studio-production/ has a
+  // second mkd_testimonials instance with
+  // category="hit-songwriting,songwriting-music-producer") - each slug is
+  // looked up individually via the resolver (which already splits/dedupes
+  // multi-instance category sets the same way wp-portfolio-resolver.ts
+  // does) and merged into one slide list.
+  const slugs = (categoryAttr || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const seen = new Set<string>();
+  const items: TestimonialItem[] = [];
+  for (const slug of slugs.length > 0 ? slugs : [""]) {
+    for (const item of ctx.resolveTestimonials(slug)) {
+      const key = `${item.author}::${item.text}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push(item);
+    }
+  }
   if (items.length === 0) return "";
 
   // Previously used the wrong heading tag (h2, which inherits the theme's
@@ -307,9 +390,17 @@ function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): stri
     })
     .slice(0, postLimit);
 
+  // "0" means "don't truncate at all" - confirmed against production on
+  // /courses/songwriting/ (text_length="0"), whose excerpts render at full
+  // length, not empty. Any positive value truncates as normal.
   const textLength = parseInt(attrs.text_length || "150", 10);
   const columns = attrs.number_of_columns || "4";
   const titleTag = /^h[1-6]$/.test(attrs.title_tag || "") ? attrs.title_tag : "h5";
+  // A distinct, much simpler layout from the default "simple" grid - no
+  // category/date row, no circular read-more button, no column-count class,
+  // just a stacked title+excerpt list - confirmed against production on
+  // /courses/songwriting/'s sidebar "From the Blog" widget.
+  const isMinimal = attrs.type === "minimal";
 
   const columnWords: Record<string, string> = { "1": "one", "2": "two", "3": "three", "4": "four" };
 
@@ -317,7 +408,20 @@ function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): stri
     .map((item) => {
       const excerpt = item.excerpt || "";
       const trimmed =
-        excerpt.length > textLength ? `${excerpt.slice(0, textLength).trimEnd()}...` : excerpt;
+        textLength > 0 && excerpt.length > textLength ? `${excerpt.slice(0, textLength).trimEnd()}...` : excerpt;
+      if (isMinimal) {
+        return `<li class="mkd-blog-list-item clearfix">
+	<div class="mkd-blog-list-item-inner">
+		<div class="mkd-item-text-holder">
+			<${titleTag} class="mkd-item-title">
+				<a href="${esc(item.href)}">
+					${esc(item.title)}				</a>
+			</${titleTag}>
+							<p class="mkd-excerpt">${esc(trimmed)}</p>
+					</div>
+	</div>
+</li>`;
+      }
       return `<li class="mkd-blog-list-item clearfix">
 	<div class="mkd-blog-list-item-inner">
 				<div class="mkd-item-text-holder">
@@ -341,7 +445,11 @@ function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): stri
     })
     .join("");
 
-  return `<div class="mkd-blog-list-holder mkd-simple mkd-${columnWords[columns] || "four"}-columns">
+  const holderClass = isMinimal
+    ? "mkd-blog-list-holder mkd-minimal "
+    : `mkd-blog-list-holder mkd-simple mkd-${columnWords[columns] || "four"}-columns`;
+
+  return `<div class="${holderClass}">
 	<ul class="mkd-blog-list">
 	${listItems}</ul>
 </div>`;
@@ -506,7 +614,20 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // all four classes and never renders, while our migration previously
       // dropped the attribute entirely and showed it as duplicate content.
       const offsetClass = attrs.offset ? ` ${attrs.offset}` : "";
-      return `<div class="wpb_column vc_column_container vc_col-sm-${cols}${offsetClass}"${vcCustomStyle(attrs.css)}><div class="vc_column-inner"><div class="wpb_wrapper">${renderChildren(
+      // el_class was previously dropped entirely - confirmed against
+      // production (la's /courses/pro-tools-course/ "Course Highlights"/
+      // "Prerequisites" section) that a column's el_class is how page-level
+      // custom CSS (e.g. .img-bg-1 p{background-color:white;border-radius:
+      // 25px} from the "Simple Custom CSS and JS" plugin output, see
+      // backfill-simple-custom-css-js.ts) selects it - without it, the
+      // column got its background-image style fine (that comes from the
+      // css attribute) but none of the classed rules that give its text a
+      // readable background box. vc_col-has-fill mirrors WPBakery's own
+      // behavior of auto-adding it whenever a background is set via Design
+      // Options (only affects .vc_column-inner's top padding).
+      const elClass = attrs.el_class ? ` ${attrs.el_class}` : "";
+      const hasFillClass = attrs.css ? " vc_col-has-fill" : "";
+      return `<div class="wpb_column vc_column_container vc_col-sm-${cols}${offsetClass}${elClass}${hasFillClass}"${vcCustomStyle(attrs.css)}><div class="vc_column-inner"><div class="wpb_wrapper">${renderChildren(
         children,
         ctx
       )}</div></div></div>`;
@@ -605,8 +726,7 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       return `<h2 class="mkd-section-title"${style}>${esc(attrs.title_text || "")}</h2>`;
     }
 
-    case "vc_single_image":
-    case "mkd_image_with_text": {
+    case "vc_single_image": {
       const imageId = attrs.image;
       if (!imageId) return "";
       const url = ctx.resolveImage(imageId);
@@ -618,6 +738,33 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
         return `<a href="${esc(attrs.link)}"${target}>${wrapped}</a>`;
       }
       return wrapped;
+    }
+
+    // A distinct shortcode from vc_single_image, not a variant of it -
+    // confirmed against production's DOM (e.g. hk's /programs/ableton-
+    // producer-program/): renders a static image by default, but reveals a
+    // colored ::after overlay + the "title" attribute as text on hover
+    // (buro-modules.css owns the hover mechanics network-wide; sites can
+    // recolor the overlay via their own customCss, e.g. hk's
+    // ".mkd-image-with-text::after{background-color:#CE1713}"). The "link"
+    // attribute is optional - the anchor wrapper is omitted entirely when
+    // absent (confirmed: the six programme-step icons on this same page
+    // have no link, only the sidebar's Yelp widget does).
+    case "mkd_image_with_text": {
+      const imageId = attrs.image;
+      if (!imageId) return "";
+      const url = ctx.resolveImage(imageId);
+      if (!url) return "";
+      const styleParts = [`color: ${attrs.title_color || "#ffffff"}`];
+      if (attrs.font_size) styleParts.push(`font-size: ${attrs.font_size}`);
+      const linkHtml = attrs.link
+        ? `<a class="mkd-iwt-link" href="${esc(attrs.link)}"${
+            attrs.target === "_blank" ? ' target="_blank" rel="external noopener noreferrer"' : ""
+          }></a>`
+        : "";
+      return `<div class="mkd-image-with-text">${linkHtml}<div class="mkd-iwt-text"><span class="mkd-iwt-title" style="${esc(
+        styleParts.join(";")
+      )}">${esc(attrs.title || "")}</span></div><div class="mkd-iwt-image"><img src="${esc(url)}" alt=""/></div></div>`;
     }
 
     case "mkd_elements_holder": {
@@ -656,11 +803,23 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     case "vc_raw_html": {
       // WPBakery stores this shortcode's body as base64(urlencode(html)).
       const text = children.map((c) => (c.type === "text" ? c.content : "")).join("");
+      let decoded: string;
       try {
-        return decodeURIComponent(Buffer.from(text.trim(), "base64").toString("utf-8"));
+        decoded = decodeURIComponent(Buffer.from(text.trim(), "base64").toString("utf-8"));
       } catch {
         return "";
       }
+      // Was previously returned bare, with no wrapper at all - confirmed
+      // against production this always renders inside .wpb_raw_code
+      // .wpb_raw_html.wpb_content_element > .wpb_wrapper, the same
+      // .wpb_content_element convention every other WPBakery content module
+      // uses (see vc_column_text). Missing it isn't just a markup nicety:
+      // globals.css's full-bleed :has() exclusions for hero sliders/
+      // portfolio grids key off a module's own wrapper class the same way,
+      // so an embed with no wrapper class silently falls through to the
+      // generic 1300px "readable article text" max-width rule instead
+      // (confirmed against production, ny homepage's full-bleed hero video).
+      return `<div class="wpb_raw_code wpb_raw_html wpb_content_element"><div class="wpb_wrapper">${decoded}</div></div>`;
     }
 
     case "mkd_icon": {
@@ -869,6 +1028,9 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     case "mkd_portfolio_list":
       return renderPortfolioList(attrs.category, ctx);
 
+    case "mkd_portfolio_slider":
+      return renderPortfolioSlider(attrs, ctx);
+
     case "mkd_testimonials":
       return renderTestimonials(attrs.category, ctx);
 
@@ -900,15 +1062,87 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
 // real tag text back in - wpautop only ever sees content outside of tags.
 const SHORTCODE_TAG_RE = /\[[^\]]*\]/g;
 
+// Production does not actually run core wpautop() on this content -
+// js_composer disables it and substitutes its own shortcode-aware variant
+// (wpb_js_remove_wpautop()) that treats its own row/column container tags as
+// block-level line separators, on top of the plain-HTML block tags vanilla
+// wpautop already knows about. Our plain port above only knows the latter, so
+// a text run that starts right after e.g. [vc_column_text] with no manual
+// <p> of its own (a common authoring gap - confirmed against production,
+// la's /courses/pro-tools-course/ "Prerequisites" column has no manual <p>,
+// unlike its sibling "Course Highlights" column) never got one: nothing here
+// treated [vc_column_text] as a paragraph boundary, so wpautop's
+// chunk-splitter merged it into one enormous run stretching to the next
+// literal HTML block tag anywhere later in the page, and the resulting
+// single <p>...</p> landed in the wrong place entirely once real shortcode
+// expansion split that text back apart into separate divs.
+const VC_AUTOP_BLOCK_TAGS = new Set([
+  "vc_row",
+  "vc_row_inner",
+  "vc_column",
+  "vc_column_inner",
+  "vc_column_text",
+  // Void (self-closing), always used standalone on its own line - never
+  // legitimately inline within a sentence, so isolating it too avoids it
+  // getting swept into a neighboring chunk's <p> wrap (e.g. a lone
+  // [vc_empty_space] sitting between two now-isolated column/row
+  // boundaries would otherwise become the entire content of its own
+  // one-token chunk and get wrapped as <p><div class="vc_empty_space">
+  // ...</div></p> - invalid nesting the browser silently "fixes" by
+  // auto-closing the <p> early, but still not what production emits).
+  "vc_empty_space",
+]);
+
+// [vc_raw_html]'s body is a base64(urlencode(html)) blob (see renderNode's
+// "vc_raw_html" case) - never real prose, and NOT itself made of [shortcode]
+// tags, so the generic per-tag placeholder substitution below leaves it
+// exposed as plain text between two separate open/close placeholders. If
+// isolated the same way VC_AUTOP_BLOCK_TAGS isolates a tag (blank lines
+// around each boundary), that exposed base64 blob becomes an isolated
+// wpautop chunk of its own and gets <p>-wrapped like any bare text run -
+// splicing literal "<p>"/"</p>" characters into the middle of the base64
+// string BEFORE it's decoded, corrupting every byte after that point
+// (confirmed by trying exactly that: ny homepage's hero video rendered as
+// garbled binary text instead of a video). The whole block - open tag,
+// body, and close tag together - must become a single opaque unit instead.
+const VC_RAW_HTML_BLOCK_RE = /\[vc_raw_html\][\s\S]*?\[\/vc_raw_html\]/g;
+const SHORTCODE_TAG_NAME_RE = /^\[\/?([a-zA-Z_][a-zA-Z0-9_]*)/;
+
 function wpautopPreservingShortcodes(rawContent: string): string {
   const placeholders: string[] = [];
-  const protectedContent = rawContent.replace(SHORTCODE_TAG_RE, (match) => {
-    const token = ` SC${placeholders.length} `;
+
+  // Whole-block protection for vc_raw_html (see VC_RAW_HTML_BLOCK_RE above)
+  // runs first, before the generic per-tag pass below, so its base64 body
+  // is captured as part of the SAME placeholder as its open/close tags
+  // rather than left exposed as its own separately-autop'd text run.
+  const rawHtmlProtected = rawContent.replace(VC_RAW_HTML_BLOCK_RE, (match) => {
+    const idx = placeholders.length;
     placeholders.push(match);
-    return token;
+    return `<div data-sc="${idx}"></div>`;
+  });
+
+  const protectedContent = rawHtmlProtected.replace(SHORTCODE_TAG_RE, (match) => {
+    const idx = placeholders.length;
+    placeholders.push(match);
+    const tagName = match.match(SHORTCODE_TAG_NAME_RE)?.[1] ?? "";
+    if (VC_AUTOP_BLOCK_TAGS.has(tagName)) {
+      // Masquerade as a self-closing block-level element (div is already in
+      // AUTOP_BLOCK_TAGS) purely so wpautop's own block-tag isolation
+      // treats it as a paragraph boundary - swapped back below. Must NOT
+      // apply this to every shortcode indiscriminately: inline ones (e.g.
+      // [mkd_icon]) need to stay inert, or a run of icons mixed with plain
+      // text inside one real, manually-typed <p> would each get isolated
+      // into their own separate <p> instead of flowing together (confirmed
+      // against production - courses/logic-pro's bullet list renders as one
+      // flowing paragraph with inline icons and <br>s, not one box per line).
+      return `<div data-sc="${idx}"></div>`;
+    }
+    return ` SC${idx} `;
   });
   const autopped = wpautop(protectedContent);
-  return autopped.replace(/ SC(\d+) /g, (_m, idx) => placeholders[Number(idx)]);
+  return autopped
+    .replace(/<div data-sc="(\d+)">\s*<\/div>/g, (_m, idx) => placeholders[Number(idx)])
+    .replace(/ SC(\d+) /g, (_m, idx) => placeholders[Number(idx)]);
 }
 
 export function wpContentToStyledHtml(

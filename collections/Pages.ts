@@ -63,6 +63,32 @@ export const Pages: CollectionConfig = {
       },
     },
     {
+      name: "titleBackgroundResponsive",
+      type: "checkbox",
+      defaultValue: true,
+      admin: {
+        description:
+          "WordPress theme's mkd_title_area_background_image_responsive_meta - when false, the title area's background image is rendered as a plain inline background-image on the title bar itself (matching production's 'parallax'/'not-responsive' markup) instead of the default <img>-based responsive markup, which otherwise renders with zero height for these pages (confirmed against production, e.g. mia's /courses/curso-de-dj-espanol/).",
+      },
+    },
+    {
+      name: "titleAreaHeight",
+      type: "number",
+      admin: {
+        description:
+          "WordPress theme's mkd_title_area_height_meta - explicit pixel height for the title area, only meaningful when titleBackgroundResponsive is false. When absent, production computes this via its own parallax JS; we fall back to a fixed default instead of replicating that.",
+      },
+    },
+    {
+      name: "fullWidthTemplate",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        description:
+          "WordPress's own _wp_page_template meta - true when the page uses the theme's 'full-width.php' template (edge-to-edge .mkd-full-width wrapper, no boxed .mkd-container) instead of the default boxed template. Previously only the homepage got this treatment (hardcoded); any other page built with the Full Width template - e.g. ny's /music-production-academy/ and /programs/logic-pro-x-music-program/ - rendered its rows squeezed into the ~1300px boxed container instead of the edge-to-edge layout production actually uses.",
+      },
+    },
+    {
       name: "content",
       type: "richText",
       editor: lexicalEditor(),
@@ -115,6 +141,15 @@ export const Pages: CollectionConfig = {
       admin: {
         description:
           "WPBakery page-level 'Custom CSS' field (_wpb_post_custom_css postmeta) - drives visible sizing/spacing on production that isn't otherwise in the shortcode content",
+      },
+    },
+    {
+      name: "hasSidebar",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        description:
+          "Buro theme's mkd_sidebar_meta (e.g. 'sidebar-25-right') - a page-level layout choice stored in postmeta, entirely separate from the page's own shortcode content. When true, the page renders in a two-column .mkd-two-columns-75-25 layout with the site's widget sidebar (Yelp banner, Recent Posts, Search) alongside the main content instead of full-width.",
       },
     },
   ],

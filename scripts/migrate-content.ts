@@ -94,7 +94,7 @@ async function main() {
       const [metaRows] = await conn.query<any[]>(
         `SELECT post_id, meta_key, meta_value FROM ${prefix}postmeta
          WHERE post_id IN (${pageIds.join(",")}) AND meta_key IN
-         ('_thumbnail_id','_yoast_wpseo_title','_yoast_wpseo_metadesc','rank_math_title','rank_math_description','mkd_title_area_background_image_meta','edgtf_title_area_background_image_meta','rank_math_robots','_yoast_wpseo_meta-robots-noindex','_wpb_post_custom_css','mkd_show_title_area_meta');`
+         ('_thumbnail_id','_yoast_wpseo_title','_yoast_wpseo_metadesc','rank_math_title','rank_math_description','mkd_title_area_background_image_meta','edgtf_title_area_background_image_meta','rank_math_robots','_yoast_wpseo_meta-robots-noindex','_wpb_post_custom_css','mkd_show_title_area_meta','mkd_sidebar_meta');`
       );
       pageMeta = metaRows as any[];
     }
@@ -169,6 +169,12 @@ async function main() {
       // to shown, matching the theme's own default.
       const showTitleAreaMeta = getMetaValue(pageMeta, p.ID, "mkd_show_title_area_meta");
       const showTitleArea = showTitleAreaMeta !== "no";
+      // Buro theme's own per-page sidebar toggle (e.g. "sidebar-25-right"),
+      // entirely separate from post_content - drives whether the page renders
+      // in a two-column layout with the site's widget sidebar (Yelp banner,
+      // Recent Posts, Search) alongside the main content.
+      const sidebarMeta = getMetaValue(pageMeta, p.ID, "mkd_sidebar_meta");
+      const hasSidebar = Boolean(sidebarMeta && sidebarMeta.startsWith("sidebar-"));
 
       const content = wpContentToLexical(p.post_content, mediaResolver);
       const fullPath = computeFullPath(p);
@@ -181,6 +187,7 @@ async function main() {
         featuredImage: featuredImage ?? undefined,
         titleBackgroundImage: titleBackgroundImage ?? undefined,
         showTitleArea,
+        hasSidebar,
         content,
         excerpt,
         seo: { metaTitle, metaDescription, noindex },

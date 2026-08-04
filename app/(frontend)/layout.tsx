@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../globals.css";
 import { getCurrentSite } from "../../lib/current-site";
+import ConsultationPopup from "../../components/ConsultationPopup";
 
 // Loaded as plain blocking <script> tags in <head> (not next/script's
 // beforeInteractive strategy) because that strategy's SSR-injection
@@ -140,6 +141,7 @@ export default async function RootLayout({
             <span aria-hidden="true" className="mkd-icon-font-elegant arrow_carrot-up"></span>
           </span>
         </a>
+        <ConsultationPopup />
       </body>
     </html>
   );

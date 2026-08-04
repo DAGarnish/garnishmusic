@@ -5,9 +5,21 @@ export async function buildPortfolioListResolver(
   siteId: number | string,
   rawContent: string
 ): Promise<PortfolioListResolver> {
+  // mkd_portfolio_slider is a separate shortcode from mkd_portfolio_list
+  // (confirmed against production, e.g. la's /courses/synthesis-and-sound-
+  // design/ "Meet Our World-Class Instructors" section), but shares the
+  // same category-filtered portfolio data - rendered here as the same
+  // static grid mkd_portfolio_list already uses rather than reproducing its
+  // JS carousel, which doesn't need to run for the images to show. Its
+  // category attribute can hold a comma-separated list (e.g. "ableton,
+  // sound-design, logic"), unlike mkd_portfolio_list's single slug.
   const categorySlugs = new Set<string>();
-  for (const m of (rawContent || "").matchAll(/\[mkd_portfolio_list[^\]]*\bcategory="([^"]*)"/g)) {
-    if (m[1]) categorySlugs.add(m[1]);
+  for (const m of (rawContent || "").matchAll(/\[mkd_portfolio_(?:list|slider)[^\]]*\bcategory="([^"]*)"/g)) {
+    if (!m[1]) continue;
+    for (const slug of m[1].split(",")) {
+      const trimmed = slug.trim();
+      if (trimmed) categorySlugs.add(trimmed);
+    }
   }
 
   const map = new Map<string, PortfolioItem[]>();
@@ -19,30 +31,49 @@ export async function buildPortfolioListResolver(
       limit: 100,
     });
 
-    for (const category of categories.docs) {
-      const pages = await payload.find({
-        collection: "pages",
-        where: {
-          and: [
-            { site: { equals: siteId } },
-            { portfolioCategories: { in: [category.id] } },
-          ],
-        },
-        limit: 100,
-        depth: 1,
-        // Explicit sort so row order (and therefore the rendered HTML
-        // string) is stable across repeated queries - without it, ordering
-        // isn't guaranteed and can differ between Next's two internal
-        // render passes per request, causing hydration mismatches.
-        sort: "id",
-      });
+    // One query per category previously meant a page with N distinct
+    // portfolio categories made N sequential DB round-trips - fine when
+    // each round-trip is a few ms, but this environment's Postgres
+    // connection latency runs into multiple seconds per query (Neon
+    // serverless cold-start), so N categories meant N times that latency
+    // compounding, confirmed as the dominant cost behind some pages taking
+    // 60+ seconds to render (e.g. ny's /courses/mixing-mastering/, with 2
+    // separate mkd_portfolio_slider category sets). A single query with an
+    // "in" filter across every category id, grouped client-side afterward,
+    // costs the same one round-trip regardless of how many categories a
+    // page references.
+    const categoryIds = categories.docs.map((c: any) => c.id);
+    const pages =
+      categoryIds.length > 0
+        ? await payload.find({
+            collection: "pages",
+            where: {
+              and: [{ site: { equals: siteId } }, { portfolioCategories: { in: categoryIds } }],
+            },
+            limit: 100,
+            depth: 1,
+            // Explicit sort so row order (and therefore the rendered HTML
+            // string) is stable across repeated queries - without it,
+            // ordering isn't guaranteed and can differ between Next's two
+            // internal render passes per request, causing hydration
+            // mismatches.
+            sort: "id",
+          })
+        : { docs: [] as any[] };
 
-      const items: PortfolioItem[] = pages.docs.map((p: any) => ({
-        title: p.title,
-        href: `/${p.slug}/`,
-        imageUrl: typeof p.featuredImage === "object" ? p.featuredImage?.url : undefined,
-        categoryLabel: category.name,
-      }));
+    for (const category of categories.docs) {
+      const items: PortfolioItem[] = pages.docs
+        .filter((p: any) =>
+          Array.isArray(p.portfolioCategories)
+            ? p.portfolioCategories.some((c: any) => (typeof c === "object" ? c.id : c) === category.id)
+            : false
+        )
+        .map((p: any) => ({
+          title: p.title,
+          href: `/${p.slug}/`,
+          imageUrl: typeof p.featuredImage === "object" ? p.featuredImage?.url : undefined,
+          categoryLabel: category.name,
+        }));
       // Multiple WP taxonomies (portfolio-category, category, product_cat)
       // can share the same slug for a site, producing more than one
       // Payload category doc per slug. Merge rather than overwrite so an
