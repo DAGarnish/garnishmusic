@@ -4,15 +4,86 @@ import { getWpConnection, tablePrefixForBlog } from "./wp-db";
 import https from "https";
 import http from "http";
 
-function findTextLayers(obj: any, out: string[] = []): string[] {
+type RawTextLayer = {
+  text: string;
+  color?: string;
+  backgroundColor?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  padding?: string;
+  x: number;
+  y: number;
+  groupOrder: number;
+};
+
+function findTextLayers(obj: any, out: RawTextLayer[] = []): RawTextLayer[] {
   if (obj == null || typeof obj !== "object") return out;
   if (obj.type === "text" && typeof obj.text === "string" && obj.text.trim()) {
-    out.push(obj.text);
+    const idle = obj.idle || {};
+    const color = idle.color?.d?.v;
+    const backgroundColor = idle.backgroundColor;
+    // Slider Revolution's own desktop padding for this layer (top/right/
+    // bottom/left, in px) - e.g. [10,10,10,10]. Only meaningful alongside a
+    // real background box, so it's captured here but only applied at render
+    // time when backgroundColor is also set.
+    const paddingValues = idle.padding?.d?.v;
+    out.push({
+      text: obj.text,
+      color: color && color !== "transparent" ? color : undefined,
+      backgroundColor: backgroundColor && backgroundColor !== "transparent" ? backgroundColor : undefined,
+      fontFamily: idle.fontFamily || undefined,
+      fontSize: idle.fontSize?.d?.v || undefined,
+      padding: Array.isArray(paddingValues) ? paddingValues.map((n: number) => `${n}px`).join(" ") : undefined,
+      x: parseFloat(obj.position?.x?.d?.v) || 0,
+      y: parseFloat(obj.position?.y?.d?.v) || 0,
+      groupOrder: obj.group?.groupOrder ?? 0,
+    });
   }
   for (const key of Object.keys(obj)) {
     findTextLayers(obj[key], out);
   }
   return out;
+}
+
+// Slider Revolution positions each text layer independently by absolute x/y
+// offset rather than flowing them like normal document text - reproducing
+// that exact freeform geometry isn't practical here, but layers sharing the
+// same vertical offset are, in practice, always meant to read as one line
+// (e.g. "Contact" + "Us" placed side by side at the same y), while layers at
+// different y offsets are separate stacked lines (e.g. "Our" above
+// "INSTRUCTORS & MENTORS!"). Grouping by y and ordering by x within a group
+// reconstructs that reading order without needing full layout math.
+function groupIntoLines(rawLayers: RawTextLayer[]) {
+  const groups = new Map<number, RawTextLayer[]>();
+  for (const layer of rawLayers) {
+    const existing = groups.get(layer.y);
+    if (existing) existing.push(layer);
+    else groups.set(layer.y, [layer]);
+  }
+
+  return [...groups.entries()]
+    .sort(([yA, membersA], [yB, membersB]) => {
+      if (yA !== yB) return yA - yB;
+      const minOrder = (members: RawTextLayer[]) => Math.min(...members.map((m) => m.groupOrder));
+      return minOrder(membersA) - minOrder(membersB);
+    })
+    .map(([, members]) => {
+      const ordered = [...members].sort((a, b) => a.x - b.x);
+      const text = ordered
+        .map((m) => m.text.trim())
+        .filter(Boolean)
+        .join(" ");
+      const first = ordered[0];
+      return {
+        text,
+        color: first.color,
+        backgroundColor: first.backgroundColor,
+        fontFamily: first.fontFamily,
+        fontSize: first.fontSize,
+        padding: first.padding,
+      };
+    })
+    .filter((line) => line.text);
 }
 
 function downloadBuffer(url: string): Promise<Buffer> {
@@ -88,19 +159,19 @@ async function main() {
         [slider.id]
       );
 
-      const slides: { imageId?: number | string; text?: string }[] = [];
+      const slides: { imageId?: number | string; layers: ReturnType<typeof groupIntoLines> }[] = [];
       for (const row of slideRows as any[]) {
         let imageUrl: string | undefined;
-        let text: string | undefined;
+        let lines: ReturnType<typeof groupIntoLines> = [];
         try {
           const params = JSON.parse(row.params);
           imageUrl = params?.bg?.lastLoadedImage?.src;
         } catch {}
         try {
           const layers = JSON.parse(row.layers);
-          const texts = findTextLayers(layers);
-          text = texts[0];
+          lines = groupIntoLines(findTextLayers(layers));
         } catch {}
+        const altText = lines[0]?.text;
 
         let mediaId: number | string | undefined;
         if (imageUrl) {
@@ -119,7 +190,7 @@ async function main() {
               const mimetype = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
               const created = await payload.create({
                 collection: "media",
-                data: { alt: text || filename, site: site.id, wpSourceUrl: imageUrl },
+                data: { alt: altText || filename, site: site.id, wpSourceUrl: imageUrl },
                 file: { data: buffer, mimetype, name: filename, size: buffer.length },
               });
               mediaId = created.id;
@@ -129,7 +200,7 @@ async function main() {
           }
         }
 
-        slides.push({ imageId: mediaId, text });
+        slides.push({ imageId: mediaId, layers: lines });
       }
 
       const existingSlider = await payload.find({
@@ -140,7 +211,7 @@ async function main() {
       const data = {
         alias,
         site: site.id,
-        slides: slides.map((s) => ({ image: s.imageId ?? undefined, text: s.text ?? undefined })),
+        slides: slides.map((s) => ({ image: s.imageId ?? undefined, layers: s.layers })),
       };
       if (existingSlider.docs[0]) {
         await payload.update({ collection: "hero-sliders", id: existingSlider.docs[0].id, data });

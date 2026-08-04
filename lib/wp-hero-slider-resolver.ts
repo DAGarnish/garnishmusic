@@ -22,7 +22,14 @@ export async function buildHeroSliderResolver(
     for (const slider of sliders.docs) {
       const slides: HeroSlide[] = (slider.slides || []).map((s: any) => ({
         imageUrl: typeof s.image === "object" ? s.image?.url : undefined,
-        text: s.text,
+        layers: (s.layers || []).map((l: any) => ({
+          text: l.text,
+          color: l.color ?? undefined,
+          backgroundColor: l.backgroundColor ?? undefined,
+          fontFamily: l.fontFamily ?? undefined,
+          fontSize: l.fontSize ?? undefined,
+          padding: l.padding ?? undefined,
+        })),
       }));
       map.set(slider.alias as string, slides);
     }

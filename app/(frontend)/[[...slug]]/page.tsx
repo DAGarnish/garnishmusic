@@ -11,6 +11,7 @@ import { buildPortfolioListResolver } from "../../../lib/wp-portfolio-resolver";
 import { buildTestimonialsResolver } from "../../../lib/wp-testimonials-resolver";
 import { buildHeroSliderResolver } from "../../../lib/wp-hero-slider-resolver";
 import { buildBlogListResolver } from "../../../lib/wp-blog-list-resolver";
+import { resolvePartners } from "../../../lib/wp-partners-resolver";
 import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
 
 const EMPTY_RICHTEXT = {
@@ -193,13 +194,15 @@ export default async function CatchAllPage({ params }: Args) {
     const resolveTestimonials = await buildTestimonialsResolver(site.id, doc.wpRawContent as string);
     const resolveHeroSlider = await buildHeroSliderResolver(site.id, doc.wpRawContent as string);
     const resolveBlogList = await buildBlogListResolver(site.id, doc.wpRawContent as string);
+    const partners = await resolvePartners(doc.wpRawContent as string);
     styledHtml = wpContentToStyledHtml(
       doc.wpRawContent as string,
       resolveImage,
       resolvePortfolioList,
       resolveTestimonials,
       resolveHeroSlider,
-      resolveBlogList
+      resolveBlogList,
+      partners
     );
   }
 
@@ -219,7 +222,7 @@ export default async function CatchAllPage({ params }: Args) {
 
     return (
       <>
-        <Header menu={site.mainMenu as any} />
+        <Header menu={site.mainMenu as any} currentPath={slug.join("/")} siteDomain={site.domain} />
         <div
           className="mkd-title mkd-standard-type mkd-content-left-alignment mkd-title-small-text-size mkd-animation-no mkd-title-in-grid"
           style={{ height: 200 }}
@@ -310,7 +313,7 @@ export default async function CatchAllPage({ params }: Args) {
   return (
     <>
       {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
-      <Header menu={site.mainMenu as any} />
+      <Header menu={site.mainMenu as any} currentPath={slug.join("/")} siteDomain={site.domain} />
       {/* The title bar sits BEFORE .mkd-container/.mkd-full-width in the
          DOM, not nested inside it - it's always full-bleed regardless of
          whether the page content below is boxed (confirmed against
@@ -330,10 +333,27 @@ export default async function CatchAllPage({ params }: Args) {
               "showTitleArea" in doc &&
               doc.showTitleArea !== false &&
               (() => {
-                const hasImage =
+                // A page's own title image (mkd_title_area_background_image_meta,
+                // per-page postmeta) takes priority; without one, the theme
+                // falls back to a site-wide default (Buro theme option
+                // title_area_background_image, stored in wp_options - NOT
+                // page postmeta, which is why this needs its own field on
+                // Sites rather than living on the page doc) - confirmed
+                // against production, where pages with no page-specific
+                // image (e.g. bcn's /uk-a-level-3-course/) still show this
+                // default studio photo, not a bare title bar.
+                const ownImage =
                   "titleBackgroundImage" in doc &&
                   doc.titleBackgroundImage &&
-                  typeof doc.titleBackgroundImage === "object";
+                  typeof doc.titleBackgroundImage === "object"
+                    ? doc.titleBackgroundImage
+                    : undefined;
+                const siteDefaultImage =
+                  site.defaultTitleBackgroundImage && typeof site.defaultTitleBackgroundImage === "object"
+                    ? site.defaultTitleBackgroundImage
+                    : undefined;
+                const titleImage = ownImage ?? siteDefaultImage;
+                const hasImage = Boolean(titleImage);
                 // With a background image, production adds the
                 // background/parallax classes and uses a taller (400px)
                 // banner; without one, mkd-title-image renders as an empty
@@ -348,7 +368,7 @@ export default async function CatchAllPage({ params }: Args) {
                 return (
                   <div className={className} style={{ height }} data-height={height}>
                     <div className="mkd-title-image">
-                      {hasImage && <img src={doc.titleBackgroundImage.url ?? undefined} alt="" />}
+                      {hasImage && <img src={titleImage?.url ?? undefined} alt="" />}
                     </div>
                     <div className="mkd-title-holder" style={{ height }}>
                       <div className="mkd-container clearfix">

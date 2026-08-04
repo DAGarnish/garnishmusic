@@ -109,13 +109,26 @@ body {
   animation-iteration-count: infinite;
 }
 .mkd-hero-slide-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 2rem;
+  max-width: 900px;
+}
+/* Base look for a single stacked text layer - each Slider Revolution layer
+   carries its own captured color/font/background (set inline per layer by
+   renderHeroSlider), which overrides these defaults where present.
+   line-height is deliberately loose (not the font's tight default) so a
+   layer's own <br>-separated lines get breathing room against its
+   background box instead of reading as sandwiched together. */
+.mkd-hero-slide-line {
   color: #fff;
   font-size: 2.5rem;
   font-weight: 700;
+  line-height: 1.3;
   text-align: center;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-  padding: 0 2rem;
-  max-width: 900px;
 }
 
 /* Modern spacing between content sections. The theme itself has no default

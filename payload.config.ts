@@ -20,6 +20,7 @@ import { FormSubmissions } from "./collections/FormSubmissions";
 import { Redirects } from "./collections/Redirects";
 import { Testimonials } from "./collections/Testimonials";
 import { HeroSliders } from "./collections/HeroSliders";
+import { Partners } from "./globals/Partners";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -44,6 +45,7 @@ export default buildConfig({
     Testimonials,
     HeroSliders,
   ],
+  globals: [Partners],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   sharp,

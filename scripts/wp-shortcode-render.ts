@@ -18,9 +18,17 @@ export type TestimonialItem = {
 };
 export type TestimonialsResolver = (categorySlug: string) => TestimonialItem[];
 
+export type HeroSlideLayer = {
+  text?: string;
+  color?: string;
+  backgroundColor?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  padding?: string;
+};
 export type HeroSlide = {
   imageUrl?: string;
-  text?: string;
+  layers?: HeroSlideLayer[];
 };
 export type HeroSliderResolver = (alias: string) => HeroSlide[];
 
@@ -33,12 +41,19 @@ export type BlogListItem = {
 };
 export type BlogListResolver = (categoryCsv: string) => BlogListItem[];
 
+export type PartnerItem = {
+  imageUrl: string;
+  name?: string;
+  link?: string;
+};
+
 type RenderContext = {
   resolveImage: ImageUrlResolver;
   resolvePortfolioList: PortfolioListResolver;
   resolveTestimonials: TestimonialsResolver;
   resolveHeroSlider: HeroSliderResolver;
   resolveBlogList: BlogListResolver;
+  partners: PartnerItem[];
 };
 
 // WPBakery's link-picker widget (used by vc_btn and others) stores its
@@ -207,6 +222,32 @@ function renderPortfolioList(categorySlug: string | undefined, ctx: RenderContex
   return `<div class="mkd-portfolio-list-holder-outer mkd-ptf-gallery mkd-ptf-no-space mkd-ptf-hover-follow mkd-ptf-four-columns"><div class="mkd-portfolio-list-holder clearfix">${cards}</div></div>`;
 }
 
+// The "Some of our partners" logo strip was copy-pasted as raw WPBakery
+// content onto 38 separate pages network-wide, all with the identical 12
+// logos/links/order (confirmed against every instance found) - meaning any
+// fix or update had to be repeated 38 times, and easily drifted (that's how
+// the vc_video center-alignment bug above only showed up on some pages).
+// Rendered here from one shared Partners global instead, reusing the exact
+// markup shape vc_column_text/vc_row_inner/vc_single_image already produce
+// elsewhere in this file, so it matches the theme CSS identically to a
+// hand-authored WPBakery row.
+function renderPartners(ctx: RenderContext): string {
+  if (ctx.partners.length === 0) return "";
+
+  const logos = ctx.partners
+    .map((p) => {
+      const img = `<figure class="wpb_wrapper vc_figure"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img"/></figure>`;
+      const linked = p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">${img}</a>` : img;
+      return `<div class="wpb_column vc_column_container vc_col-sm-3"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
+    })
+    .join("");
+
+  return `<div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper">
+  <div class="wpb_text_column wpb_content_element"><div class="wpb_wrapper"><h2 style="text-align:center">Some of our partners</h2></div></div>
+  <div class="vc_row wpb_row vc_inner vc_row-fluid mkd-section mkd-grid-section mkd-content-aligment-center alignment-of-images"><div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${logos}</div></div></div>
+</div></div></div>`;
+}
+
 function renderTestimonials(categorySlug: string | undefined, ctx: RenderContext): string {
   const items = ctx.resolveTestimonials(categorySlug || "");
   if (items.length === 0) return "";
@@ -338,9 +379,23 @@ function renderHeroSlider(alias: string | undefined, ctx: RenderContext): string
   const slidesHtml = slides
     .map((slide, i) => {
       const delay = i * slideDuration;
-      const text = slide.text ? decodeHTML(slide.text) : "";
+      const layersHtml = (slide.layers || [])
+        .filter((l) => l.text)
+        .map((l) => {
+          const text = decodeHTML(l.text!);
+          const styleParts = [
+            l.color && `color:${esc(l.color)}`,
+            l.fontFamily && `font-family:${esc(l.fontFamily)}`,
+            l.fontSize && `font-size:${esc(l.fontSize)}`,
+            l.backgroundColor && `background-color:${esc(l.backgroundColor)}`,
+            l.backgroundColor && `padding:${esc(l.padding || "10px")}`,
+          ].filter(Boolean);
+          const style = styleParts.length > 0 ? ` style="${styleParts.join("; ")}"` : "";
+          return `<div class="mkd-hero-slide-line"${style}>${text}</div>`;
+        })
+        .join("");
       return `<div class="mkd-hero-slide" style="background-image:url(${esc(slide.imageUrl!)}); animation-name:${animName}; animation-duration:${cycle}s; animation-delay:-${delay}s;">
-  ${text ? `<div class="mkd-hero-slide-text">${text}</div>` : ""}
+  ${layersHtml ? `<div class="mkd-hero-slide-text">${layersHtml}</div>` : ""}
 </div>`;
     })
     .join("");
@@ -385,9 +440,15 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // headings rendered at the global default hero size instead.
       rowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
       if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
+      // This row is copy-pasted, byte-for-byte, onto 38 pages network-wide
+      // as the "Some of our partners" logo strip - render it from the
+      // shared Partners global instead of this page's own duplicated
+      // children, so every instance stays in sync (see renderPartners).
+      const isPartnersRow = (attrs.el_class || "").includes("heading-some-of-our-partners");
+      const rowContent = isPartnersRow ? renderPartners(ctx) : renderChildren(children, ctx);
       const inner = isGrid
-        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${renderChildren(children, ctx)}</div></div>`
-        : `<div class="clearfix mkd-full-section-inner">${renderChildren(children, ctx)}</div>`;
+        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${rowContent}</div></div>`
+        : `<div class="clearfix mkd-full-section-inner">${rowContent}</div>`;
 
       // row_type="parallax" rows carry their background as a separate
       // parallax_background_image (media ID) attribute, not through the
@@ -488,7 +549,13 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       if (!videoId) return "";
       const aspect = attrs.el_aspect || "169";
       const widthPct = attrs.el_width || "100";
-      const align = attrs.el_align || "left";
+      // WPBakery's real attribute is "align", not "el_align" (which doesn't
+      // exist) - the wrong name meant this always fell back to "left",
+      // silently dropping every vc_video's actual alignment (confirmed
+      // against production: bcn's homepage YouTube embed uses align="center"
+      // and .vc_video-align-center's margin:0 auto, from the theme's own
+      // bundled js-composer.css, is what centers it there).
+      const align = attrs.align || "left";
       return `<div class="wpb_video_widget wpb_content_element vc_clearfix   vc_video-aspect-ratio-${esc(
         aspect
       )} vc_video-el-width-${esc(widthPct)} vc_video-align-${esc(align)}"${vcCustomStyle(
@@ -850,7 +917,8 @@ export function wpContentToStyledHtml(
   resolvePortfolioList: PortfolioListResolver = () => [],
   resolveTestimonials: TestimonialsResolver = () => [],
   resolveHeroSlider: HeroSliderResolver = () => [],
-  resolveBlogList: BlogListResolver = () => []
+  resolveBlogList: BlogListResolver = () => [],
+  partners: PartnerItem[] = []
 ): string {
   const tree = parseShortcodes(wpautopPreservingShortcodes(rawContent || ""));
   return renderChildren(tree, {
@@ -859,5 +927,6 @@ export function wpContentToStyledHtml(
     resolveTestimonials,
     resolveHeroSlider,
     resolveBlogList,
+    partners,
   });
 }

@@ -34,11 +34,25 @@ export const HeroSliders: CollectionConfig = {
           relationTo: "media",
         },
         {
-          name: "text",
-          type: "text",
+          name: "layers",
+          type: "array",
           admin: {
-            description: "Slide caption text (may contain <br> line breaks, migrated as-is)",
+            description: "Stacked Slider Revolution text layers for this slide, in on-screen order, each with its own captured style",
           },
+          fields: [
+            {
+              name: "text",
+              type: "text",
+              admin: {
+                description: "Layer caption text (may contain <br> line breaks, migrated as-is)",
+              },
+            },
+            { name: "color", type: "text" },
+            { name: "backgroundColor", type: "text" },
+            { name: "fontFamily", type: "text" },
+            { name: "fontSize", type: "text" },
+            { name: "padding", type: "text" },
+          ],
         },
       ],
     },

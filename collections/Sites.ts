@@ -93,5 +93,14 @@ export const Sites: CollectionConfig = {
           "This site's WordPress Customizer \"Additional CSS\" (theme_mods custom_css, rendered live as <style id=\"wp-custom-css\">) - applies network-wide overrides (e.g. reduced in-content heading sizes) that aren't in any page's own content. Scraped from the live site rather than the custom_css post type table, which can hold multiple stale/duplicate revisions.",
       },
     },
+    {
+      name: "defaultTitleBackgroundImage",
+      type: "upload",
+      relationTo: "media",
+      admin: {
+        description:
+          "This site's theme-wide default title-area background image (Buro theme options -> title_area_background_image, stored in wp_options as mkd_options_buro, not per-page postmeta). Falls back for any page whose own titleBackgroundImage isn't set - confirmed against production, where pages with no page-specific title image still show this default (e.g. bcn's /uk-a-level-3-course/).",
+      },
+    },
   ],
 };
