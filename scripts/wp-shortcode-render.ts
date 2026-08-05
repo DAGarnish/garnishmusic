@@ -297,17 +297,37 @@ function renderPortfolioSlider(attrs: Record<string, string>, ctx: RenderContext
 function renderPartners(ctx: RenderContext): string {
   if (ctx.partners.length === 0) return "";
 
-  const logos = ctx.partners
-    .map((p) => {
-      const img = `<figure class="wpb_wrapper vc_figure"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img"/></figure>`;
-      const linked = p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">${img}</a>` : img;
-      return `<div class="wpb_column vc_column_container vc_col-sm-3"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
-    })
-    .join("");
+  // The real WordPress source (still present verbatim in wpRawContent on
+  // every one of the 38 pages this was copy-pasted onto) splits the 12
+  // logos across three separate [vc_row_inner el_class="alignment-of-
+  // images"] blocks of 4 each, not one row of 12 - confirmed by pulling the
+  // raw shortcode source directly (bcn's homepage, the same content bytes
+  // this global replaces). That distinction matters here specifically
+  // because .alignment-of-images .mkd-section-inner-margin carries a
+  // site/page-level custom-CSS rule (display:flex, no wrap) meant to
+  // vertically-center exactly 4 same-width flex items per row. Flattening
+  // all 12 into one such flex row (as this function used to) doesn't just
+  // look different - flex's default no-wrap means those 12 items each
+  // claiming 25% width (1200% of the row) get shrunk down to ~8% each
+  // instead, visibly crushing all 12 logos into a single illegible strip.
+  const rows: string[] = [];
+  for (let i = 0; i < ctx.partners.length; i += 4) {
+    const rowLogos = ctx.partners
+      .slice(i, i + 4)
+      .map((p) => {
+        const img = `<figure class="wpb_wrapper vc_figure"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img"/></figure>`;
+        const linked = p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">${img}</a>` : img;
+        return `<div class="wpb_column vc_column_container vc_col-sm-3"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
+      })
+      .join("");
+    rows.push(
+      `<div class="vc_row wpb_row vc_inner vc_row-fluid mkd-section mkd-grid-section mkd-content-aligment-center alignment-of-images"><div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${rowLogos}</div></div></div>`
+    );
+  }
 
   return `<div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper">
   <div class="wpb_text_column wpb_content_element"><div class="wpb_wrapper"><h2 style="text-align:center">Some of our partners</h2></div></div>
-  <div class="vc_row wpb_row vc_inner vc_row-fluid mkd-section mkd-grid-section mkd-content-aligment-center alignment-of-images"><div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${logos}</div></div></div>
+  ${rows.join("")}
 </div></div></div>`;
 }
 
