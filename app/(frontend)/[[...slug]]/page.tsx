@@ -144,6 +144,14 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
   return {
     title,
     description,
+    // Without this, Next.js infers metadataBase itself - in dev that's
+    // always the bare "http://localhost:PORT" origin, not the ".slug"
+    // subdomain a request actually came in on, so relative og:image URLs
+    // resolved to a host with no site context (and none of our sites'
+    // media). Pin it to the real production domain, same as canonicalUrl
+    // below, so social-preview images resolve correctly in both dev and
+    // prod regardless of which host served the request.
+    metadataBase: new URL(`https://${site.domain}`),
     robots: noindex ? { index: false, follow: false } : undefined,
     alternates: { canonical: canonicalUrl },
     openGraph: {
@@ -429,8 +437,8 @@ export default async function CatchAllPage({ params }: Args) {
                 const height = hasImage ? fallbackHeight : 200;
                 const nonResponsiveStyle = hasImage
                   ? aspectRatio
-                    ? { aspectRatio: `${aspectRatio}`, backgroundImage: `url(${titleImage?.url ?? ""})` }
-                    : { height, backgroundImage: `url(${titleImage?.url ?? ""})` }
+                    ? { aspectRatio: `${aspectRatio}` }
+                    : { height }
                   : { height };
                 return (
                   <div
@@ -449,6 +457,38 @@ export default async function CatchAllPage({ params }: Args) {
                     // bug (confirmed via buro-modules.min.js's own source).
                     suppressHydrationWarning
                   >
+                    {hasImage && (
+                      // Real WordPress renders this photo as a literal <img>
+                      // nested inside .mkd-title, not a CSS background-image
+                      // (confirmed against production's live DOM: an <img>
+                      // occupying this exact position/size, no background-
+                      // image anywhere) - this app used background-image
+                      // instead specifically to avoid depending on client JS
+                      // to size things. That divergence is invisible until a
+                      // page's own migrated custom_css contains a rule like
+                      // ".mkd-title{background-image:none!important}" (real
+                      // WP pages sometimes carry this, harmlessly, since real
+                      // WP never populated that property to begin with) -
+                      // confirmed on nsh's /courses/mixing-mastering/, whose
+                      // custom_css does exactly this, silently erasing the
+                      // photo here while doing nothing on production. Using
+                      // a real <img> (kept out of layout flow so it doesn't
+                      // disturb the server-computed aspect-ratio/height
+                      // sizing above) is immune to that entire class of
+                      // legacy custom CSS the same way production always was.
+                      <img
+                        src={titleImage?.url ?? undefined}
+                        alt=""
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          zIndex: -1,
+                        }}
+                      />
+                    )}
                     <div className="mkd-title-holder" style={{ height }}>
                       <div className="mkd-container clearfix">
                         <div className="mkd-container-inner">
@@ -522,10 +562,23 @@ export default async function CatchAllPage({ params }: Args) {
               // person's own inline photo a second time via featuredImage,
               // stretched to the wrapper's 75%-wide column1 instead of its
               // own intended size.
+              //
+              // mkd_elements_holder presence is only correlated with the
+              // real switch, not equal to it - the real one is WordPress's
+              // own mkd_portfolio_single_template_meta postmeta ('custom' vs
+              // absent/'default'), backfilled onto portfolioCustomTemplate
+              // (see backfill-portfolio-custom-template.ts). Confirmed wrong
+              // on nsh's /courses/ableton-live/: meta is 'custom' (renders
+              // full-width, own-layout on production) but its content has no
+              // mkd_elements_holder either, same as /courses/vocal-
+              // production/ and /courses/mixing-mastering/ (meta absent,
+              // correctly narrow on production) - the old check alone
+              // couldn't tell these apart and put all three in one bucket.
               !(
-                "wpRawContent" in doc &&
-                typeof doc.wpRawContent === "string" &&
-                doc.wpRawContent.includes("mkd_elements_holder")
+                ("wpRawContent" in doc &&
+                  typeof doc.wpRawContent === "string" &&
+                  doc.wpRawContent.includes("mkd_elements_holder")) ||
+                ("portfolioCustomTemplate" in doc && doc.portfolioCustomTemplate === true)
               ) ? (
                 // Portfolio-item (course/instructor) singular template: the
                 // theme renders the featured image, post content, and a

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getPayloadClient } from "./lib/get-payload";
+import { getAllSitesCached } from "./lib/sites-cache";
 import { rewriteUrlForLocalDev, type UrlRewriteContext } from "./lib/current-site";
 
 const DEFAULT_DOMAIN = "www.garnishmusicproduction.com";
@@ -36,8 +37,8 @@ export async function proxy(request: NextRequest) {
 
   const payload = await getPayloadClient();
 
-  const allSites = await payload.find({ collection: "sites", limit: 100 });
-  const site = allSites.docs.find((s: any) => s.domain === domain);
+  const allSites = await getAllSitesCached();
+  const site = allSites.find((s: any) => s.domain === domain);
   if (!site) return NextResponse.next();
 
   const redirects = await payload.find({
@@ -52,7 +53,7 @@ export async function proxy(request: NextRequest) {
       const port = host.includes(":") ? host.split(":")[1] : "";
       const localBase = port ? `localhost:${port}` : "localhost";
       const domainMap = new Map<string, string>();
-      for (const s of allSites.docs) {
+      for (const s of allSites) {
         domainMap.set(s.domain, s.slug);
         if (s.isMainSite) domainMap.set(s.domain.replace(/^www\./, ""), s.slug);
       }

@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { getPayloadClient } from "./get-payload";
+import { getAllSitesCached } from "./sites-cache";
 
 const DEFAULT_DOMAIN = "www.garnishmusicproduction.com";
 
@@ -25,14 +25,8 @@ export async function getCurrentSite() {
   const host = headerList.get("host") || DEFAULT_DOMAIN;
   const domain = resolveProductionDomain(host);
 
-  const payload = await getPayloadClient();
-  const result = await payload.find({
-    collection: "sites",
-    where: { domain: { equals: domain } },
-    limit: 1,
-  });
-
-  return result.docs[0] || null;
+  const sites = await getAllSitesCached();
+  return sites.find((s: any) => s.domain === domain) || null;
 }
 
 // Context needed to rewrite absolute production-domain URLs (baked into
@@ -57,10 +51,9 @@ export async function getUrlRewriteContext(): Promise<UrlRewriteContext> {
   const port = host.includes(":") ? host.split(":")[1] : "";
   const localBase = port ? `localhost:${port}` : "localhost";
 
-  const payload = await getPayloadClient();
-  const result = await payload.find({ collection: "sites", limit: 100 });
+  const sites = await getAllSitesCached();
   const domainMap = new Map<string, string>();
-  for (const site of result.docs) {
+  for (const site of sites) {
     domainMap.set(site.domain, site.slug);
     // WordPress menu data sometimes links the main site without "www."
     if (site.isMainSite) {

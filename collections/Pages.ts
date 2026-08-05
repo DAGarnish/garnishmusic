@@ -152,5 +152,14 @@ export const Pages: CollectionConfig = {
           "Buro theme's mkd_sidebar_meta (e.g. 'sidebar-25-right') - a page-level layout choice stored in postmeta, entirely separate from the page's own shortcode content. When true, the page renders in a two-column .mkd-two-columns-75-25 layout with the site's widget sidebar (Yelp banner, Recent Posts, Search) alongside the main content instead of full-width.",
       },
     },
+    {
+      name: "portfolioCustomTemplate",
+      type: "checkbox",
+      defaultValue: false,
+      admin: {
+        description:
+          "WordPress theme's mkd_portfolio_single_template_meta postmeta ('custom' vs absent/'default') on portfolio-item posts - the real switch between the theme's default two-column image+bio single template and a page that builds its own full-width layout from its shortcode content. Previously approximated by checking for the mkd_elements_holder shortcode in the page's content, which is only correlated with this setting, not it - confirmed wrong on nsh's /courses/ableton-live/ (meta is 'custom', so production renders it full-width) vs /courses/vocal-production/ and /courses/mixing-mastering/ (meta absent, so production renders both with the default two-column template) - both lack mkd_elements_holder, so the old heuristic put all three in the same bucket.",
+      },
+    },
   ],
 };
