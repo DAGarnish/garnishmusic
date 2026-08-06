@@ -1,0 +1,90 @@
+[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[⡿] Pulling schema from database...
+[2K[1G[⢿] Pulling schema from database...
+[2K[1G[⣻] Pulling schema from database...
+[2K[1G[⣽] Pulling schema from database...
+[2K[1G[⣷] Pulling schema from database...
+[2K[1G[⣯] Pulling schema from database...
+[2K[1G[⣟] Pulling schema from database...
+[2K[1G[✓] Pulling schema from database...
+[17:23:47] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+[vc_row][vc_column][vc_column_text]
+<h1 style="text-align: center;">Ableton Music Production &amp; Performance Course</h1>
+Learn to produce and perform using Ableton Live in the world’s boutique music production school, with class sizes of <b>no more than eight people, </b>now with the option to pay in interest-free installments.
+
+As well as being a perfect introduction for beginners, this course is suitable for intermediate self-taught Ableton users. You will learn how to improve your workflow, design sound and perform live with our team of active industry <a href="https://www.garnishmusicproduction.com/instructors/">instructors</a>.
+<p style="text-align: center;"><strong><em>"I needed to brush up on something, so I called Garnish, as they have the best instructors" - <a href="https://jamiejones.com/">Jamie Jones</a></em></strong></p>
+[/vc_column_text][vc_empty_space][mkd_separator type="full-width"][mkd_separator type="full-width"][vc_empty_space][mkd_accordion style="toggle"][mkd_accordion_tab title="Getting Started" title_tag="h5"][vc_column_text]
+<ul>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Understanding your goals</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Getting set up: audio and the preferences window</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Session view vs. arrangement view: applications of each</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Live concepts: clips / scenes / browser / library</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Ableton’s unique warp engine</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Launching clips</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Intro to FX</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Intro to instruments</span></li>
+</ul>
+[/vc_column_text][/mkd_accordion_tab][mkd_accordion_tab title="Creating with Audio &amp; MIDI" title_tag="h5"][vc_column_text]
+<ul>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Warping in practice</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Quantising audio</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Clip view and clip properties</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Making beats with drum racks and simpler sampling</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Live’s effects</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Basic routing and resampling</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Creating dynamic changes in your arrangements</span></li>
+</ul>
+[/vc_column_text][/mkd_accordion_tab][mkd_accordion_tab title="Sound Engineering &amp; Recording" title_tag="h5"][vc_column_text]
+<ul>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Group tracks and advanced uses of routing</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Introduction to sound waves, frequency, and amplitude</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">The recording patch in detail, introduction to gain structure</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">EQ and compression for recording</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Foldback, headphone mixes, and latency</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Digital, analogue, sampling rate and bit-rate</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Overview of microphones and stereo techniques</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Recording specific aspects of Ableton</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Brand new Live audio-to-midi features</span></li>
+</ul>
+[/vc_column_text][/mkd_accordion_tab][mkd_accordion_tab title="MIDI &amp; Virtual Instruments" title_tag="h5"][vc_column_text]
+<ul>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Sampling using Simpler</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Drum rack</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Using and controlling third-party virtual instruments</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Grooves + groove extraction</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Setting up a MIDI keyboard or drum pad controllers</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Getting creative with MIDI effects</span></li>
+</ul>
+[/vc_column_text][/mkd_accordion_tab][mkd_accordion_tab title="DJ-ing &amp; Live Performance" title_tag="h5"][vc_column_text]
+<ul>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Preparing (warping) whole tracks and harmonic mixing</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">DJ effects</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Using MIDI controllers effectively</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Push 2</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Grouping tracks and basic routing</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Structuring your sets and using loops</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Recording your performance</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Editing the arrangement view</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Bouncing yours tracks</span></li>
+</ul>
+[/vc_column_text][/mkd_accordion_tab][mkd_accordion_tab title="Advanced Techniques" title_tag="h5"][vc_column_text]
+<ul>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Advanced warping</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Multi-track warping</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Clip envelopes</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Using multiple automations</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Intro to racks &amp; chains</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Mixing tips and techniques</span></li>
+</ul>
+[/vc_column_text][/mkd_accordion_tab][mkd_accordion_tab title="Additional Information" title_tag="h5"][vc_column_text]
+<ul>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">This course supports Ableton for PC.</span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Use your own laptop, or use our iMacs free of charge. </span></li>
+ 	<li style="font-weight: 400;"><span style="font-weight: 400;">Headphones, controllers and Ableton Push are available to use.</span></li>
+</ul>
+[/vc_column_text][/mkd_accordion_tab][/mkd_accordion][vc_empty_space][vc_column_text css=""]
+<p style="text-align: center;">We're currently only offering our short courses via private tuition — available in London, Cardiff, Manchester, Margate, Brighton, other select locations, and online. For details, visit our <a href="https://www.garnishmusicproduction.com/bespoke-private-tuition/" target="_blank" rel="noopener">Private Tuition page</a>. information.</p>
+[/vc_column_text][/vc_column][/vc_row]

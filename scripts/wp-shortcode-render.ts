@@ -315,7 +315,9 @@ function renderPartners(ctx: RenderContext): string {
     const rowLogos = ctx.partners
       .slice(i, i + 4)
       .map((p) => {
-        const img = `<figure class="wpb_wrapper vc_figure"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img"/></figure>`;
+        const isApple = (p.name || "").toLowerCase().includes("apple") || p.imageUrl.toLowerCase().includes("apple");
+        const maxWidth = isApple ? "52%" : "75%";
+        const img = `<figure class="wpb_wrapper vc_figure" style="text-align: center; margin: 0;"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img" style="max-width: ${maxWidth}; height: auto; margin: 0 auto; display: block;"/></figure>`;
         const linked = p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">${img}</a>` : img;
         return `<div class="wpb_column vc_column_container vc_col-sm-3"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
       })
@@ -1184,3 +1186,5 @@ export function wpContentToStyledHtml(
     partners,
   });
 }
+// force rebuild for accordion revert
+// force rebuild Next

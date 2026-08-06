@@ -104,7 +104,7 @@ export default async function RootLayout({
         />
         <link
           rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
         />
         {themeStylesheets.map((href) => (
           <link key={href} rel="stylesheet" href={href} />
@@ -134,3 +134,9 @@ export default async function RootLayout({
     </html>
   );
 }
+// trigger rebuild for accordion fix
+// trigger rebuild for partner logos scaling
+// trigger rebuild for apple logo scaling
+// trigger rebuild for centering apple logo
+// trigger rebuild for taking out open house on tyo
+// trigger rebuild for fixing accordion minus icon
