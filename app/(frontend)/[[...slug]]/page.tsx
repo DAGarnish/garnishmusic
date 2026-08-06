@@ -538,7 +538,7 @@ export default async function CatchAllPage({ params }: Args) {
                   </div>
                 </div>
               )}
-      <div className={WrapperTag}>
+      <div className={`${WrapperTag} ${slug[0] === 'courses' ? 'mkd-course-page' : ''}`}>
         <div className={InnerTag}>
           {(() => {
             const content = (

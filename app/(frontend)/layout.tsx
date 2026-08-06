@@ -128,19 +128,7 @@ export default async function RootLayout({
       </head>
       <body className="mkd-header-centered mkd-fixed-on-scroll mkd-default-mobile-header mkd-sticky-up-mobile-header mkd-dropdown-default mkd-dark-header mkd-header-style-on-scroll mkd-side-menu-slide-from-right">
         {children}
-        {/* Global, persistent element on every production page (not
-           content-driven) - buro-modules.min.js already loaded above binds
-           its show/hide-on-scroll and click-to-scroll-to-top behavior to
-           this id, so only the markup itself was missing. suppressHydrationWarning
-           because that same script toggles the "on" class based on scroll
-           position as soon as it runs, which can race React's hydration of
-           this element - the mismatch is the external script doing exactly
-           what it's supposed to, not a real bug. */}
-        <a id="mkd-back-to-top" href="#" suppressHydrationWarning>
-          <span className="mkd-icon-stack">
-            <span aria-hidden="true" className="mkd-icon-font-elegant arrow_carrot-up"></span>
-          </span>
-        </a>
+
         <ConsultationPopup />
       </body>
     </html>

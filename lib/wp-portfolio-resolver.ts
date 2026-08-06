@@ -71,7 +71,11 @@ export async function buildPortfolioListResolver(
         .map((p: any) => ({
           title: p.title,
           href: `/${p.slug}/`,
-          imageUrl: typeof p.featuredImage === "object" ? p.featuredImage?.url : undefined,
+          imageUrl: (typeof p.featuredImage === "object" && p.featuredImage?.url) 
+            ? p.featuredImage.url 
+            : (typeof p.titleBackgroundImage === "object" && p.titleBackgroundImage?.url) 
+              ? p.titleBackgroundImage.url 
+              : undefined,
           categoryLabel: category.name,
         }));
       // Multiple WP taxonomies (portfolio-category, category, product_cat)
@@ -83,5 +87,12 @@ export async function buildPortfolioListResolver(
     }
   }
 
-  return (categorySlug: string) => map.get(categorySlug) || [];
+  return (categorySlug: string) => {
+    let list = map.get(categorySlug) || [];
+    
+    // Globally remove Release Party from portfolio grids
+    list = list.filter(i => !i.href.includes("release-party"));
+    
+    return list;
+  };
 }
