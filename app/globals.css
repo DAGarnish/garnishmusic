@@ -63,10 +63,15 @@ body {
    (wp_head "buro-mikado-modules-inline-css" block); we don't run that
    options system, so the fixed value observed on production is hardcoded
    here instead. */
+.mkd-title .mkd-title-subtitle-holder-inner {
+  text-align: center;
+}
 .mkd-title .mkd-title-holder h1 {
   background: #ce1713;
   color: #fff;
   padding: 5px 15px;
+  display: inline-block;
+  margin: 0;
 }
 
 /* Pure-CSS crossfade hero slider (replaces the commercial Slider
@@ -202,10 +207,15 @@ body {
    whichever shortcodes appear on that page), which isn't part of any static
    theme CSS file we scraped - so it's missing entirely unless added here by
    hand. This is the page title's red background badge. */
+div.mkd-title .mkd-title-subtitle-holder-inner {
+  text-align: center;
+}
 div.mkd-title .mkd-title-holder h1 {
   background: #ce1713;
   color: #fff;
   padding: 5px 15px;
+  display: inline-block;
+  margin: 0;
 }
 .mkd-title {
   background-size: cover;

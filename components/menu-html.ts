@@ -52,22 +52,23 @@ function linkAttrs(node: MenuNode, ctx: UrlRewriteContext, extraClass?: string):
   return `href="${esc(url)}"${classAttr}${target}`;
 }
 
-function renderNode(node: MenuNode, depth: number, ctx: UrlRewriteContext, active?: ActiveMatch): string {
+function renderNode(node: MenuNode, depth: number, ctx: UrlRewriteContext, active?: ActiveMatch, isWideParent: boolean = true): string {
   const hasChildren = node.children.length > 0;
   const label = esc(node.label);
   const self = isSelf(node, active);
   const activeBranch = containsActive(node, active);
 
   if (depth === 0) {
-    let liClass = `menu-item menu-item-type-custom menu-item-object-custom mkd-wide-background${
-      hasChildren ? " menu-item-has-children mkd-has-sub mkd-menu-wide" : ""
+    const isWide = label.toLowerCase() !== "about";
+    let liClass = `menu-item menu-item-type-custom menu-item-object-custom${isWide ? " mkd-wide-background" : ""}${
+      hasChildren ? ` menu-item-has-children mkd-has-sub${isWide ? " mkd-menu-wide" : " mkd-menu-narrow"}` : ""
     }`;
     if (self) liClass += " current-menu-item";
     else if (activeBranch) liClass += " current-menu-ancestor";
     if (activeBranch) liClass += " mkd-active-item";
     const childrenHtml = hasChildren
       ? `<div class="mkd-menu-second"><div class="mkd-menu-inner"><ul>${node.children
-          .map((c) => renderNode(c, 1, ctx, active))
+          .map((c) => renderNode(c, 1, ctx, active, isWide))
           .join("")}</ul></div></div>`
       : "";
     return `<li class="${liClass}"><a ${linkAttrs(node, ctx, activeBranch ? "current" : undefined)}><span class="mkd-item-outer"><span class="mkd-item-inner"><span class="mkd-item-text">${label}</span></span>${
@@ -76,20 +77,20 @@ function renderNode(node: MenuNode, depth: number, ctx: UrlRewriteContext, activ
   }
 
   if (depth === 1) {
-    let liClass = `menu-item menu-item-type-custom menu-item-object-custom mkd-wide-background${
+    let liClass = `menu-item menu-item-type-custom menu-item-object-custom${isWideParent ? " mkd-wide-background" : ""}${
       hasChildren ? " menu-item-has-children mkd-sub" : ""
     }`;
     if (self) liClass += " current-menu-item";
     else if (activeBranch) liClass += " current-menu-ancestor current-menu-parent";
     const childrenHtml = hasChildren
-      ? `<ul>${node.children.map((c) => renderNode(c, 2, ctx, active)).join("")}</ul>`
+      ? `<ul>${node.children.map((c) => renderNode(c, 2, ctx, active, isWideParent)).join("")}</ul>`
       : "";
     return `<li class="${liClass}"><a ${linkAttrs(node, ctx)}><span class="mkd-item-outer"><span class="mkd-item-inner"><span class="mkd-item-text">${label}</span></span>${
       hasChildren ? '<span class="plus"></span><i class="mkd-menu-arrow fa fa-angle-right"></i>' : ""
     }</span></a>${childrenHtml}</li>`;
   }
 
-  const liClass = `menu-item menu-item-type-custom menu-item-object-custom mkd-wide-background${
+  const liClass = `menu-item menu-item-type-custom menu-item-object-custom${isWideParent ? " mkd-wide-background" : ""}${
     self ? " current-menu-item" : ""
   }`;
   return `<li class="${liClass}"><a ${linkAttrs(

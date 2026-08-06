@@ -489,7 +489,7 @@ export default async function CatchAllPage({ params }: Args) {
                         }}
                       />
                     )}
-                    <div className="mkd-title-holder" style={{ height }}>
+                    <div className="mkd-title-holder" style={{ height: "100%" }}>
                       <div className="mkd-container clearfix">
                         <div className="mkd-container-inner">
                           <div className="mkd-title-subtitle-holder">
