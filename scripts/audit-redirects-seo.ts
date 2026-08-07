@@ -2,7 +2,7 @@ import { getWpConnection, tablePrefixForBlog, BASE_PREFIX } from "./wp-db";
 
 async function safeCount(conn: any, table: string): Promise<number | null> {
   try {
-    const [[row]] = await conn.query<any[]>(`SELECT COUNT(*) c FROM ${table};`);
+    const [[row]] = await conn.query(`SELECT COUNT(*) c FROM ${table};`) as any;
     return row.c;
   } catch {
     return null;

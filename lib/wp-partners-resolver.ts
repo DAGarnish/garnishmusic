@@ -14,5 +14,5 @@ export async function resolvePartners(rawContent: string): Promise<PartnerItem[]
       name: l.name || undefined,
       link: l.link || undefined,
     }))
-    .filter((l): l is PartnerItem => Boolean(l.imageUrl));
+    .filter((l) => Boolean(l.imageUrl)) as PartnerItem[];
 }
