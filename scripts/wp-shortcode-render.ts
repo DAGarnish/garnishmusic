@@ -576,6 +576,7 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // children, so every instance stays in sync (see renderPartners).
       const isPartnersRow = (attrs.el_class || "").includes("heading-some-of-our-partners");
       const rowContent = isPartnersRow ? renderPartners(ctx) : renderChildren(children, ctx);
+      if (!rowContent.trim()) return "";
       const inner = isGrid
         ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${rowContent}</div></div>`
         : `<div class="clearfix mkd-full-section-inner">${rowContent}</div>`;
@@ -610,6 +611,8 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // without the .mkd-section-inner/.mkd-grid-section wrapper the theme
       // CSS (and per-page custom CSS keyed off el_class) requires, producing
       // a ragged left-aligned stack instead of the real evenly-spaced grid.
+      const rendered = renderChildren(children, ctx);
+      if (!rendered.trim()) return "";
       const isGrid = attrs.content_width === "grid";
       let rowClass = `vc_row wpb_row vc_inner vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
       // Same default as vc_row above - VC/WPBakery defaults to "left" when
@@ -617,13 +620,15 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       rowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
       if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
       const inner = isGrid
-        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${renderChildren(children, ctx)}</div></div>`
-        : `<div class="clearfix mkd-full-section-inner">${renderChildren(children, ctx)}</div>`;
+        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${rendered}</div></div>`
+        : `<div class="clearfix mkd-full-section-inner">${rendered}</div>`;
       return `<div class="${rowClass}"${vcCustomStyle(attrs.css)}>${inner}</div>`;
     }
 
     case "vc_column":
     case "vc_column_inner": {
+      const rendered = renderChildren(children, ctx);
+      if (!rendered.trim()) return "";
       const cols = widthAttrToCols(attrs.width);
       // WPBakery's "offset" attribute carries space-separated
       // vc_hidden-xs/sm/md/lg classes for the builder's per-breakpoint
@@ -649,10 +654,7 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // Options (only affects .vc_column-inner's top padding).
       const elClass = attrs.el_class ? ` ${attrs.el_class}` : "";
       const hasFillClass = attrs.css ? " vc_col-has-fill" : "";
-      return `<div class="wpb_column vc_column_container vc_col-sm-${cols}${offsetClass}${elClass}${hasFillClass}"${vcCustomStyle(attrs.css)}><div class="vc_column-inner"><div class="wpb_wrapper">${renderChildren(
-        children,
-        ctx
-      )}</div></div></div>`;
+      return `<div class="wpb_column vc_column_container vc_col-sm-${cols}${offsetClass}${elClass}${hasFillClass}"${vcCustomStyle(attrs.css)}><div class="vc_column-inner"><div class="wpb_wrapper">${rendered}</div></div></div>`;
     }
 
     case "vc_column_text": {
@@ -665,16 +667,17 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // back to a generic img rule that stretches it to 100% of the
       // column's width instead of its natural size - confirmed against
       // production, where the wrapper is always present.
+      const rendered = renderChildren(children, ctx);
+      if (!rendered.trim()) return "";
       let cls = "wpb_text_column wpb_content_element";
       if (attrs.el_class) cls += ` ${attrs.el_class}`;
-      return `<div class="${cls}"${vcCustomStyle(attrs.css)}><div class="wpb_wrapper">${renderChildren(
-        children,
-        ctx
-      )}</div></div>`;
+      return `<div class="${cls}"${vcCustomStyle(attrs.css)}><div class="wpb_wrapper">${rendered}</div></div>`;
     }
 
     case "vc_empty_space": {
-      const height = attrs.height || "20px";
+      // Many pages stack multiple [vc_empty_space] shortcodes between headings.
+      // Default height changed from 20px to 0px to prevent huge unintended gaps.
+      const height = attrs.height || "0px";
       return `<div class="vc_empty_space" style="height: ${esc(height)}"><span class="vc_empty_space_inner"></span></div>`;
     }
 

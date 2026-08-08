@@ -31,3 +31,6 @@ export default async function Footer({ site }: { site?: FooterSite } = {}) {
 // force rebuild
 // force rebuild for footer margin
 // trigger rebuild
+// trigger rebuild
+// trigger rebuild
+// trigger rebuild css

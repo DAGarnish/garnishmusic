@@ -76,7 +76,7 @@ export async function buildPortfolioListResolver(
             : (typeof p.titleBackgroundImage === "object" && p.titleBackgroundImage?.url) 
               ? p.titleBackgroundImage.url 
               : undefined,
-          categoryLabel: category.name,
+          categoryLabel: category.name?.toLowerCase() === "locations" ? undefined : category.name,
         }));
       // Multiple WP taxonomies (portfolio-category, category, product_cat)
       // can share the same slug for a site, producing more than one

@@ -187,6 +187,9 @@ body {
    homepage's "locations" mkd_portfolio_list grid) are meant to fill the
    viewport edge-to-edge on production, not read as boxed article text -
    exclude them from the readability max-width too. */
+.vc_row.mkd-section:has(> .mkd-full-section-inner .mkd-portfolio-list-holder) {
+  margin-bottom: 0;
+}
 .vc_row.mkd-section:has(> .mkd-full-section-inner .mkd-portfolio-list-holder) > .mkd-full-section-inner {
   max-width: none;
   padding-left: 0;
@@ -257,3 +260,75 @@ div.mkd-title .mkd-title-holder h1 {
   margin-bottom: 32px !important;
 }
 
+/* -----------------------------------------------------------------------
+   Styles for the new Tailwind-based BlockRenderer's raw HTML blocks.
+   These completely replace reliance on the old WPBakery/Mikado theme CSS
+   for pages that have been migrated to native Payload blocks.
+   ----------------------------------------------------------------------- */
+.raw-html-block h1,
+.raw-html-block h2,
+.raw-html-block h3,
+.raw-html-block h4,
+.raw-html-block h5,
+.raw-html-block h6 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.raw-html-block > :first-child {
+  margin-top: 0 !important;
+}
+
+.raw-html-block p {
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+  color: #374151;
+  font-size: 1.05rem;
+}
+
+.raw-html-block h2 { font-size: 1.875rem; }
+.raw-html-block h3 { font-size: 1.5rem; }
+.raw-html-block h4 { font-size: 1.25rem; }
+
+.raw-html-block ul {
+  list-style-type: none;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.raw-html-block ul li {
+  position: relative;
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+  color: #374151;
+  font-size: 1.05rem;
+}
+
+.raw-html-block ul li::before {
+  content: "•";
+  color: #cc0000;
+  position: absolute;
+  left: -1rem;
+  font-weight: bold;
+}
+
+.raw-html-block ol { list-style: decimal; padding-left: 1.5em; margin: 0.75em 0; }
+.raw-html-block li { margin: 0.25em 0; }
+.raw-html-block a {
+  color: #cc0000;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.raw-html-block a:hover {
+  border-bottom-color: #cc0000;
+}
+.raw-html-block strong,
+.raw-html-block b { font-weight: 700 !important; }
+.raw-html-block img { max-width: 100%; height: auto; }
+.raw-html-block hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
