@@ -12,6 +12,6 @@ export const generateMetadata = ({ params, searchParams }: Args): Promise<Metada
   generatePageMetadata({ config, params, searchParams: searchParams as any });
 
 const Page = ({ params, searchParams }: Args) =>
-  RootPage({ config, params, searchParams, importMap });
+  RootPage({ config, params, searchParams: searchParams as any, importMap });
 
 export default Page;
