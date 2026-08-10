@@ -157,8 +157,8 @@ body {
   margin-bottom: 0;
 }
 
-.vc_row.mkd-section:has(.mkd-accordion):not([style*="background"]):has(+ .vc_row.mkd-section:has(.mkd-accordion)),
-.vc_row.mkd-section:has(.mkd-toggle):not([style*="background"]):has(+ .vc_row.mkd-section:has(.mkd-toggle)) {
+.vc_row.mkd-section:has(.mkd-accordion):not([style*="background"]):has(+ .vc_row.mkd-section .mkd-accordion),
+.vc_row.mkd-section:has(.mkd-toggle):not([style*="background"]):has(+ .vc_row.mkd-section .mkd-toggle) {
   margin-bottom: -50px !important;
 }
 
@@ -171,6 +171,20 @@ body {
 .vc_row.mkd-section:has(.mkd-accordion) .vc_empty_space,
 .vc_row.mkd-section:has(.mkd-toggle) .vc_empty_space {
   display: none !important;
+}
+
+/* The vc_row.vc_inner wrapping an accordion/toggle box carries WPBakery's
+   default -15px/-15px row-gutter margins (meant to counteract a 15px column
+   padding, which this row template actually sets to 0). That unused gutter
+   margin is invisible on its own, but when the row also paints its own
+   background-color (the grey accordion panel), the background bleeds 15px
+   past the accordion's own left/right edges on each side. Zero it out so
+   the painted background aligns exactly with the accordion box instead of
+   fringing wider than the title bar above/below it. */
+.vc_row.mkd-section.vc_inner[style*="background"]:has(.mkd-accordion),
+.vc_row.mkd-section.vc_inner[style*="background"]:has(.mkd-toggle) {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 /* WPBakery's default (non-grid) row layout is genuinely edge-to-edge full
