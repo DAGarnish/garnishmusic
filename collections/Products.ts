@@ -115,5 +115,37 @@ export const Products: CollectionConfig = {
         { name: "options", type: "text", required: true },
       ],
     },
+    {
+      name: "productType",
+      type: "select",
+      defaultValue: "simple",
+      options: [
+        { label: "Simple Product", value: "simple" },
+        { label: "Variable Product", value: "variable" },
+      ],
+    },
+    {
+      name: "variations",
+      type: "array",
+      admin: {
+        condition: (data) => data.productType === "variable",
+        description: "Define product variations (e.g. Early Bird, Full Price, different schedules).",
+      },
+      fields: [
+        { name: "name", type: "text", required: true },
+        { name: "price", type: "number", required: true },
+        { name: "salePrice", type: "number" },
+        { name: "sku", type: "text" },
+        { name: "stockQuantity", type: "number" },
+        {
+          name: "attributes",
+          type: "array",
+          fields: [
+            { name: "attributeName", type: "text", required: true, admin: { description: "e.g., 'Registration Fee'" } },
+            { name: "attributeValue", type: "text", required: true, admin: { description: "e.g., 'Early Bird'" } },
+          ],
+        },
+      ],
+    },
   ],
 };

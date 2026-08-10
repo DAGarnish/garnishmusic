@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "../globals.css";
 import { getCurrentSite } from "../../lib/current-site";
+import { Analytics } from "@vercel/analytics/react";
 import ConsultationPopup from "../../components/ConsultationPopup";
+import { CartProvider } from "../../components/CartContext";
 
 // Loaded as plain blocking <script> tags in <head> (not next/script's
 // beforeInteractive strategy) because that strategy's SSR-injection
@@ -128,9 +130,10 @@ export default async function RootLayout({
         {themeScriptsAfterGlobals.map((src) => (
           <Script key={src} src={src} strategy="beforeInteractive" />
         ))}
-        {children}
-
-        <ConsultationPopup />
+        <CartProvider>
+          {children}
+          <ConsultationPopup />
+        </CartProvider>
       </body>
     </html>
   );

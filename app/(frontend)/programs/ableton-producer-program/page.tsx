@@ -158,7 +158,7 @@ export default async function AbletonProducerProgramPage() {
           <section className="relative w-full overflow-hidden bg-black">
             <div className="relative w-full" style={{ aspectRatio: "21/9", minHeight: "320px", maxHeight: "560px" }}>
               <img
-                src={(heroImage as any).url}
+                src={(heroImage as any)?.sizes?.large?.url || (heroImage as any)?.url}
                 alt={doc.title || ""}
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ opacity: 0.6 }}

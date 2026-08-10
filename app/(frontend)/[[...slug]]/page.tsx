@@ -7,6 +7,7 @@ import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import Sidebar from "../../../components/Sidebar";
 import PortfolioShare from "../../../components/PortfolioShare";
+import AddToCart from "../../../components/AddToCart";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
 import { buildImageResolver } from "../../../lib/wp-image-resolver";
@@ -377,7 +378,7 @@ export default async function CatchAllPage({ params }: Args) {
               style={aspectRatio && isResponsive ? { aspectRatio: `${aspectRatio}` } : { height }}
             >
               <img
-                src={(titleImage as any).url}
+                src={(titleImage as any).sizes?.large?.url || (titleImage as any).url}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover z-0"
               />
@@ -528,7 +529,7 @@ export default async function CatchAllPage({ params }: Args) {
                       // sizing above) is immune to that entire class of
                       // legacy custom CSS the same way production always was.
                       <img
-                        src={titleImage?.url ?? undefined}
+                        src={((titleImage as any)?.sizes?.large?.url || titleImage?.url) ?? undefined}
                         alt=""
                         style={{
                           position: "absolute",
@@ -717,7 +718,18 @@ export default async function CatchAllPage({ params }: Args) {
                   );
                 })()
               ) : (
-                <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                <>
+                  {type === "product" && (
+                    <div className="mkd-container" style={{ paddingTop: "40px" }}>
+                      <div className="mkd-container-inner" style={{ padding: "0 20px" }}>
+                        {(("price" in doc && doc.price != null) || ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)) && (
+                          <AddToCart product={doc} variations={(doc as any).variations || []} />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                </>
               )
             ) : (
               <article style={{ padding: "3rem 2rem", maxWidth: 900, margin: "0 auto" }}>
@@ -747,8 +759,11 @@ export default async function CatchAllPage({ params }: Args) {
                     )}
                   </div>
                 )}
-                {type === "product" && "price" in doc && doc.price != null && (
-                  <p style={{ fontSize: "1.25rem", fontWeight: 600 }}>£{doc.price}</p>
+                {type === "product" && (
+                  ("price" in doc && doc.price != null) || 
+                  ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)
+                ) && (
+                  <AddToCart product={doc} variations={(doc as any).variations || []} />
                 )}
                 <RichText
                   data={

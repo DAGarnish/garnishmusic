@@ -49,6 +49,8 @@ export const Orders: CollectionConfig = {
           type: "relationship",
           relationTo: "products",
         },
+        { name: "variationId", type: "text" },
+        { name: "variationName", type: "text" },
         { name: "name", type: "text" },
         { name: "quantity", type: "number" },
         { name: "price", type: "number" },
