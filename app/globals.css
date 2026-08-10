@@ -150,8 +150,8 @@ body {
 
 /* Tighten spacing between accordion/toggle rows so they sit closer together.
    Note: Some accordions have a hardcoded inline 'margin-top: 50px !important' from WPBakery.
-   To force a 5px gap, we apply a -45px margin-bottom to the preceding accordion row,
-   which collapses with the 50px margin-top to equal 5px. */
+   To force a 0px gap (touching), we apply a -50px margin-bottom to the preceding accordion row,
+   which collapses with the 50px margin-top to equal 0px. */
 .vc_row.mkd-section:has(.mkd-accordion):not([style*="background"]),
 .vc_row.mkd-section:has(.mkd-toggle):not([style*="background"]) {
   margin-bottom: 0;
@@ -159,7 +159,12 @@ body {
 
 .vc_row.mkd-section:has(.mkd-accordion):not([style*="background"]):has(+ .vc_row.mkd-section:has(.mkd-accordion)),
 .vc_row.mkd-section:has(.mkd-toggle):not([style*="background"]):has(+ .vc_row.mkd-section:has(.mkd-toggle)) {
-  margin-bottom: -45px !important;
+  margin-bottom: -50px !important;
+}
+
+/* Ensure flex layouts don't cause single columns (like accordions) to shrink to their content width */
+.call-action-la-content-row2 .mkd-section-inner-margin > .vc_column_container {
+  width: 100%;
 }
 
 /* Hide empty space elements inside accordion rows to ensure consistent sizing */
