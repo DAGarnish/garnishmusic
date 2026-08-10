@@ -148,10 +148,18 @@ body {
   margin-bottom: 0;
 }
 
-/* Tighten spacing between accordion/toggle rows so they sit closer together */
+/* Tighten spacing between accordion/toggle rows so they sit closer together.
+   Note: Some accordions have a hardcoded inline 'margin-top: 50px !important' from WPBakery.
+   To force a 5px gap, we apply a -45px margin-bottom to the preceding accordion row,
+   which collapses with the 50px margin-top to equal 5px. */
 .vc_row.mkd-section:has(.mkd-accordion):not([style*="background"]),
 .vc_row.mkd-section:has(.mkd-toggle):not([style*="background"]) {
   margin-bottom: 0;
+}
+
+.vc_row.mkd-section:has(.mkd-accordion):not([style*="background"]):has(+ .vc_row.mkd-section:has(.mkd-accordion)),
+.vc_row.mkd-section:has(.mkd-toggle):not([style*="background"]):has(+ .vc_row.mkd-section:has(.mkd-toggle)) {
+  margin-bottom: -45px !important;
 }
 
 /* Hide empty space elements inside accordion rows to ensure consistent sizing */
@@ -345,7 +353,8 @@ div.mkd-title .mkd-title-holder h1 {
 .raw-html-block img { max-width: 100%; height: auto; }
 .raw-html-block hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
 
-/* Add a 32px gap between the footer content and the bottom edge of the page */
+/* Add a 32px gap before and after the footer */
 footer {
+  margin-top: 32px !important;
   padding-bottom: 32px !important;
 }
