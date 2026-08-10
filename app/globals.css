@@ -148,6 +148,18 @@ body {
   margin-bottom: 0;
 }
 
+/* Tighten spacing between accordion/toggle rows so they sit closer together */
+.vc_row.mkd-section:has(.mkd-accordion):not([style*="background"]),
+.vc_row.mkd-section:has(.mkd-toggle):not([style*="background"]) {
+  margin-bottom: 0;
+}
+
+/* Hide empty space elements inside accordion rows to ensure consistent sizing */
+.vc_row.mkd-section:has(.mkd-accordion) .vc_empty_space,
+.vc_row.mkd-section:has(.mkd-toggle) .vc_empty_space {
+  display: none !important;
+}
+
 /* WPBakery's default (non-grid) row layout is genuinely edge-to-edge full
    width by design on production too (.mkd-full-section-inner has no width
    rule at all in the theme CSS) - fine for image/color bands, but it means
@@ -332,3 +344,8 @@ div.mkd-title .mkd-title-holder h1 {
 .raw-html-block b { font-weight: 700 !important; }
 .raw-html-block img { max-width: 100%; height: auto; }
 .raw-html-block hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
+
+/* Add a 32px gap between the footer content and the bottom edge of the page */
+footer {
+  padding-bottom: 32px !important;
+}
