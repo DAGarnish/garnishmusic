@@ -1,0 +1,316 @@
+[
+  {
+    "url": "#",
+    "label": "About",
+    "newTab": false,
+    "children": [
+      {
+        "url": "#",
+        "label": "Miami",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/locations",
+            "label": "Home",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/open-house",
+            "label": "Open House",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/instructors",
+            "label": "Instructors",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://edu.garnishmusicproduction.com/courses/dave-garnish/",
+            "label": "Dave Garnish",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Locations",
+        "newTab": false,
+        "children": [
+          {
+            "url": "https://edu.garnishmusicproduction.com",
+            "label": "World Home",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://bcn.garnishmusicproduction.com/",
+            "label": "BCN",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://ber.garnishmusicproduction.com/",
+            "label": "BER",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://garnishmusicproduction.com/",
+            "label": "LDN",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://lis.garnishmusicproduction.com/",
+            "label": "LIS",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://hk.garnishmusicproduction.com",
+            "label": "HK",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://tyo.garnishmusicproduction.com/",
+            "label": "TYO",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://la.garnishmusicproduction.com/",
+            "label": "LA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://mia.garnishmusicproduction.com/",
+            "label": "MIA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "http://nsh.garnishmusicproduction.com",
+            "label": "NSH",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://ny.garnishmusicproduction.com/",
+            "label": "NYC",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://sf.garnishmusicproduction.com/",
+            "label": "SF",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "#",
+    "label": "Music Production Programs",
+    "newTab": false,
+    "children": [
+      {
+        "url": "#",
+        "label": "UK-accredited",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "url": "#",
+        "label": "Comprehensive Programs",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/academy/emp-electronic-music-producer",
+            "label": "Electronic Music Academy",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/programs/ableton-producer-program",
+            "label": "Ableton Producer Program",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/programs/logic-producer-program",
+            "label": "Logic Producer Program",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Beginner Classes",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/courses/ableton-live-course",
+            "label": "Ableton Live",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/logic-course",
+            "label": "Logic Pro",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://www.musicgurus.com/learn/garnish-music-production-online-courses/",
+            "label": "Logic Self-Paced Online",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "/courses/pro-tools101-course",
+            "label": "Pro Tools",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Express Classes",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/courses/vocal-production",
+            "label": "Vocal Production",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/ai-music-composition-marketing",
+            "label": "Exploring AI in Music",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/electronic-music-emp",
+            "label": "Sound Design & Synthesis",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/hit-songwriting-course",
+            "label": "Hit Songwriting",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/mixing-mastering-course",
+            "label": "The Art of Mixing",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/composition",
+            "label": "Music Composition",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/release-party",
+            "label": "Mastering",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/electronic-sound-art",
+            "label": "Electronic Sound Art",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/hip-hop-course",
+            "label": "Hip Hop Production",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/rhythm-section-programming",
+            "label": "Rhythm Section Programming",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "#",
+    "label": "DJ & More",
+    "newTab": false,
+    "children": [
+      {
+        "url": "/courses/electronic-dj-course",
+        "label": "DJ Course (Electronic)",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "url": "/courses/curso-de-dj-espanol",
+        "label": "Curso de DJ Pro en Español",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "url": "/courses/open-house",
+        "label": "Open House",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "url": "https://edu.garnishmusicproduction.com/gift/",
+        "label": "Gift Certificate",
+        "newTab": true,
+        "children": []
+      },
+      {
+        "url": "https://edu.garnishmusicproduction.com/online-music-production/",
+        "label": "Live Online Classes",
+        "newTab": true,
+        "children": []
+      },
+      {
+        "url": "/courses/summer-camp-school",
+        "label": "Summer Camp",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "url": "/private-tuition",
+        "label": "Private/Bespoke",
+        "newTab": false,
+        "children": []
+      },
+      {
+        "url": "https://garn.link/discord",
+        "label": "Discord",
+        "newTab": true,
+        "children": []
+      }
+    ]
+  },
+  {
+    "url": "/contact-miami",
+    "label": "Contact",
+    "newTab": false,
+    "children": []
+  }
+]

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { RowBlock } from "../blocks/Row";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -133,6 +134,14 @@ export const Pages: CollectionConfig = {
       admin: {
         description:
           "Raw WordPress post_content (with WPBakery shortcodes) preserved for reference/reprocessing",
+      },
+    },
+    {
+      name: "layout",
+      type: "blocks",
+      blocks: [RowBlock],
+      admin: {
+        description: "Native Payload Blocks layout",
       },
     },
     {

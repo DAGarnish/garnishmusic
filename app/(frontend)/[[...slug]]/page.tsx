@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -15,6 +16,7 @@ import { buildHeroSliderResolver } from "../../../lib/wp-hero-slider-resolver";
 import { buildBlogListResolver } from "../../../lib/wp-blog-list-resolver";
 import { resolvePartners } from "../../../lib/wp-partners-resolver";
 import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
+import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
 
 const EMPTY_RICHTEXT = {
   root: {
@@ -348,6 +350,55 @@ export default async function CatchAllPage({ params }: Args) {
   // portfolio image - the two never overlap in practice since a page is
   // either an instructor bio or a sidebar page, not both).
   const hasSidebar = "hasSidebar" in doc && Boolean(doc.hasSidebar);
+
+  const hasLayout = "layout" in doc && Array.isArray((doc as any).layout) && (doc as any).layout.length > 0;
+
+  if (hasLayout) {
+    const ownImage = "titleBackgroundImage" in doc && doc.titleBackgroundImage && typeof doc.titleBackgroundImage === "object" ? doc.titleBackgroundImage : undefined;
+    const siteDefaultImage = site.defaultTitleBackgroundImage && typeof site.defaultTitleBackgroundImage === "object" ? site.defaultTitleBackgroundImage : undefined;
+    const titleImage = ownImage ?? siteDefaultImage;
+    const hasImage = Boolean(titleImage);
+    const explicitHeight = "titleAreaHeight" in doc && typeof doc.titleAreaHeight === "number" ? doc.titleAreaHeight : undefined;
+    const isResponsive = "titleBackgroundResponsive" in doc ? doc.titleBackgroundResponsive !== false : true;
+    const naturalWidth = titleImage && typeof (titleImage as any).width === "number" ? (titleImage as any).width : undefined;
+    const naturalHeight = titleImage && typeof (titleImage as any).height === "number" ? (titleImage as any).height : undefined;
+    const aspectRatio = naturalWidth && naturalHeight ? naturalWidth / naturalHeight : undefined;
+    const fallbackHeight = explicitHeight || (isResponsive ? 400 : 810);
+    const height = hasImage ? fallbackHeight : 200;
+
+    return (
+      <>
+        {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
+        <Header menu={site.mainMenu as any} currentPath={slug.join("/")} siteDomain={site.domain} />
+        <main className="w-full flex flex-col min-h-screen">
+          {hasImage && type === "page" && ("showTitleArea" in doc ? doc.showTitleArea !== false : true) && slug.length > 0 && (
+            <div 
+              className="relative w-full overflow-hidden" 
+              style={aspectRatio && isResponsive ? { aspectRatio: `${aspectRatio}` } : { height }}
+            >
+              <img
+                src={(titleImage as any).url}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover z-0"
+              />
+              <div className="absolute inset-0 bg-black/40 z-10" />
+              <div className="relative z-20 h-full max-w-5xl mx-auto px-4 flex flex-col justify-center items-center text-center">
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight drop-shadow-md leading-normal md:leading-snug">
+                  <span className="text-white px-4 py-2" style={{ backgroundColor: '#cc0000', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone' }}>
+                    {doc.title}
+                  </span>
+                </h1>
+              </div>
+            </div>
+          )}
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+            <BlockRenderer blocks={(doc as any).layout} />
+          </div>
+        </main>
+        <Footer site={site} />
+      </>
+    );
+  }
 
   return (
     <>

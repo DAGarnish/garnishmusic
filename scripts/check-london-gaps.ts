@@ -6,18 +6,18 @@ async function main() {
   
   const pages = await payload.find({
     collection: "pages",
-    where: { slug: { equals: "programs/ableton-producer-program" } }
+    limit: 10,
+    where: {
+      wpRawContent: { like: "%World-class Music Production Courses in London%" }
+    }
   });
   
   for (const page of pages.docs) {
     console.log(`Found page: ${page.slug} (ID: ${page.id})`);
     if (page.wpRawContent && typeof page.wpRawContent === 'string') {
-        // Just print the tags used
-        const matches = page.wpRawContent.match(/\[([a-zA-Z_]+)/g);
-        if (matches) {
-           const uniqueTags = [...new Set(matches.map(m => m.substring(1)))];
-           console.log("Tags used:", uniqueTags);
-        }
+        const start = page.wpRawContent.indexOf("World-class Music Production Courses in London");
+        const snippet = page.wpRawContent.substring(Math.max(0, start - 200), start + 400);
+        console.log(snippet);
     }
   }
 

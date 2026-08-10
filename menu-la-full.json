@@ -1,0 +1,346 @@
+[
+  {
+    "url": "#",
+    "label": "About",
+    "newTab": false,
+    "children": [
+      {
+        "url": "#",
+        "label": "Los Angeles",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/locations",
+            "label": "Home",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://discord.com/invite/rwpkkKsPAD",
+            "label": "Discord",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "http://www.loudboymusic.com",
+            "label": "Appu Krishnan",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://edu.garnishmusicproduction.com/courses/dave-garnish/",
+            "label": "Dave Garnish",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://edu.garnishmusicproduction.com/privacy-policy/",
+            "label": "Privacy Policy",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://la.garnishmusicproduction.com/garnish-los-angeles-terms/",
+            "label": "Terms",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://edu.garnishmusicproduction.com/gift/",
+            "label": "Gift Certificate",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "https://edu.garnishmusicproduction.com",
+        "label": "Locations",
+        "newTab": true,
+        "children": [
+          {
+            "url": "https://edu.garnishmusicproduction.com",
+            "label": "World Home",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://bcn.garnishmusicproduction.com",
+            "label": "BCN",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://ber.garnishmusicproduction.com",
+            "label": "BER",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://www.garnishmusicproduction.com",
+            "label": "LDN",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://lis.garnishmusicproduction.com/",
+            "label": "LIS",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://hk.garnishmusicproduction.com",
+            "label": "HK",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://tyo.garnishmusicproduction.com",
+            "label": "TYO",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://la.garnishmusicproduction.com",
+            "label": "LA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://mia.garnishmusicproduction.com",
+            "label": "MIA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "http://nsh.garnishmusicproduction.com",
+            "label": "NSH",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://ny.garnishmusicproduction.com/",
+            "label": "NYC",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://sea.garnishmusicproduction.com",
+            "label": "SEA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://sf.garnishmusicproduction.com",
+            "label": "SF",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://edu.garnishmusicproduction.com/online-music-production/",
+            "label": "Live Online Class",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "#",
+    "label": "Programs",
+    "newTab": false,
+    "children": [
+      {
+        "url": "#",
+        "label": "USA F1 Visa Eligible",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/cetrificate-in-music-production-and-songwriting",
+            "label": "Certificate in Music Production and Songwriting",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Production Programs",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/la-music-production-academy",
+            "label": "360 Music Production Academy",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/programs/ableton-production-program",
+            "label": "Ableton Production Program",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/programs/logic-production-program",
+            "label": "Logic Production Program",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/songcraft-production-program",
+            "label": "SongCraft Production Program",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/dj-production-program",
+            "label": "DJ Production Program",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Express Courses",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/courses/ableton-live-course",
+            "label": "Ableton Live",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/logic-pro-course",
+            "label": "Logic Pro",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/synthesis-and-sound-design",
+            "label": "Synthesis and Sound Design",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/composing-and-media-scoring",
+            "label": "Composing and Media Scoring",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/songcraft-hit-songwriting",
+            "label": "SongCraft Hit Songwriting",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/studio-vocal-production",
+            "label": "Studio Vocal Production",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/mixing-and-mastering-course",
+            "label": "Mixing and Mastering",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/advanced-mastering",
+            "label": "Advanced Mastering",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/k-pop-hitmaker",
+            "label": "K-pop Hitmaker",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/hip-hop-production",
+            "label": "Hip Hop Production",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://la.garnishmusicproduction.com/courses/art-of-remix/",
+            "label": "Art of Remix",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/fl-studio-production",
+            "label": "FL Studio Production",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/pro-tools-course",
+            "label": "Pro Tools",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Pro Skills & More",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/social-media-and-branding-for-artists",
+            "label": "Social Media & Branding for Artists",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/dj-course",
+            "label": "DJ Performance",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://mia.garnishmusicproduction.com/courses/curso-de-dj-espanol/",
+            "label": "Curso de DJ (Español en MIA)",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "/music-production-private-instruction",
+            "label": "Private Instruction",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/summer-camp-school",
+            "label": "Summer Camp",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/garnish-la-artist-services",
+            "label": "Garnish LA Artist Services",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "/music-production-instructors-los-angeles",
+    "label": "Instructors",
+    "newTab": false,
+    "children": []
+  },
+  {
+    "url": "/music-production-school-los-angeles-contact",
+    "label": "Contact",
+    "newTab": false,
+    "children": []
+  }
+]

@@ -1,8 +1,20 @@
-const text = `[vc_row_inner css=".vc_custom_1653323693945{background-color: #a0a0a0 !important;background-position: center !important;background-repeat: no-repeat !important;background-size: cover !important;}"][vc_column_inner css=".vc_custom_1653323525760{background-color: #f8f8f8 !important;}"][vc_column_text]
-<h3><strong>Stay Connected</strong></h3>
-<em>We will not share your information</em>
+import fs from "fs";
 
-[/vc_column_text][contact-form-7 id="5689"][/vc_column_inner][/vc_row_inner]`;
+let content = fs.readFileSync("mastering-973.txt", "utf8");
+console.log("--- ORIGINAL ---");
+console.log(content.substring(content.indexOf("36 hours or 20 hours"), content.indexOf("Use the ‘CONNECT’ button")));
 
-const regex = /\[vc_row_inner[^\]]*\](?:(?!\[\/?vc_row_inner)[^])*?Stay Connected(?:(?!\[\/?vc_row_inner)[^])*?\[\/vc_row_inner\]/ig;
-console.log("Matches:", text.match(regex));
+const localCurrency = "EU"; // test for Lisbon
+const toDelete = ["USA", "EU", "UK"].filter(c => c !== localCurrency);
+
+for (const prefix of toDelete) {
+    const regex = new RegExp(`<(p|div|h[1-6])[^>]*>(?:(?!<\\/\\1>)[\\s\\S])*?\\b${prefix}:\\s*(?:\\$|€|£|\\d)(?:(?!<\\/\\1>)[\\s\\S])*?<\\/\\1>\\s*`, 'gi');
+    content = content.replace(regex, '');
+}
+
+const keepRegex = new RegExp(`(<(?:p|div|h[1-6])[^>]*>(?:<[^>]+>)*\\s*)\\b${localCurrency}:\\s*`, 'gi');
+content = content.replace(keepRegex, '$1');
+
+console.log("--- MODIFIED ---");
+console.log(content.substring(content.indexOf("36 hours or 20 hours"), content.indexOf("Use the ‘CONNECT’ button")));
+

@@ -1,0 +1,232 @@
+[
+  {
+    "url": "#",
+    "label": "About",
+    "newTab": false,
+    "children": [
+      {
+        "url": "#",
+        "label": "San Francisco Bay",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/locations",
+            "label": "Home",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/remote-attendance",
+            "label": "Online",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://edu.garnishmusicproduction.com/courses/dave-garnish/",
+            "label": "Dave Garnish",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Locations",
+        "newTab": false,
+        "children": [
+          {
+            "url": "https://edu.garnishmusicproduction.com/",
+            "label": "World Home",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://bcn.garnishmusicproduction.com/",
+            "label": "BCN",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://ber.garnishmusicproduction.com/",
+            "label": "BER",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://ldn.garnishmusicproduction.com/",
+            "label": "LDN",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://lis.garnishmusicproduction.com/",
+            "label": "LIS",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://tyo.garnishmusicproduction.com/",
+            "label": "TYO",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://la.garnishmusicproduction.com",
+            "label": "LA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://hk.garnishmusicproduction.com",
+            "label": "HK",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://mia.garnishmusicproduction.com",
+            "label": "MIA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "http://nsh.garnishmusicproduction.com",
+            "label": "NSH",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://ny.garnishmusicproduction.com/",
+            "label": "NYC",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://sea.garnishmusicproduction.com/",
+            "label": "SEA",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://sf.garnishmusicproduction.com/",
+            "label": "SF",
+            "newTab": true,
+            "children": []
+          },
+          {
+            "url": "https://ny.garnishmusicproduction.com/online-school/",
+            "label": "Online",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "#",
+    "label": "Music Production Courses",
+    "newTab": false,
+    "children": [
+      {
+        "url": "#",
+        "label": "Accredited",
+        "newTab": false,
+        "children": [
+          {
+            "url": "https://la.garnishmusicproduction.com/undergraduate-business-and-music/",
+            "label": "F1 USA Visa Eligible (LA)",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Comprehensive Programs",
+        "newTab": false,
+        "children": [
+          {
+            "url": "https://sf.garnishmusicproduction.com/ableton-producer-program/",
+            "label": "Ableton Producer Program",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/logic-producer-program",
+            "label": "Logic Pro Music Producer",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "https://edu.garnishmusicproduction.com/college-bachelors-degrees/",
+            "label": "Music Production",
+            "newTab": true,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "Express Classes",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/courses/ableton-live-course",
+            "label": "Ableton Live",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/logic-course",
+            "label": "Logic Pro",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/pro-tools101-course",
+            "label": "Pro Tools",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/mixing-mastering-course",
+            "label": "The Art of Mixing and Mastering",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/electronic-music-sound-design",
+            "label": "Sound Design & Synthesis",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "url": "#",
+        "label": "DJ & More",
+        "newTab": false,
+        "children": [
+          {
+            "url": "/courses/private-instruction",
+            "label": "Private Instruction",
+            "newTab": false,
+            "children": []
+          },
+          {
+            "url": "/courses/electronic-dj-course",
+            "label": "DJ Course (Electronic)",
+            "newTab": false,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "url": "/contact-map",
+    "label": "Contact",
+    "newTab": false,
+    "children": []
+  }
+]
