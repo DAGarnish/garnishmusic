@@ -167,6 +167,20 @@ body {
   width: 100%;
 }
 
+/* Remove WPBakery background, border, and padding from accordion wrapper rows
+   so the accordion itself touches the edges without a gray border above/below it. */
+.vc_row_inner:has(.mkd-accordion) {
+  background-color: transparent !important;
+  border: none !important;
+}
+.vc_row_inner:has(.mkd-accordion) .vc_column-inner {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.vc_row_inner:has(.mkd-accordion) .wpb_text_column {
+  margin-bottom: 0 !important;
+}
+
 /* Hide empty space elements inside accordion rows to ensure consistent sizing */
 .vc_row.mkd-section:has(.mkd-accordion) .vc_empty_space,
 .vc_row.mkd-section:has(.mkd-toggle) .vc_empty_space {
