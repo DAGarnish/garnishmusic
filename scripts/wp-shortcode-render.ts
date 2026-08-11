@@ -597,7 +597,10 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
           declarations.push(`background-image:url(${bgUrl})`);
         }
       }
-      const style = declarations.filter(Boolean).join(";");
+      const style = declarations.filter(Boolean).map(decl => {
+        return decl
+          .replace(/(margin-top|margin-bottom|padding-top|padding-bottom)\s*:\s*(50|60|64|70|80)px/gi, "$1: 32px");
+      }).join(";");
 
       return `<div class="${rowClass}"${extraAttrs}${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
     }
@@ -622,7 +625,12 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       const inner = isGrid
         ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${rendered}</div></div>`
         : `<div class="clearfix mkd-full-section-inner">${rendered}</div>`;
-      return `<div class="${rowClass}"${vcCustomStyle(attrs.css)}>${inner}</div>`;
+      let declarations = [vcCssDeclarations(attrs.css)];
+      const style = declarations.filter(Boolean).map(decl => {
+        return decl
+          .replace(/(margin-top|margin-bottom|padding-top|padding-bottom)\s*:\s*(50|60|64|70|80)px/gi, "$1: 32px");
+      }).join(";");
+      return `<div class="${rowClass}"${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
     }
 
     case "vc_column":

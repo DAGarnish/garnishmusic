@@ -386,8 +386,38 @@ div.mkd-title .mkd-title-holder h1 {
 .raw-html-block img { max-width: 100%; height: auto; }
 .raw-html-block hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
 
-/* Add a 32px gap before and after the footer */
+/* Reduce gaps before/after footer and header title */
 footer {
   margin-top: 32px !important;
   padding-bottom: 32px !important;
+}
+
+.mkd-title {
+  margin-bottom: 32px !important;
+}
+
+/* Globally reduce default section spacing from 50px/64px down to 32px */
+.mkd-course-page > .mkd-container-inner,
+.mkd-course-page > .mkd-full-width-inner {
+  padding-top: 32px !important;
+  padding-bottom: 32px !important;
+}
+
+.mkd-section,
+.vc_row {
+  padding-top: 32px !important;
+  padding-bottom: 32px !important;
+  margin-top: 32px !important;
+  margin-bottom: 32px !important;
+}
+
+/* Remove excessive spacing for first/last children */
+.mkd-section:first-child,
+.vc_row:first-child {
+  margin-top: 0 !important;
+}
+
+.mkd-section:last-child,
+.vc_row:last-child {
+  margin-bottom: 0 !important;
 }
