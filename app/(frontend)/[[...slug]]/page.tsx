@@ -359,6 +359,17 @@ export default async function CatchAllPage({ params }: Args) {
     const siteDefaultImage = site.defaultTitleBackgroundImage && typeof site.defaultTitleBackgroundImage === "object" ? site.defaultTitleBackgroundImage : undefined;
     const titleImage = ownImage ?? siteDefaultImage;
     const hasImage = Boolean(titleImage);
+    
+    if (slug.length === 0) {
+      console.log("SF HOMEPAGE RENDER:", {
+        type,
+        ownImage: !!ownImage,
+        siteDefaultImage: !!siteDefaultImage,
+        hasImage,
+        showTitleArea: "showTitleArea" in doc ? doc.showTitleArea : undefined
+      });
+    }
+
     const explicitHeight = "titleAreaHeight" in doc && typeof doc.titleAreaHeight === "number" ? doc.titleAreaHeight : undefined;
     const isResponsive = "titleBackgroundResponsive" in doc ? doc.titleBackgroundResponsive !== false : true;
     const naturalWidth = titleImage && typeof (titleImage as any).width === "number" ? (titleImage as any).width : undefined;
@@ -372,7 +383,10 @@ export default async function CatchAllPage({ params }: Args) {
         {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
         <Header menu={site.mainMenu as any} currentPath={slug.join("/")} siteDomain={site.domain} />
         <main className="w-full flex flex-col min-h-screen">
-          {hasImage && type === "page" && ("showTitleArea" in doc ? doc.showTitleArea !== false : true) && slug.length > 0 && (
+            <pre style={{color: 'red', zIndex: 9999, position: 'relative', background: 'white'}}>
+              DEBUG INFO: {JSON.stringify({ type, ownImage: !!ownImage, siteDefaultImage: !!siteDefaultImage, hasImage, showTitleArea: "showTitleArea" in doc ? doc.showTitleArea : undefined, slugLen: slug.length })}
+            </pre>
+          {hasImage && type === "page" && ("showTitleArea" in doc ? doc.showTitleArea !== false : true) && (
             <div 
               className="relative w-full overflow-hidden" 
               style={aspectRatio && isResponsive ? { aspectRatio: `${aspectRatio}` } : { height }}
@@ -413,14 +427,8 @@ export default async function CatchAllPage({ params }: Args) {
          container earlier constrained the hero image with the same
          left/right margins as the boxed content, which production doesn't
          have. */}
-      {/* The theme never shows a page's own title bar when that page
-         is being served as the site's front page (confirmed on
-         production: the "Locations" page has its title area enabled
-         for its own /locations/ permalink, but the homepage - which is
-         that same underlying doc - shows no title bar at all) - so
-         this is gated on slug.length, not just showTitleArea. */}
+      {/* NOTE: We previously did not show title areas for homepages, but some sites (e.g. SF, Miami) DO use them on the homepage. */}
       {type === "page" &&
-              slug.length > 0 &&
               "showTitleArea" in doc &&
               doc.showTitleArea !== false &&
               (() => {

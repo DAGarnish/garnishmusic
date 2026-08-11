@@ -130,9 +130,11 @@ export default async function RootLayout({
         {themeScriptsAfterGlobals.map((src) => (
           <Script key={src} src={src} strategy="beforeInteractive" />
         ))}
+        <div id="TEST-LAYOUT">HELLO HOT RELOAD</div>
         <CartProvider>
           {children}
           <ConsultationPopup />
+          <div id="modal-root"></div>
         </CartProvider>
       </body>
     </html>
