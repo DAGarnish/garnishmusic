@@ -23,9 +23,9 @@ export default async function Header({
   const active: ActiveMatch | undefined =
     currentPath !== undefined && siteDomain ? { path: currentPath, domain: siteDomain } : undefined;
   
-  // Hide cart on all sites
+  // Hide cart and logo on all sites; remove gap between partners and footer
   let finalAfterNav = afterNav;
-  finalAfterNav += "<style>.mkd-shopping-cart-outer { display: none !important; }</style>";
+  finalAfterNav += "<style>.mkd-shopping-cart-outer { display: none !important; } .mkd-logo-wrapper { display: none !important; } .heading-some-of-our-partners { margin-bottom: 0 !important; } footer { margin-top: 0 !important; }</style>";
 
   const navHtml = menuTreeToHtml(menu || [], ctx, active);
   const fullHtml = rewriteHtmlLinksForLocalDev(beforeNav + navHtml + finalAfterNav, ctx);
