@@ -597,32 +597,100 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
           declarations.push(`background-image:url(${bgUrl})`);
         }
       }
-      const style = declarations.filter(Boolean).join(";");
 
-      return `<div class="${rowClass}"${extraAttrs}${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
+      let bgImageUrl: string | null = null;
+      let hasBgImage = false;
+      const cleanedDeclarations = declarations.filter(Boolean).map(decl => {
+        let clean = decl;
+        if (clean.includes("background-image")) {
+          const match = clean.match(/background-image\s*:\s*url\(([^)]+)\)/i);
+          if (match) {
+            bgImageUrl = match[1].replace(/['"]/g, "").trim();
+            hasBgImage = true;
+            clean = clean.replace(/background-image\s*:\s*url\(([^)]+)\)[^;]*/i, "");
+          }
+        }
+        return clean;
+      });
+
+      const finalDeclarations = cleanedDeclarations.map(decl => {
+        if (hasBgImage) {
+          // Strip inline margins so they don't override global CSS margin: 0 !important
+          return decl
+            .replace(/margin-top\s*:\s*[^;]+;?/gi, "")
+            .replace(/margin-bottom\s*:\s*[^;]+;?/gi, "");
+        }
+        return decl;
+      });
+
+      if (hasBgImage) {
+        rowClass += " vc-row-with-bg";
+      }
+
+      const style = finalDeclarations.filter(Boolean).join(";");
+      const bgMarkup = bgImageUrl ? `
+        <div class="vc-row-bg-image" style="background-image: url('${esc(bgImageUrl)}');"></div>
+        <div class="vc-row-bg-overlay"></div>
+      ` : "";
+
+      return `<div class="${rowClass}"${extraAttrs}${style ? ` style="${esc(style)};"` : ""}>${bgMarkup}${inner}</div>`;
     }
 
     case "vc_row_inner": {
-      // Was previously a stub that ignored content_width="grid", el_class,
-      // and content_aligment entirely - unlike vc_row, which already
-      // handles grid boxing correctly. Nested grid rows (e.g. the "Our
-      // partners" logo grid, [vc_row_inner content_width="grid"
-      // content_aligment="center" el_class="alignment-of-images"]) rendered
-      // without the .mkd-section-inner/.mkd-grid-section wrapper the theme
-      // CSS (and per-page custom CSS keyed off el_class) requires, producing
-      // a ragged left-aligned stack instead of the real evenly-spaced grid.
       const rendered = renderChildren(children, ctx);
       if (!rendered.trim()) return "";
       const isGrid = attrs.content_width === "grid";
-      let rowClass = `vc_row wpb_row vc_inner vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
-      // Same default as vc_row above - VC/WPBakery defaults to "left" when
-      // content_aligment is omitted, it isn't a signal for "no class".
+      let rowClass = `vc_row wpb_row vc_row_inner vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
       rowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
       if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
+      
+      const declarations = [vcCssDeclarations(attrs.css)];
+      
+      let bgImageUrl: string | null = null;
+      let hasBgImage = false;
+      const cleanedDeclarations = declarations.filter(Boolean).map(decl => {
+        let clean = decl;
+        if (clean.includes("background-image") || clean.includes("background:")) {
+          const match = clean.match(/url\(([^)]+)\)/i);
+          if (match) {
+            bgImageUrl = match[1].replace(/['"]/g, "").trim();
+            hasBgImage = true;
+            clean = clean.replace(/url\(([^)]+)\)/i, "");
+            clean = clean.replace(/background-image\s*:\s*[^;]+;?/i, "");
+            // If it was shorthand background: it's trickier to fully strip, but we removed the url.
+            // Let's strip the whole background property if it had url to be safe and use our custom bg markup
+            if (clean.includes("background:")) {
+               clean = clean.replace(/background\s*:\s*[^;]+;?/i, "");
+            }
+          }
+        }
+        return clean;
+      });
+
+      const finalDeclarations = cleanedDeclarations.map(decl => {
+        if (hasBgImage) {
+          return decl
+            .replace(/margin-top\s*:\s*[^;]+;?/gi, "")
+            .replace(/margin-bottom\s*:\s*[^;]+;?/gi, "");
+        }
+        return decl;
+      });
+
+      if (hasBgImage) {
+        rowClass += " vc-row-with-bg";
+      }
+
+      const style = finalDeclarations.filter(Boolean).join(";");
+      const bgMarkup = bgImageUrl ? `
+        <div class="vc-row-bg-image" style="background-image: url('${esc(bgImageUrl)}');"></div>
+        <div class="vc-row-bg-overlay"></div>
+      ` : "";
+
       const inner = isGrid
-        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${rendered}</div></div>`
-        : `<div class="clearfix mkd-full-section-inner">${rendered}</div>`;
-      return `<div class="${rowClass}"${vcCustomStyle(attrs.css)}>${inner}</div>`;
+        ? `<div class="clearfix mkd-section-inner"><div class="mkd-section-inner-margin clearfix">${bgMarkup}${rendered}</div></div>`
+        : `<div class="clearfix mkd-full-section-inner">${bgMarkup}${rendered}</div>`;
+      
+      return `<div class="${rowClass}"${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
     }
 
     case "vc_column":
