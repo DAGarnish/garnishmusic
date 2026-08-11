@@ -3,12 +3,12 @@ import Stripe from "stripe";
 import { getPayloadClient } from "../../../lib/get-payload";
 
 // This is a scaffold. You'll need to set STRIPE_SECRET_KEY in .env
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2024-06-20",
-});
-
 export async function POST(req: Request) {
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+      apiVersion: "2026-07-29.dahlia",
+    });
+
     const { items, siteDomain } = await req.json();
 
     if (!items || items.length === 0) {
