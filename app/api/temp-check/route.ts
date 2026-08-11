@@ -3,18 +3,20 @@ import { getPayloadClient } from "../../../lib/get-payload";
 
 export async function GET() {
   const payload = await getPayloadClient();
-  const pages = await payload.find({
-    collection: "pages",
-    where: { slug: { equals: "courses/ableton-live" } },
-    limit: 1
+  const products = await payload.find({
+    collection: "products",
+    where: { slug: { like: "electronic-dj" } },
+    limit: 100,
+    depth: 1
   });
 
-  if (pages.docs.length === 0) {
-    return NextResponse.json({ error: "Not found" });
-  }
-
-  const doc = pages.docs[0];
   return NextResponse.json({
-    content: (doc as any).wpRawContent,
+    products: products.docs.map((d: any) => ({
+      slug: d.slug,
+      id: d.id,
+      site: typeof d.site === "object" ? d.site?.domain : d.site,
+      price: d.price,
+      variations: d.variations
+    }))
   });
 }
