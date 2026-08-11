@@ -599,7 +599,7 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       }
       const style = declarations.filter(Boolean).map(decl => {
         return decl
-          .replace(/(margin-top|margin-bottom|padding-top|padding-bottom)\s*:\s*(32|50|60|64|70|80)px/gi, "$1: 16px");
+          .replace(/(margin-top|margin-bottom)\s*:\s*(32|50|60|64|70|80)px/gi, "$1: 16px");
       }).join(";");
 
       return `<div class="${rowClass}"${extraAttrs}${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
@@ -628,7 +628,7 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       let declarations = [vcCssDeclarations(attrs.css)];
       const style = declarations.filter(Boolean).map(decl => {
         return decl
-          .replace(/(margin-top|margin-bottom|padding-top|padding-bottom)\s*:\s*(32|50|60|64|70|80)px/gi, "$1: 16px");
+          .replace(/(margin-top|margin-bottom)\s*:\s*(32|50|60|64|70|80)px/gi, "$1: 16px");
       }).join(";");
       return `<div class="${rowClass}"${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
     }
