@@ -419,9 +419,3 @@ footer {
 .vc_row:last-child {
   margin-bottom: 0 !important;
 }
-
-/* Force all text inside WPBakery/Mikado accordions to black to fix legibility */
-.mkd-accordion-content,
-.mkd-accordion-content * {
-  color: #000 !important;
-}
