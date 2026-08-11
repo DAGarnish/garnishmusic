@@ -719,7 +719,7 @@ export default async function CatchAllPage({ params }: Args) {
                 })()
               ) : (
                 <>
-                  {type === "product" && (
+                  {type === "product" && slug.join("/") !== "product/electronic-dj-class" && (
                     <div className="mkd-container" style={{ paddingTop: "40px" }}>
                       <div className="mkd-container-inner" style={{ padding: "0 20px" }}>
                         {(("price" in doc && doc.price != null) || ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)) && (
@@ -759,7 +759,7 @@ export default async function CatchAllPage({ params }: Args) {
                     )}
                   </div>
                 )}
-                {type === "product" && (
+                {type === "product" && slug.join("/") !== "product/electronic-dj-class" && (
                   ("price" in doc && doc.price != null) || 
                   ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)
                 ) && (
@@ -817,6 +817,26 @@ export default async function CatchAllPage({ params }: Args) {
           })()}
         </div>
       </div>
+      {slug.join("/") === "product/electronic-dj-class" && (
+        <div style={{ display: "flex", justifyContent: "center", padding: "40px 20px" }}>
+          <div dangerouslySetInnerHTML={{ __html: `
+            <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+              <stripe-buy-button
+                buy-button-id="buy_btn_1U3AR8RoaD4TdO3IShNlrEix"
+                publishable-key="pk_live_51PvISyRoaD4TdO3I9U2ye4ornQhhV6DIPdYinqHAWK18LzidOfvhGi36obyDiHCFX02sWOsIzkj9lkwhrDWS4QPW00QqY1EMa8"
+              >
+              </stripe-buy-button>
+              
+              <stripe-buy-button
+                buy-button-id="buy_btn_1U3AX1RoaD4TdO3IUKZYx0Uf"
+                publishable-key="pk_live_51PvISyRoaD4TdO3I9U2ye4ornQhhV6DIPdYinqHAWK18LzidOfvhGi36obyDiHCFX02sWOsIzkj9lkwhrDWS4QPW00QqY1EMa8"
+              >
+              </stripe-buy-button>
+            </div>
+          ` }} />
+        </div>
+      )}
       <Footer site={site} />
     </>
   );
