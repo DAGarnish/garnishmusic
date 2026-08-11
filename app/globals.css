@@ -388,27 +388,27 @@ div.mkd-title .mkd-title-holder h1 {
 
 /* Reduce gaps before/after footer and header title */
 footer {
-  margin-top: 32px !important;
-  padding-bottom: 32px !important;
+  margin-top: 16px !important;
+  padding-bottom: 16px !important;
 }
 
 .mkd-title {
-  margin-bottom: 32px !important;
+  margin-bottom: 16px !important;
 }
 
-/* Globally reduce default section spacing from 50px/64px down to 32px */
+/* Globally reduce default section spacing from 50px/64px down to 16px */
 .mkd-course-page > .mkd-container-inner,
 .mkd-course-page > .mkd-full-width-inner {
-  padding-top: 32px !important;
-  padding-bottom: 32px !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
 }
 
 .mkd-section,
 .vc_row {
-  padding-top: 32px !important;
-  padding-bottom: 32px !important;
-  margin-top: 32px !important;
-  margin-bottom: 32px !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
 }
 
 /* Remove excessive spacing for first/last children */
