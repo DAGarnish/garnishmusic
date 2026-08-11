@@ -476,3 +476,12 @@ footer {
   margin-bottom: 0 !important;
 }
 
+/* Make inner rows with backgrounds span the full page width, breaking out of parent grid constraints */
+.vc_row_inner.vc-row-with-bg {
+  width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  max-width: 100vw !important;
+  border-radius: 0 !important; /* Spanning full width means edge-to-edge, no curves on the sides */
+}
+

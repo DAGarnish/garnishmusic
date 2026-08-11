@@ -639,10 +639,10 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     case "vc_row_inner": {
       const rendered = renderChildren(children, ctx);
       if (!rendered.trim()) return "";
-      const isGrid = attrs.content_width === "grid";
-      let rowClass = `vc_row wpb_row vc_row_inner vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
-      rowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
-      if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
+      let initialIsGrid = attrs.content_width === "grid";
+      let initialRowClass = `vc_row wpb_row vc_row_inner vc_row-fluid mkd-section${initialIsGrid ? " mkd-grid-section" : ""}`;
+      initialRowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
+      if (attrs.el_class) initialRowClass += ` ${attrs.el_class}`;
       
       const declarations = [vcCssDeclarations(attrs.css)];
       
@@ -666,6 +666,13 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
         }
         return clean;
       });
+
+      // If a vc_row_inner has a background image, we break it out to full viewport width via CSS.
+      // Therefore, its content MUST be wrapped in the grid container so it remains centered.
+      const isGrid = initialIsGrid || hasBgImage;
+      let rowClass = `vc_row wpb_row vc_row_inner vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
+      rowClass += ` mkd-content-aligment-${attrs.content_aligment || "left"}`;
+      if (attrs.el_class) rowClass += ` ${attrs.el_class}`;
 
       const finalDeclarations = cleanedDeclarations.map(decl => {
         if (hasBgImage) {
