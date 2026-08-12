@@ -8,6 +8,7 @@ import Footer from "../../../components/Footer";
 import Sidebar from "../../../components/Sidebar";
 import PortfolioShare from "../../../components/PortfolioShare";
 import AddToCart from "../../../components/AddToCart";
+import PayPalHostedButtons from "../../../components/PayPalHostedButtons";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
 import { buildImageResolver } from "../../../lib/wp-image-resolver";
@@ -825,51 +826,7 @@ export default async function CatchAllPage({ params }: Args) {
           })()}
         </div>
       </div>
-      {slug.join("/") === "product/electronic-dj-class" && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "40px 20px", width: "100%" }}>
-          <div style={{ width: "100%", maxWidth: "800px" }} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
-<div style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; width: 100%;">
-  <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; alignItems: center; text-align: center;">
-    <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">DJ Class Early Bird Registration</h3>
-    <p style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;">$500</p>
-    <script>
-      (function() {
-        if (typeof window !== 'undefined' && !window._paypalConsolePatched) {
-          window._paypalConsolePatched = true;
-          var originalError = console.error;
-          console.error = function() {
-            if (arguments.length > 0 && typeof arguments[0] === 'string' && arguments[0].includes('ncps_standalone_paylater_ineligible')) {
-              return;
-            }
-            originalError.apply(console, arguments);
-          };
-        }
-      })();
-    </script>
-    <script src="https://www.paypal.com/sdk/js?client-id=BAAGqy4Q23H-Hh2w6mcbc7lUaoiHNKwWisufASZCcCctIVfykddWdmckI-yE4nGsONyKpgD8mHeXyLUca0&components=hosted-buttons&enable-funding=venmo&disable-funding=paylater&currency=USD"></script>
-    <div id="paypal-container-DVBYCLCZLAZ34" style="width: 100%;"></div>
-    <script>
-      paypal.HostedButtons({
-        hostedButtonId: "DVBYCLCZLAZ34",
-      }).render("#paypal-container-DVBYCLCZLAZ34")
-    </script>
-  </div>
-  
-  <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; alignItems: center; text-align: center;">
-    <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">DJ Class Registration</h3>
-    <p style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;">$600</p>
-    
-    <div id="paypal-container-6E64BWEW8RLQN" style="width: 100%;"></div>
-    <script>
-      paypal.HostedButtons({
-        hostedButtonId: "6E64BWEW8RLQN",
-      }).render("#paypal-container-6E64BWEW8RLQN")
-    </script>
-  </div>
-</div>
-          ` }} />
-        </div>
-      )}
+      {slug.join("/") === "product/electronic-dj-class" && <PayPalHostedButtons />}
       <Footer site={site} />
     </>
   );
