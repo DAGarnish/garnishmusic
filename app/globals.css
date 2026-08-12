@@ -425,3 +425,37 @@ footer {
 .mkd-accordion-content * {
   color: #000 !important;
 }
+
+/* Force all general content text to be black and not faded */
+.wpb_text_column,
+.wpb_text_column p,
+.wpb_text_column span,
+.wpb_text_column li,
+.mkd-accordion-holder,
+.mkd-accordion-holder p,
+.mkd-accordion-holder span {
+  color: #000 !important;
+  opacity: 1 !important;
+}
+
+/* Aggressively remove all margins between accordion items so they touch */
+.mkd-accordion-holder {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.mkd-accordion-holder .mkd-title-holder {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.vc_row.mkd-section:has(.mkd-accordion), 
+.vc_row_inner:has(.mkd-accordion),
+.wpb_column:has(.mkd-accordion) > .vc_column-inner,
+.wpb_wrapper:has(.mkd-accordion) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.wpb_wrapper:has(.mkd-accordion) > .vc_empty_space {
+  display: none !important;
+}
