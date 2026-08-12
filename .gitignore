@@ -45,3 +45,4 @@ next-env.d.ts
 /garnishmusic.db
 /media
 payload-types.ts
+products_dump.json
