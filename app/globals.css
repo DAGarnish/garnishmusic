@@ -386,9 +386,11 @@ div.mkd-title .mkd-title-holder h1 {
 .raw-html-block img { max-width: 100%; height: auto; }
 .raw-html-block hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
 
-/* Reduce gaps before/after footer and header title */
+/* Remove gap before footer (matches the sitewide override already injected
+   by Header.tsx - kept in sync here so this stylesheet doesn't silently
+   disagree with it) and reduce padding after footer content. */
 footer {
-  margin-top: 16px !important;
+  margin-top: 0 !important;
   padding-bottom: 16px !important;
 }
 
