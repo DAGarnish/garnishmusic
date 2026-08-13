@@ -54,7 +54,37 @@ type RenderContext = {
   resolveHeroSlider: HeroSliderResolver;
   resolveBlogList: BlogListResolver;
   partners: PartnerItem[];
+  // Mutated in place (not replaced) so every renderNode call sharing this
+  // ctx object sees the same flag - lets the first [vc_row] encountered in
+  // document order (i.e. the section immediately under the page's hero)
+  // identify itself, without threading an index through every renderChildren
+  // call site.
+  firstRowState: { done: boolean };
 };
+
+// The gap between the hero and the first content row is authored per-page
+// in WordPress as arbitrary margin-top/padding-top on that row's [vc_row
+// css="..."] - some pages stack a generous margin AND a generous padding
+// (e.g. /music/composition/'s margin-top:50px + padding-top:64px = 80px),
+// producing a much larger visible gap than the theme intends. Cap just the
+// combined top spacing of that one row to 32px, and only shrink it (never
+// grow it), so pages whose hero gap already reads fine are left untouched.
+function clampFirstRowTopGap(css: string): string {
+  const maxTotal = 32;
+  const marginMatch = css.match(/margin-top\s*:\s*(\d+(?:\.\d+)?)px/i);
+  const paddingMatch = css.match(/padding-top\s*:\s*(\d+(?:\.\d+)?)px/i);
+  const marginTop = marginMatch ? parseFloat(marginMatch[1]) : 0;
+  const paddingTop = paddingMatch ? parseFloat(paddingMatch[1]) : 0;
+  if (marginTop + paddingTop <= maxTotal) return css;
+  let result = css;
+  if (marginMatch) result = result.replace(marginMatch[0], "margin-top: 0px");
+  if (paddingMatch) {
+    result = result.replace(paddingMatch[0], `padding-top: ${maxTotal}px`);
+  } else {
+    result += `;padding-top: ${maxTotal}px`;
+  }
+  return result;
+}
 
 // WPBakery's link-picker widget (used by vc_btn and others) stores its
 // value as "url:ENCODED|title:ENCODED|target:VALUE", not a bare URL.
@@ -559,6 +589,12 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // "grid" (boxed) adds .mkd-grid-section to the row and wraps children
       // in .mkd-section-inner (centered, 1300px) + .mkd-section-inner-margin.
       // Matches the real theme CSS exactly, rather than an ad-hoc guess.
+      // Captured before recursing into this row's own children below, so a
+      // nested [vc_row] (rare, but structurally possible) can never steal
+      // this flag from the outer/top-level row that actually sits right
+      // under the hero.
+      const isFirstRow = !ctx.firstRowState.done;
+      ctx.firstRowState.done = true;
       const isGrid = attrs.content_width === "grid";
       let rowClass = `vc_row wpb_row vc_row-fluid mkd-section${isGrid ? " mkd-grid-section" : ""}`;
       // Visual Composer/WPBakery defaults content_aligment to "left" when the
@@ -597,10 +633,11 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
           declarations.push(`background-image:url(${bgUrl})`);
         }
       }
-      const style = declarations.filter(Boolean).map(decl => {
+      let style = declarations.filter(Boolean).map(decl => {
         return decl
           .replace(/(margin-top|margin-bottom)\s*:\s*(32|50|60|64|70|80)px/gi, "$1: 16px");
       }).join(";");
+      if (isFirstRow) style = clampFirstRowTopGap(style);
 
       return `<div class="${rowClass}"${extraAttrs}${style ? ` style="${esc(style)};"` : ""}>${inner}</div>`;
     }
@@ -1195,6 +1232,7 @@ export function wpContentToStyledHtml(
     resolveHeroSlider,
     resolveBlogList,
     partners,
+    firstRowState: { done: false },
   });
 }
 // force rebuild for accordion revert
