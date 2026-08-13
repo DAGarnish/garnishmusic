@@ -403,6 +403,13 @@ footer {
   padding-bottom: 16px !important;
 }
 
+/* buro-modules.css sets .mkd-portfolio-single-holder { margin-bottom: 84px },
+   which on course/instructor singular pages leaves a large white gap between
+   the content and the footer. */
+.mkd-portfolio-single-holder {
+  margin-bottom: 16px !important;
+}
+
 .mkd-section,
 .vc_row {
   margin-top: 16px !important;
