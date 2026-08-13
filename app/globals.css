@@ -459,3 +459,15 @@ footer {
 .wpb_wrapper:has(.mkd-accordion) > .vc_empty_space {
   display: none !important;
 }
+/* The malformed <p><div class="mkd-accordion-holder">...</div></p> markup makes the
+   browser split each accordion out into its own stray empty <p> siblings, which is
+   what actually creates the visible gap between modules (not the holder's own margin). */
+.mkd-accordion-holder + p,
+p:has(+ .mkd-accordion-holder) {
+  display: none !important;
+}
+/* Stray <br> tags left directly inside each holder (before/after the h5) from the
+   same malformed markup add extra height even while the panel is collapsed. */
+.mkd-accordion-holder > br {
+  display: none !important;
+}
