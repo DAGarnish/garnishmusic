@@ -792,6 +792,12 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       const styleParts: string[] = [];
       if (attrs.text_size) styleParts.push(`font-size: ${attrs.text_size}px`);
       if (attrs.text_align) styleParts.push(`text-align: ${attrs.text_align}`);
+      // text_color was silently dropped, so shortcodes authored with it
+      // (e.g. white titles over a dark bg-1 photo) always rendered in the
+      // browser's default black - !important since this sits inside the
+      // same globals.css .wpb_text_column color: #000 !important scope as
+      // every other white-on-dark text fix in this codebase.
+      if (attrs.text_color) styleParts.push(`color: ${attrs.text_color} !important`);
       const style = styleParts.length ? ` style="${esc(styleParts.join("; "))}"` : "";
       return `<h2 class="mkd-section-title"${style}>${esc(attrs.title_text || "")}</h2>`;
     }

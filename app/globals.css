@@ -556,6 +556,23 @@ p:has(+ .mkd-accordion-holder) {
   .alignment-of-images {
     margin-top: 0 !important;
   }
+
+  /* Classic-editor float classes (e.g. an instructor photo floated left
+     of their name/bio text, as on la's music-production-instructors-los-
+     angeles page) rely on the floated image being short enough that
+     following text clears below it once the float's height runs out.
+     On a narrow phone column that assumption breaks per-photo - taller
+     or differently-cropped images push the next heading/paragraph to
+     wrap in the remaining sliver beside the image instead of starting
+     cleanly underneath, and where exactly the wrap happens differs image
+     to image. Stack image and text on mobile regardless of photo size. */
+  .alignleft,
+  .alignright {
+    float: none !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 }
 
 /* mkd_elements_holder_item's item_padding attribute (and its
