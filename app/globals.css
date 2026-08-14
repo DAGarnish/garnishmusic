@@ -33,9 +33,21 @@ body {
   height: auto;
 }
 
+/* display: inline overrides Tailwind preflight's img { display: block },
+   which broke the WordPress content pattern of centering an image via a
+   wrapping <p style="text-align: center"> - restoring inline display lets
+   that still-present inline styling center the image as originally authored. */
 .wpb-content-wrapper img:not([style*="position: absolute"]) {
   max-width: 100%;
   height: auto;
+  display: inline;
+}
+
+/* wp-image-10984 is the "Apply Now" / academy application button graphic,
+   reused across every site in the network. Give it breathing room from
+   whatever follows it (often the footer directly). */
+.wpb-content-wrapper img.wp-image-10984 {
+  margin-bottom: 32px;
 }
 
 /* WordPress's own "size-full" class (meaning "this attachment's original
