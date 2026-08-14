@@ -51,7 +51,7 @@ export default function ConsultationPopup() {
         </button>
         <div className="consultation-popup-image">
           <img
-            src="https://sea.garnishmusicproduction.com/wp-content/uploads/sites/21/2019/03/53841454_410839762822247_6902924111610118144_n.jpg"
+            src="/api/media/file/53841454_410839762822247_6902924111610118144_n-3.jpg"
             alt=""
           />
         </div>
