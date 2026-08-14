@@ -518,6 +518,27 @@ p:has(+ .mkd-accordion-holder) {
     width: 100% !important;
     float: none !important;
   }
+
+  /* The stacking above turns each "Some of our partners" row (see
+     renderPartners in wp-shortcode-render.ts) from 4 logos side by side
+     into 4 full-width blocks - but WPBakery's column padding is
+     horizontal only (15px left/right, no vertical margin), so once
+     stacked the logos sit with zero gap between them, each one's bottom
+     edge touching the next one's top edge. Give stacked partner logos
+     breathing room on mobile. */
+  .alignment-of-images .vc_column_container {
+    margin-bottom: 24px !important;
+  }
+  /* Sibling .alignment-of-images rows (one per 4 logos - renderPartners
+     splits all 12 into three) carry their own 16px margin-top from the
+     theme's row-to-row spacing, which made the gap between the last logo
+     of one row and the first of the next only 16px while every other gap
+     was the 24px above - an inconsistent rhythm down the stack. Zero it
+     so the 24px column margin is the only source of spacing, uniform
+     across every logo including across row boundaries. */
+  .alignment-of-images {
+    margin-top: 0 !important;
+  }
 }
 
 /* mkd_elements_holder_item's item_padding attribute (and its
