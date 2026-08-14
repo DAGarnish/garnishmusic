@@ -728,7 +728,7 @@ export default async function CatchAllPage({ params }: Args) {
                 })()
               ) : (
                 <>
-                  {type === "product" && slug.join("/") !== "product/electronic-dj-class" && (
+                  {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && (
                     <div className="mkd-container" style={{ paddingTop: "40px" }}>
                       <div className="mkd-container-inner" style={{ padding: "0 20px" }}>
                         {(("price" in doc && doc.price != null) || ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)) && (
@@ -768,8 +768,8 @@ export default async function CatchAllPage({ params }: Args) {
                     )}
                   </div>
                 )}
-                {type === "product" && slug.join("/") !== "product/electronic-dj-class" && (
-                  ("price" in doc && doc.price != null) || 
+                {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && (
+                  ("price" in doc && doc.price != null) ||
                   ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)
                 ) && (
                   <AddToCart product={doc} variations={(doc as any).variations || []} />
