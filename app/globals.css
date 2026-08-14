@@ -148,6 +148,23 @@ body {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
 }
 
+/* Each hero slider layer's colored background box (e.g. the homepage
+   sliders' red "In a Pro Studio Setting" banner) gets its font-size and
+   padding as an inline style per layer (see renderHeroSlider), sized for
+   desktop. On phones that box ends up dominating the whole slide instead
+   of reading as a caption. Scaling the shared wrapper down to half size
+   shrinks every layer inside it - text, padding, and background box -
+   proportionally in one move, without needing to know or override each
+   layer's own inline values individually. Same breakpoint as
+   .mkd-hero-slider's own height reduction above, for one consistent
+   "phone" tier for this component. transform doesn't change the flex
+   layout box used to center it, so it stays centered, just smaller. */
+@media (max-width: 600px) {
+  .mkd-hero-slide-text {
+    transform: scale(0.5);
+  }
+}
+
 /* Modern spacing between content sections. The theme itself has no default
    row spacing (.mkd-section only sets position:relative) - gaps on
    production come from each row's own vc_empty_space shortcodes. Rows that
