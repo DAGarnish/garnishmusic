@@ -13,11 +13,19 @@ export async function buildPortfolioListResolver(
   // JS carousel, which doesn't need to run for the images to show. Its
   // category attribute can hold a comma-separated list (e.g. "ableton,
   // sound-design, logic"), unlike mkd_portfolio_list's single slug.
+  // Category slugs are always lowercase (Payload's slug field normalizes
+  // on save - confirmed against every category in this network), but
+  // shortcode authors typed this attribute by hand and didn't reliably
+  // match that casing (e.g. courses/dj-course's own "Meet Our World-Class
+  // Instructors" section uses category="DJ", not "dj" - silently
+  // rendering nothing this whole time, confirmed live). Lowercase here so
+  // the query below actually finds the category regardless of how the
+  // shortcode capitalized it.
   const categorySlugs = new Set<string>();
   for (const m of (rawContent || "").matchAll(/\[mkd_portfolio_(?:list|slider)[^\]]*\bcategory="([^"]*)"/g)) {
     if (!m[1]) continue;
     for (const slug of m[1].split(",")) {
-      const trimmed = slug.trim();
+      const trimmed = slug.trim().toLowerCase();
       if (trimmed) categorySlugs.add(trimmed);
     }
   }
@@ -88,7 +96,7 @@ export async function buildPortfolioListResolver(
   }
 
   return (categorySlug: string) => {
-    let list = map.get(categorySlug) || [];
+    let list = map.get(categorySlug.trim().toLowerCase()) || [];
     
     // Globally remove Release Party from portfolio grids
     list = list.filter(i => !i.href.includes("release-party"));
