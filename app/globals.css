@@ -519,3 +519,44 @@ p:has(+ .mkd-accordion-holder) {
     float: none !important;
   }
 }
+
+/* mkd_elements_holder_item's item_padding attribute (and its
+   item_padding_W_H / item_padding_W responsive variants) is passed
+   through from wp-shortcode-render.ts as CSS custom properties, since a
+   plain inline `padding` can't vary by breakpoint. This is the one static
+   rule set that reads whichever custom property applies at the current
+   width. It matters most for a holder item that's only a background
+   image with no text content (e.g. the homepage's Garnish LA Artist
+   Services row): once buro-modules-responsive.css's own
+   .mkd-responsive-mode-* breakpoints below switch it from table-cell to
+   display:inline-block + height:auto, an empty div has nothing else
+   giving it height, so without this padding it collapses to 0px and the
+   image disappears entirely instead of stacking above the text. */
+.mkd-elements-holder-item {
+  padding: var(--item-padding, 0);
+}
+@media (max-width: 1280px) and (min-width: 1024px) {
+  .mkd-elements-holder-item {
+    padding: var(--item-padding-1024-1280, var(--item-padding, 0));
+  }
+}
+@media (max-width: 1024px) and (min-width: 768px) {
+  .mkd-elements-holder-item {
+    padding: var(--item-padding-768-1024, var(--item-padding, 0));
+  }
+}
+@media (max-width: 768px) and (min-width: 600px) {
+  .mkd-elements-holder-item {
+    padding: var(--item-padding-600-768, var(--item-padding, 0));
+  }
+}
+@media (max-width: 600px) and (min-width: 480px) {
+  .mkd-elements-holder-item {
+    padding: var(--item-padding-480-600, var(--item-padding, 0));
+  }
+}
+@media (max-width: 480px) {
+  .mkd-elements-holder-item {
+    padding: var(--item-padding-480, var(--item-padding, 0));
+  }
+}

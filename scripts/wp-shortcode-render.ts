@@ -844,7 +844,18 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // columns stretch to equal height for free. No inline style needed;
       // adding our own flex layout here just fights the theme's own rule.
       const colClass = attrs.number_of_columns ? ` mkd-${esc(attrs.number_of_columns)}` : "";
-      return `<div class="mkd-elements-holder${colClass}">${renderChildren(children, ctx)}</div>`;
+      // buro-modules-responsive.css only drops the table-cell layout for
+      // .mkd-elements-holder-item (stacking columns full-width instead of
+      // squeezing them side by side, e.g. the LA homepage's Paris Hilton
+      // testimonial or Garnish LA Artist Services image+text row) when the
+      // holder also carries a "mkd-responsive-mode-{width}" class - the
+      // shortcode's own responsive_mode param, which WPBakery's param
+      // definition defaults to 768 and which 0 of 694 real usages in this
+      // network's content ever override, so the source data never carries
+      // it explicitly (confirmed across pages/products/posts). Without this
+      // class every multi-column holder stayed side-by-side at every width.
+      const responsiveMode = attrs.responsive_mode || "768";
+      return `<div class="mkd-elements-holder${colClass} mkd-responsive-mode-${esc(responsiveMode)}">${renderChildren(children, ctx)}</div>`;
     }
 
     case "mkd_elements_holder_item": {
@@ -854,20 +865,31 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // display), not an absolutely-positioned <img> child.
       const bgId = attrs.background_image;
       const bgUrl = bgId ? ctx.resolveImage(bgId) : undefined;
-      const bgStyle = bgUrl ? ` style="background-image: url(${esc(bgUrl)}); background-position: center;"` : "";
-      // item_padding is "top right bottom left" in percent (WPBakery/Mikado
-      // convention - percentages are of the column's own width, giving the
-      // generous, viewport-scaling gutters production actually has). Only
-      // the desktop value is handled; the responsive item_padding_W_H
-      // variants would need real media queries to do properly, so at
-      // narrower widths content just falls back to no padding rather than
-      // the wrong desktop spacing.
-      const padding = attrs.item_padding;
+      const bgStyle = bgUrl ? `background-image: url(${esc(bgUrl)}); background-position: center; ` : "";
+      // item_padding (base) and its item_padding_W_H / item_padding_W
+      // responsive variants are "top right bottom left" in percent
+      // (WPBakery/Mikado convention - percentages are of the column's own
+      // width). These are passed through as CSS custom properties rather
+      // than applied as a real `padding` here, because a fixed inline value
+      // can't vary by breakpoint - globals.css reads whichever one applies
+      // at the current width via a single static rule set. This matters
+      // most for an item that's only a background image with no text
+      // content (like the two examples above): once the holder's
+      // responsive-mode class drops table-cell layout for display:
+      // inline-block + height:auto at that same breakpoint (see
+      // mkd_elements_holder above), an empty div has nothing else giving it
+      // height, so it collapses to 0px and the image disappears - the
+      // padding is what's supposed to give it height instead.
+      const paddingVars: string[] = [];
+      if (attrs.item_padding) paddingVars.push(`--item-padding: ${esc(attrs.item_padding)}`);
+      if (attrs.item_padding_1024_1280) paddingVars.push(`--item-padding-1024-1280: ${esc(attrs.item_padding_1024_1280)}`);
+      if (attrs.item_padding_768_1024) paddingVars.push(`--item-padding-768-1024: ${esc(attrs.item_padding_768_1024)}`);
+      if (attrs.item_padding_600_768) paddingVars.push(`--item-padding-600-768: ${esc(attrs.item_padding_600_768)}`);
+      if (attrs.item_padding_480_600) paddingVars.push(`--item-padding-480-600: ${esc(attrs.item_padding_480_600)}`);
+      if (attrs.item_padding_480) paddingVars.push(`--item-padding-480: ${esc(attrs.item_padding_480)}`);
+      const style = bgStyle + (paddingVars.length ? paddingVars.join("; ") + ";" : "");
       const content = renderChildren(children, ctx);
-      const paddedContent = padding
-        ? `<div style="padding: ${esc(padding)};">${content}</div>`
-        : content;
-      return `<div class="mkd-elements-holder-item"${bgStyle}>${paddedContent}</div>`;
+      return `<div class="mkd-elements-holder-item"${style ? ` style="${style}"` : ""}>${content}</div>`;
     }
 
     case "vc_raw_html": {
