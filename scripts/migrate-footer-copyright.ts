@@ -23,7 +23,7 @@ function top(inner: string): string {
 
 const DATA: Record<string, { top?: string; bottom?: string }> = {
   "bcn.garnishmusicproduction.com": {
-    top: `<p ${P_STYLE}>Copyright © Garnish Music Production School Berlin | Leuschnerdamm 31. 10999 Berlin, Germany</p><p ${P_STYLE}>All rights reserved</p>`,
+    top: `<p ${P_STYLE}>Copyright © Garnish Music Production School Barcelona | Sant Ildefons 52 08030 Barcelona, España</p><p ${P_STYLE}>All rights reserved</p>`,
     bottom: `<p>Copyright © Garnish Music Production School LA, 7600 Melrose Avenue, Los Angeles, California, 90046, USA</p><p>All rights reserved</p>`,
   },
   "ber.garnishmusicproduction.com": {
@@ -67,7 +67,7 @@ const DATA: Record<string, { top?: string; bottom?: string }> = {
     bottom: `<p>Copyright © Garnish Music Production School LA, 7600 Melrose Avenue, Los Angeles, California, 90046, USA</p><p>All rights reserved</p>`,
   },
   "pdx.garnishmusicproduction.com": {
-    top: `<p ${P_STYLE}>Copyright © Garnish Music Production School Berlin | Leuschnerdamm 31. 10999 Berlin, Germany</p><p ${P_STYLE}>All rights reserved</p>`,
+    top: `<p ${P_STYLE}>Copyright © Garnish Music Production School</p><p ${P_STYLE}>All rights reserved</p>`,
     bottom: `<p>Copyright © Garnish Music Production School LA, 7600 Melrose Avenue, Los Angeles, California, 90046, USA</p><p>All rights reserved</p>`,
   },
   "sea.garnishmusicproduction.com": {
