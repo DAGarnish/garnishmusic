@@ -19,6 +19,16 @@ import { buildBlogListResolver } from "../../../lib/wp-blog-list-resolver";
 import { resolvePartners } from "../../../lib/wp-partners-resolver";
 import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
 import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
+import { createTtlCache } from "../../../lib/ttl-cache";
+
+// Same 30s-window tradeoff already accepted for site config in
+// sites-cache.ts: content edits can take up to this long to show up on a
+// warm server instance, in exchange for collapsing repeat requests (the
+// overwhelming majority of traffic to any given page) to zero DB round
+// trips instead of 1-7 per request (findContent's collection lookups, plus
+// the 6 parallel resolvers below).
+const contentCache = createTtlCache<Awaited<ReturnType<typeof findContentUncached>>>(30_000);
+const resolverCache = createTtlCache<unknown>(30_000);
 
 const EMPTY_RICHTEXT = {
   root: {
@@ -38,6 +48,12 @@ type Args = {
 const getSiteCached = cache(getCurrentSite);
 
 async function findContent(site: any, slugSegments: string[]) {
+  return contentCache(`${site.id}:${slugSegments.join("/")}`, () =>
+    findContentUncached(site, slugSegments)
+  );
+}
+
+async function findContentUncached(site: any, slugSegments: string[]) {
   const payload = await getPayloadClient();
   const siteId = site.id;
   const fullPath = slugSegments.join("/");
@@ -224,15 +240,38 @@ export default async function CatchAllPage({ params }: Args) {
     // themselves - confirmed no error is logged for those requests, only
     // very large proxy.ts/application-code timing numbers in the same
     // request's own log line).
+    // Cached the same way as findContent above, keyed off this doc's stable
+    // id. A content edit to this same doc.id is picked up within the 30s
+    // TTL window (same tradeoff sites-cache.ts already accepts for site
+    // config), while repeat requests for the same doc skip these 6 DB
+    // round trips entirely.
+    const resolverKey = `${site.id}:${doc.id}`;
     const [resolveImage, resolvePortfolioList, resolveTestimonials, resolveHeroSlider, resolveBlogList, partners] =
       await Promise.all([
-        buildImageResolver(site.id, doc.wpRawContent as string),
-        buildPortfolioListResolver(site.id, doc.wpRawContent as string),
-        buildTestimonialsResolver(site.id, doc.wpRawContent as string),
-        buildHeroSliderResolver(site.id, doc.wpRawContent as string),
-        buildBlogListResolver(site.id, doc.wpRawContent as string),
-        resolvePartners(doc.wpRawContent as string),
-      ]);
+        resolverCache(`${resolverKey}:image`, () =>
+          buildImageResolver(site.id, doc.wpRawContent as string)
+        ),
+        resolverCache(`${resolverKey}:portfolio`, () =>
+          buildPortfolioListResolver(site.id, doc.wpRawContent as string)
+        ),
+        resolverCache(`${resolverKey}:testimonials`, () =>
+          buildTestimonialsResolver(site.id, doc.wpRawContent as string)
+        ),
+        resolverCache(`${resolverKey}:heroSlider`, () =>
+          buildHeroSliderResolver(site.id, doc.wpRawContent as string)
+        ),
+        resolverCache(`${resolverKey}:blogList`, () =>
+          buildBlogListResolver(site.id, doc.wpRawContent as string)
+        ),
+        resolverCache(`${resolverKey}:partners`, () => resolvePartners(doc.wpRawContent as string)),
+      ]) as [
+        Awaited<ReturnType<typeof buildImageResolver>>,
+        Awaited<ReturnType<typeof buildPortfolioListResolver>>,
+        Awaited<ReturnType<typeof buildTestimonialsResolver>>,
+        Awaited<ReturnType<typeof buildHeroSliderResolver>>,
+        Awaited<ReturnType<typeof buildBlogListResolver>>,
+        Awaited<ReturnType<typeof resolvePartners>>,
+      ];
     styledHtml = wpContentToStyledHtml(
       doc.wpRawContent as string,
       resolveImage,
