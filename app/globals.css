@@ -492,3 +492,30 @@ p:has(+ .mkd-accordion-holder) {
 .mkd-accordion-holder > br {
   display: none !important;
 }
+
+/* WPBakery's bundled column CSS (js-composer.css) sets .vc_col-sm-N widths
+   unconditionally, with no responsive breakpoint - unlike real Bootstrap
+   "sm" columns, which only take that fractional width at 768px and up.
+   Below that, every multi-column row (most visibly a 50/50 image+text
+   split, e.g. the homepage's Paris Hilton testimonial: a circular photo
+   half-width next to a barely-readable sliver of quote text) stays two
+   floated, un-stacked columns squeezed into a narrow phone screen instead
+   of the intended full-width stacked layout. Restore that missing
+   breakpoint so columns stack edge-to-edge on mobile, same as they would
+   under stock Bootstrap 3. */
+@media (max-width: 767px) {
+  .vc_col-sm-1,
+  .vc_col-sm-2,
+  .vc_col-sm-3,
+  .vc_col-sm-4,
+  .vc_col-sm-5,
+  .vc_col-sm-6,
+  .vc_col-sm-7,
+  .vc_col-sm-8,
+  .vc_col-sm-9,
+  .vc_col-sm-10,
+  .vc_col-sm-11 {
+    width: 100% !important;
+    float: none !important;
+  }
+}
