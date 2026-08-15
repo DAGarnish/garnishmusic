@@ -26,7 +26,19 @@ export async function getCurrentSite() {
   const domain = resolveProductionDomain(host);
 
   const sites = await getAllSitesCached();
-  return sites.find((s: any) => s.domain === domain) || null;
+  const exact = sites.find((s: any) => s.domain === domain);
+  if (exact) return exact;
+
+  // A stray "www." in front of a subdomain site (e.g.
+  // www.la.garnishmusicproduction.com instead of the registered
+  // la.garnishmusicproduction.com) should still resolve to that site rather
+  // than hitting the "Site not found" fallback - same leniency isMainSite
+  // already gets via getUrlRewriteContext's own www-stripping.
+  if (domain.startsWith("www.")) {
+    return sites.find((s: any) => s.domain === domain.slice(4)) || null;
+  }
+
+  return null;
 }
 
 // Context needed to rewrite absolute production-domain URLs (baked into
