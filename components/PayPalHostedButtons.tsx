@@ -4,13 +4,13 @@ import { useEffect } from "react";
 import Script from "next/script";
 
 const PAYPAL_CLIENT_ID =
-  "BAAGqy4Q23H-Hh2w6mcbc7lUaoiHNKwWisufASZCcCctIVfykddWdmckI-yE4nGsONyKpgD8mHeXyLUca0";
+  "BAAUzaMgehCedeDyvY7WIsJ-mSWxROvI_RSV4gW-rZm3CrnRZmZTc0_G2PZsDwr5M9qONFqpuCWU2Pfibg";
 
-const PAYPAL_SDK_SRC = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&components=hosted-buttons&enable-funding=venmo&disable-funding=paylater&currency=USD`;
+const PAYPAL_SDK_SRC = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&components=hosted-buttons&enable-funding=venmo&currency=USD`;
 
 const HOSTED_BUTTONS = [
-  { id: "DVBYCLCZLAZ34", title: "DJ Class Early Bird Registration", price: "$500" },
-  { id: "6E64BWEW8RLQN", title: "DJ Class Registration", price: "$600" },
+  { id: "HN8269LYEWPSG", title: "DJ Class Early Bird Registration" },
+  { id: "3HMQH4RMLRBZJ", title: "DJ Class Regular Registration" },
 ];
 
 function renderHostedButtons() {
@@ -60,7 +60,6 @@ export default function PayPalHostedButtons() {
               }}
             >
               <h3 style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "0.5rem" }}>{title}</h3>
-              <p style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}>{price}</p>
               <div id={`paypal-container-${id}`} style={{ width: "100%" }} />
             </div>
           ))}

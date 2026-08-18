@@ -767,7 +767,7 @@ export default async function CatchAllPage({ params }: Args) {
                 })()
               ) : (
                 <>
-                  {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && (
+                  {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && slug.join("/") !== "product/electronic-music-dj-course" && (
                     <div className="mkd-container" style={{ paddingTop: "40px" }}>
                       <div className="mkd-container-inner" style={{ padding: "0 20px" }}>
                         {(("price" in doc && doc.price != null) || ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)) && (
@@ -776,7 +776,19 @@ export default async function CatchAllPage({ params }: Args) {
                       </div>
                     </div>
                   )}
-                  <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                  {slug.join("/") === "product/electronic-music-dj-course" ? (
+                    <details style={{ marginBottom: "2rem" }}>
+                      <summary style={{ cursor: "pointer", textAlign: "center", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem", color: "#ce1713" }}>
+                        View Course Schedule & Details
+                      </summary>
+                      <div style={{ padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
+                        <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                        <PayPalHostedButtons />
+                      </div>
+                    </details>
+                  ) : (
+                    <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                  )}
                 </>
               )
             ) : (
@@ -807,7 +819,7 @@ export default async function CatchAllPage({ params }: Args) {
                     )}
                   </div>
                 )}
-                {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && (
+                {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && slug.join("/") !== "product/electronic-music-dj-course" && (
                   ("price" in doc && doc.price != null) ||
                   ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)
                 ) && (
@@ -865,7 +877,7 @@ export default async function CatchAllPage({ params }: Args) {
           })()}
         </div>
       </div>
-      {slug.join("/") === "product/electronic-dj-class" && <PayPalHostedButtons />}
+      {(slug.join("/") === "product/electronic-dj-class" || slug.join("/") === "product/electronic-music-dj-course") && <PayPalHostedButtons />}
       <Footer site={site} />
     </>
   );
