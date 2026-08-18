@@ -618,14 +618,29 @@ p:has(+ .mkd-accordion-holder) {
 
 /* mia's courses/electronic-dj-course "Electronic Music DJ Class" intro
    row (marked with .electronic-dj-video-row - see
-   fix-mia-electronic-dj-course-video-row.ts): the video column
-   (vc_video el_aspect="916") sizes itself independently via a fixed
-   aspect-ratio padding trick, unrelated to the much taller text column
-   next to it. Two attempts at matching its height to the text column via
-   flex (percentage-height chain, then a flex-grow chain) both broke the
-   column widths instead - without a browser to verify against, reverted
-   to the theme's normal video sizing here rather than risk leaving the
-   video broken again. Revisit with visual verification available. */
+   fix-mia-electronic-dj-course-video-row.ts): js-composer.css's whole
+   .vc_col-sm-8/.vc_col-sm-4 float+width grid (what puts the video beside
+   the text instead of below it) only exists inside its own
+   @media(min-width:768px) block - below that, both columns silently have
+   no float and no width rule at all, so they fall back to plain
+   block-level 100%-wide boxes and stack. That's the real cause of the
+   video landing below the text (not the text-align fix below, which
+   doesn't touch layout) - confirmed against js-composer.css directly.
+   Force this one row's columns to stay side-by-side well below that
+   theme breakpoint, more specific than both the theme's own rule and
+   this file's own general mobile-stacking rule above (2 classes beats
+   1), so this page doesn't depend on the visitor's window happening to
+   clear 768px. Only true small-phone widths still stack. */
+@media (min-width: 480px) {
+  .electronic-dj-video-row .vc_col-sm-8 {
+    float: left !important;
+    width: 66.66666667% !important;
+  }
+  .electronic-dj-video-row .vc_col-sm-4 {
+    float: left !important;
+    width: 33.33333333% !important;
+  }
+}
 
 /* Same row's intro paragraph inherits text-align:center from the row's
    content_aligment="center" (globals .mkd-content-aligment-center rule),
