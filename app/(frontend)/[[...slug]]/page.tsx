@@ -76,6 +76,11 @@ const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: strin
     slotId: "logic-producer-program-schedule-slot",
     // No PayPal hosted buttons for this program yet.
   },
+  "courses/curso-de-dj-espanol": {
+    productSlug: "product/curso-de-dj-pro-en-espanol",
+    slotId: "curso-de-dj-espanol-schedule-slot",
+    // No PayPal hosted buttons for this course yet.
+  },
 };
 // The same products' own pages (visited directly) wrap their raw content in
 // an equivalent inline disclosure - see the ternary at its call site below.
