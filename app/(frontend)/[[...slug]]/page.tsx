@@ -53,6 +53,14 @@ const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: strin
       { id: "Q7QDJWEQ3CHFS", title: "Ableton Express Registration" },
     ],
   },
+  "courses/logic-course": {
+    productSlug: "product/logic-course",
+    slotId: "logic-course-schedule-slot",
+    paypalButtons: [
+      { id: "8D4NQG5Y6NRXA", title: "Logic Pro Early Bird Registration" },
+      { id: "2SPZLGQV8EKC6", title: "Logic Pro Registration" },
+    ],
+  },
 };
 // The same products' own pages (visited directly) wrap their raw content in
 // an equivalent inline disclosure - see the ternary at its call site below.
