@@ -9,6 +9,7 @@ import Sidebar from "../../../components/Sidebar";
 import PortfolioShare from "../../../components/PortfolioShare";
 import AddToCart from "../../../components/AddToCart";
 import PayPalHostedButtons from "../../../components/PayPalHostedButtons";
+import CourseScheduleDisclosure from "../../../components/CourseScheduleDisclosure";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
 import { buildImageResolver } from "../../../lib/wp-image-resolver";
@@ -29,6 +30,8 @@ import { createTtlCache } from "../../../lib/ttl-cache";
 // the 6 parallel resolvers below).
 const contentCache = createTtlCache<Awaited<ReturnType<typeof findContentUncached>>>(30_000);
 const resolverCache = createTtlCache<unknown>(30_000);
+const courseScheduleCache = createTtlCache<string | null>(30_000);
+const COURSE_SCHEDULE_SLOT_ID = "dj-course-schedule-slot";
 
 const EMPTY_RICHTEXT = {
   root: {
@@ -282,6 +285,67 @@ export default async function CatchAllPage({ params }: Args) {
       partners
     );
   }
+
+  // The DJ course schedule/pricing disclosure ("View Course Schedule &
+  // Details") lives on the product page's own doc, but also needs to
+  // render inside courses/electronic-dj-course's newsletter box - fetch and
+  // convert the product's content the same way as above, independently of
+  // whichever doc this request actually resolved to.
+  const isMiaDjCoursePage = site.slug === "mia" && slug.join("/") === "courses/electronic-dj-course";
+  const courseScheduleHtml = isMiaDjCoursePage
+    ? await courseScheduleCache(`${site.id}:product/electronic-music-dj-course:schedule`, async () => {
+        const payload = await getPayloadClient();
+        const productRes = await payload.find({
+          collection: "products",
+          where: { and: [{ site: { equals: site.id } }, { slug: { equals: "product/electronic-music-dj-course" } }] },
+          limit: 1,
+          depth: 0,
+        });
+        const productDoc = productRes.docs[0] as any;
+        if (!productDoc?.wpRawContent) return null;
+        const resolverKey = `${site.id}:${productDoc.id}:schedule`;
+        const [resolveImage, resolvePortfolioList, resolveTestimonials, resolveHeroSlider, resolveBlogList, partners] =
+          (await Promise.all([
+            resolverCache(`${resolverKey}:image`, () => buildImageResolver(site.id, productDoc.wpRawContent)),
+            resolverCache(`${resolverKey}:portfolio`, () => buildPortfolioListResolver(site.id, productDoc.wpRawContent)),
+            resolverCache(`${resolverKey}:testimonials`, () => buildTestimonialsResolver(site.id, productDoc.wpRawContent)),
+            resolverCache(`${resolverKey}:heroSlider`, () => buildHeroSliderResolver(site.id, productDoc.wpRawContent)),
+            resolverCache(`${resolverKey}:blogList`, () => buildBlogListResolver(site.id, productDoc.wpRawContent)),
+            resolverCache(`${resolverKey}:partners`, () => resolvePartners(productDoc.wpRawContent)),
+          ])) as [
+            Awaited<ReturnType<typeof buildImageResolver>>,
+            Awaited<ReturnType<typeof buildPortfolioListResolver>>,
+            Awaited<ReturnType<typeof buildTestimonialsResolver>>,
+            Awaited<ReturnType<typeof buildHeroSliderResolver>>,
+            Awaited<ReturnType<typeof buildBlogListResolver>>,
+            Awaited<ReturnType<typeof resolvePartners>>,
+          ];
+        return wpContentToStyledHtml(
+          productDoc.wpRawContent,
+          resolveImage,
+          resolvePortfolioList,
+          resolveTestimonials,
+          resolveHeroSlider,
+          resolveBlogList,
+          partners
+        );
+      })
+    : null;
+  // Marks the empty slot inside the "To be in the loop..." newsletter box
+  // (the same nested .wpb_wrapper the old "See Schedule" button used to
+  // occupy - see remove-schedules-buttons.ts) so CourseScheduleDisclosure
+  // can portal the schedule/buy-buttons panel into it client-side. Only an
+  // id attribute is added to the existing markup - unlike splicing React
+  // elements into the middle of the raw HTML string, this keeps styledHtml
+  // a single well-formed fragment, so server and client render identically
+  // and there's no hydration mismatch from unbalanced tags.
+  const courseScheduleSlotHtml =
+    isMiaDjCoursePage && courseScheduleHtml && styledHtml
+      ? styledHtml.replace(
+          '<div class="wpb_text_column wpb_content_element">\n<div class="wpb_wrapper">\n</div>\n</div>',
+          `<div class="wpb_text_column wpb_content_element">\n<div class="wpb_wrapper" id="${COURSE_SCHEDULE_SLOT_ID}"></div>\n</div>`
+        )
+      : null;
 
   if (type === "post") {
     const categories = "categories" in doc && Array.isArray(doc.categories) ? doc.categories : [];
@@ -748,8 +812,11 @@ export default async function CatchAllPage({ params }: Args) {
                                     <div
                                       className="mkd-portfolio-content"
                                       suppressHydrationWarning
-                                      dangerouslySetInnerHTML={{ __html: styledHtml }}
+                                      dangerouslySetInnerHTML={{ __html: courseScheduleSlotHtml ?? styledHtml }}
                                     />
+                                    {isMiaDjCoursePage && courseScheduleHtml && (
+                                      <CourseScheduleDisclosure targetId={COURSE_SCHEDULE_SLOT_ID} html={courseScheduleHtml} />
+                                    )}
                                   </div>
                                   <PortfolioShare
                                     title={doc.title}

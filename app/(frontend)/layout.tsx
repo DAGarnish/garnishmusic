@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "../globals.css";
 import { getCurrentSite } from "../../lib/current-site";
 import { Analytics } from "@vercel/analytics/react";
@@ -125,15 +124,19 @@ export default async function RootLayout({
         {site?.customCss && (
           <style id="wp-custom-css" dangerouslySetInnerHTML={{ __html: site.customCss }} />
         )}
+        {/* eslint-disable @next/next/no-sync-scripts -- intentional: see
+           themeScripts' own comment above for why these must block parsing
+           in document order rather than load async. */}
+        {themeScripts.map((src) => (
+          <script key={src} src={src} />
+        ))}
+        <script id="mkd-globals" dangerouslySetInnerHTML={{ __html: MKD_GLOBAL_VARS_SCRIPT }} />
+        {themeScriptsAfterGlobals.map((src) => (
+          <script key={src} src={src} />
+        ))}
+        {/* eslint-enable @next/next/no-sync-scripts */}
       </head>
       <body className="mkd-header-centered mkd-fixed-on-scroll mkd-default-mobile-header mkd-sticky-up-mobile-header mkd-dropdown-default mkd-dark-header mkd-header-style-on-scroll mkd-side-menu-slide-from-right">
-        {themeScripts.map((src) => (
-          <Script key={src} src={src} strategy="beforeInteractive" />
-        ))}
-        <Script id="mkd-globals" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: MKD_GLOBAL_VARS_SCRIPT }} />
-        {themeScriptsAfterGlobals.map((src) => (
-          <Script key={src} src={src} strategy="beforeInteractive" />
-        ))}
         <CartProvider>
           {children}
           <ConsultationPopup />
