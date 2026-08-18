@@ -615,3 +615,24 @@ p:has(+ .mkd-accordion-holder) {
     padding: var(--item-padding-480, var(--item-padding, 0));
   }
 }
+
+/* mia's courses/electronic-dj-course "Electronic Music DJ Class" intro
+   row (marked with .electronic-dj-video-row - see
+   fix-mia-electronic-dj-course-video-row.ts): the video column
+   (vc_video el_aspect="916") sizes itself independently via a fixed
+   aspect-ratio padding trick, unrelated to the much taller text column
+   next to it. Two attempts at matching its height to the text column via
+   flex (percentage-height chain, then a flex-grow chain) both broke the
+   column widths instead - without a browser to verify against, reverted
+   to the theme's normal video sizing here rather than risk leaving the
+   video broken again. Revisit with visual verification available. */
+
+/* Same row's intro paragraph inherits text-align:center from the row's
+   content_aligment="center" (globals .mkd-content-aligment-center rule),
+   which centers every line of the paragraph instead of the ragged-right,
+   flush-left look normal body copy should have. Scoped to .wpb_text_column
+   only, not the whole row, so the two mkd_section_title headings above it
+   (which set their own centered text_align deliberately) are unaffected. */
+.electronic-dj-video-row .wpb_text_column {
+  text-align: left !important;
+}

@@ -59,7 +59,11 @@ function renderNode(node: MenuNode, depth: number, ctx: UrlRewriteContext, activ
   const activeBranch = containsActive(node, active);
 
   if (depth === 0) {
-    const isWide = label.toLowerCase() !== "about";
+    // "About" and mia's "DJ & More" both use the theme's narrow-dropdown
+    // style (a small, auto-width box near the trigger) instead of the
+    // full-header-width mega-menu bar every other top-level item gets -
+    // the right fit for a short flat link list with no column groupings.
+    const isWide = !["about", "dj & more"].includes(node.label.toLowerCase());
     let liClass = `menu-item menu-item-type-custom menu-item-object-custom${isWide ? " mkd-wide-background" : ""}${
       hasChildren ? ` menu-item-has-children mkd-has-sub${isWide ? " mkd-menu-wide" : " mkd-menu-narrow"}` : ""
     }`;
