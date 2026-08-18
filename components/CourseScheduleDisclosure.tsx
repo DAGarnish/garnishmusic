@@ -40,7 +40,7 @@ export default function CourseScheduleDisclosure({
   if (!target) return null;
 
   return createPortal(
-    <details style={{ margin: "0 auto 1rem", maxWidth: 800 }}>
+    <details style={{ width: "100%", margin: "0 0 1rem" }}>
       <summary
         style={{
           cursor: "pointer",
