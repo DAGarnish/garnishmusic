@@ -71,6 +71,11 @@ const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: strin
     slotId: "ableton-producer-program-schedule-slot",
     // No PayPal hosted buttons for this program yet.
   },
+  "programs/logic-producer-program": {
+    productSlug: "product/logic-producer-program",
+    slotId: "logic-producer-program-schedule-slot",
+    // No PayPal hosted buttons for this program yet.
+  },
 };
 // The same products' own pages (visited directly) wrap their raw content in
 // an equivalent inline disclosure - see the ternary at its call site below.
