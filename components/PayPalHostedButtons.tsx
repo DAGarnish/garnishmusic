@@ -47,7 +47,7 @@ export default function PayPalHostedButtons() {
     <div style={{ display: "flex", justifyContent: "center", padding: "40px 20px", width: "100%" }}>
       <div style={{ width: "100%", maxWidth: "800px" }}>
         <div style={{ display: "flex", gap: 40, flexWrap: "wrap", justifyContent: "center", width: "100%" }}>
-          {HOSTED_BUTTONS.map(({ id, title, price }) => (
+          {HOSTED_BUTTONS.map(({ id, title }) => (
             <div
               key={id}
               style={{
