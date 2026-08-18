@@ -651,3 +651,16 @@ p:has(+ .mkd-accordion-holder) {
 .electronic-dj-video-row .wpb_text_column {
   text-align: left !important;
 }
+
+/* The "paragraph-spacing" text panels used across course pages' image-
+   backed card sections (DJ/Ableton/Logic/Summer Camp syllabus and intro
+   blocks) get their translucent background box via each vc_column_text's
+   own inline style (background-color/border-radius - see vcCustomStyle in
+   wp-shortcode-render.ts), but that inline style carries no padding of its
+   own; the 35px padding sits on the outer vc_column_inner wrapper, around
+   the box, not inside it. Text sits flush against the box's own edges as a
+   result. Site-wide fix rather than per-page, since every course using this
+   card pattern has the same issue. */
+.paragraph-spacing {
+  padding: 5px;
+}
