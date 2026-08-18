@@ -28,7 +28,7 @@ export default function CourseScheduleDisclosure({
 }: {
   targetId: string;
   html: string;
-  paypalButtons: PayPalButton[];
+  paypalButtons?: PayPalButton[];
 }) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
@@ -56,7 +56,7 @@ export default function CourseScheduleDisclosure({
       </summary>
       <div style={{ padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
         <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: html }} />
-        <PayPalHostedButtons buttons={paypalButtons} />
+        {paypalButtons && paypalButtons.length > 0 && <PayPalHostedButtons buttons={paypalButtons} />}
       </div>
     </details>,
     target

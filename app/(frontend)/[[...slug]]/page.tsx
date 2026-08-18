@@ -36,7 +36,7 @@ const courseScheduleCache = createTtlCache<string | null>(30_000);
 // content scraped from a separate product doc - see the comment at its call
 // site below for why this is a whole extra doc fetch rather than just
 // linking to the product page.
-const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: string; paypalButtons: PayPalButton[] }> = {
+const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: string; paypalButtons?: PayPalButton[] }> = {
   "courses/electronic-dj-course": {
     productSlug: "product/electronic-music-dj-course",
     slotId: "dj-course-schedule-slot",
@@ -60,6 +60,11 @@ const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: strin
       { id: "8D4NQG5Y6NRXA", title: "Logic Pro Early Bird Registration" },
       { id: "2SPZLGQV8EKC6", title: "Logic Pro Registration" },
     ],
+  },
+  "courses/summer-camp-school": {
+    productSlug: "product/summer-camp",
+    slotId: "summer-camp-schedule-slot",
+    // No PayPal hosted buttons for this course yet.
   },
 };
 // The same products' own pages (visited directly) wrap their raw content in
@@ -894,7 +899,10 @@ export default async function CatchAllPage({ params }: Args) {
                       </summary>
                       <div style={{ padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
                         <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
-                        <PayPalHostedButtons buttons={COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))!.paypalButtons} />
+                        {(() => {
+                          const buttons = COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))!.paypalButtons;
+                          return buttons && buttons.length > 0 && <PayPalHostedButtons buttons={buttons} />;
+                        })()}
                       </div>
                     </details>
                   ) : courseScheduleConfig && courseScheduleHtml ? (
