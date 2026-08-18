@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import PayPalHostedButtons from "./PayPalHostedButtons";
+import PayPalHostedButtons, { type PayPalButton } from "./PayPalHostedButtons";
 
 // Portals into a slot marked by id inside a larger dangerouslySetInnerHTML
 // blob, rather than splicing this markup directly into that raw HTML
@@ -21,7 +21,15 @@ import PayPalHostedButtons from "./PayPalHostedButtons";
 // disagree with what the server sent, which is itself a hydration mismatch.
 // Deferring to an effect guarantees the mismatched first paint has already
 // finished reconciling before this ever calls setState.
-export default function CourseScheduleDisclosure({ targetId, html }: { targetId: string; html: string }) {
+export default function CourseScheduleDisclosure({
+  targetId,
+  html,
+  paypalButtons,
+}: {
+  targetId: string;
+  html: string;
+  paypalButtons: PayPalButton[];
+}) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -48,7 +56,7 @@ export default function CourseScheduleDisclosure({ targetId, html }: { targetId:
       </summary>
       <div style={{ padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
         <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: html }} />
-        <PayPalHostedButtons />
+        <PayPalHostedButtons buttons={paypalButtons} />
       </div>
     </details>,
     target

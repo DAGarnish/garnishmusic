@@ -8,7 +8,7 @@ import Footer from "../../../components/Footer";
 import Sidebar from "../../../components/Sidebar";
 import PortfolioShare from "../../../components/PortfolioShare";
 import AddToCart from "../../../components/AddToCart";
-import PayPalHostedButtons from "../../../components/PayPalHostedButtons";
+import PayPalHostedButtons, { type PayPalButton } from "../../../components/PayPalHostedButtons";
 import CourseScheduleDisclosure from "../../../components/CourseScheduleDisclosure";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
@@ -36,13 +36,27 @@ const courseScheduleCache = createTtlCache<string | null>(30_000);
 // content scraped from a separate product doc - see the comment at its call
 // site below for why this is a whole extra doc fetch rather than just
 // linking to the product page.
-const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: string }> = {
-  "courses/electronic-dj-course": { productSlug: "product/electronic-music-dj-course", slotId: "dj-course-schedule-slot" },
-  "courses/ableton-live-course": { productSlug: "product/ableton-production", slotId: "ableton-course-schedule-slot" },
+const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: string; paypalButtons: PayPalButton[] }> = {
+  "courses/electronic-dj-course": {
+    productSlug: "product/electronic-music-dj-course",
+    slotId: "dj-course-schedule-slot",
+    paypalButtons: [
+      { id: "HN8269LYEWPSG", title: "DJ Class Early Bird Registration" },
+      { id: "3HMQH4RMLRBZJ", title: "DJ Class Regular Registration" },
+    ],
+  },
+  "courses/ableton-live-course": {
+    productSlug: "product/ableton-production",
+    slotId: "ableton-course-schedule-slot",
+    paypalButtons: [
+      { id: "3NDEQJ9UEMKRG", title: "Ableton Express Early Bird Registration" },
+      { id: "Q7QDJWEQ3CHFS", title: "Ableton Express Registration" },
+    ],
+  },
 };
 // The same products' own pages (visited directly) wrap their raw content in
 // an equivalent inline disclosure - see the ternary at its call site below.
-const COURSE_SCHEDULE_PRODUCT_SLUGS = new Set(Object.values(COURSE_SCHEDULE_PAGES).map((c) => c.productSlug));
+const COURSE_SCHEDULE_BY_PRODUCT_SLUG = new Map(Object.values(COURSE_SCHEDULE_PAGES).map((c) => [c.productSlug, c]));
 
 const EMPTY_RICHTEXT = {
   root: {
@@ -303,6 +317,13 @@ export default async function CatchAllPage({ params }: Args) {
   // convert the product's content the same way as above, independently of
   // whichever doc this request actually resolved to.
   const courseScheduleConfig = site.slug === "mia" ? COURSE_SCHEDULE_PAGES[slug.join("/")] : undefined;
+  // "product/electronic-dj-class" is an older, no-longer-linked alias for
+  // the DJ product with no course-page equivalent of its own - it still
+  // gets the DJ buttons at the bottom of the page (see render site below).
+  const bottomPaypalButtons =
+    slug.join("/") === "product/electronic-dj-class"
+      ? COURSE_SCHEDULE_PAGES["courses/electronic-dj-course"].paypalButtons
+      : COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))?.paypalButtons;
   const courseScheduleHtml = courseScheduleConfig
     ? await courseScheduleCache(`${site.id}:${courseScheduleConfig.productSlug}:schedule`, async () => {
         const payload = await getPayloadClient();
@@ -826,7 +847,11 @@ export default async function CatchAllPage({ params }: Args) {
                                       dangerouslySetInnerHTML={{ __html: courseScheduleSlotHtml ?? styledHtml }}
                                     />
                                     {courseScheduleConfig && courseScheduleHtml && (
-                                      <CourseScheduleDisclosure targetId={courseScheduleConfig.slotId} html={courseScheduleHtml} />
+                                      <CourseScheduleDisclosure
+                                        targetId={courseScheduleConfig.slotId}
+                                        html={courseScheduleHtml}
+                                        paypalButtons={courseScheduleConfig.paypalButtons}
+                                      />
                                     )}
                                   </div>
                                   <PortfolioShare
@@ -854,14 +879,14 @@ export default async function CatchAllPage({ params }: Args) {
                       </div>
                     </div>
                   )}
-                  {COURSE_SCHEDULE_PRODUCT_SLUGS.has(slug.join("/")) ? (
+                  {COURSE_SCHEDULE_BY_PRODUCT_SLUG.has(slug.join("/")) ? (
                     <details style={{ marginBottom: "2rem" }}>
                       <summary style={{ cursor: "pointer", textAlign: "center", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem", color: "#ce1713" }}>
                         View Course Schedule & Details
                       </summary>
                       <div style={{ padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
                         <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
-                        <PayPalHostedButtons />
+                        <PayPalHostedButtons buttons={COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))!.paypalButtons} />
                       </div>
                     </details>
                   ) : courseScheduleConfig && courseScheduleHtml ? (
@@ -871,7 +896,11 @@ export default async function CatchAllPage({ params }: Args) {
                     // slot swapped in here, since they never reach that branch.
                     <>
                       <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: courseScheduleSlotHtml ?? styledHtml }} />
-                      <CourseScheduleDisclosure targetId={courseScheduleConfig.slotId} html={courseScheduleHtml} />
+                      <CourseScheduleDisclosure
+                        targetId={courseScheduleConfig.slotId}
+                        html={courseScheduleHtml}
+                        paypalButtons={courseScheduleConfig.paypalButtons}
+                      />
                     </>
                   ) : (
                     <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
@@ -964,7 +993,7 @@ export default async function CatchAllPage({ params }: Args) {
           })()}
         </div>
       </div>
-      {(slug.join("/") === "product/electronic-dj-class" || slug.join("/") === "product/electronic-music-dj-course") && <PayPalHostedButtons />}
+      {bottomPaypalButtons && <PayPalHostedButtons buttons={bottomPaypalButtons} />}
       <Footer site={site} />
     </>
   );

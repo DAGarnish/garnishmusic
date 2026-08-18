@@ -8,15 +8,12 @@ const PAYPAL_CLIENT_ID =
 
 const PAYPAL_SDK_SRC = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&components=hosted-buttons&enable-funding=venmo&currency=USD`;
 
-const HOSTED_BUTTONS = [
-  { id: "HN8269LYEWPSG", title: "DJ Class Early Bird Registration" },
-  { id: "3HMQH4RMLRBZJ", title: "DJ Class Regular Registration" },
-];
+export type PayPalButton = { id: string; title: string };
 
-function renderHostedButtons() {
+function renderHostedButtons(buttons: PayPalButton[]) {
   const paypal = (window as any).paypal;
   if (!paypal?.HostedButtons) return;
-  for (const { id } of HOSTED_BUTTONS) {
+  for (const { id } of buttons) {
     const container = document.getElementById(`paypal-container-${id}`);
     if (container && !container.hasChildNodes()) {
       paypal.HostedButtons({ hostedButtonId: id }).render(`#paypal-container-${id}`);
@@ -24,7 +21,7 @@ function renderHostedButtons() {
   }
 }
 
-export default function PayPalHostedButtons() {
+export default function PayPalHostedButtons({ buttons }: { buttons: PayPalButton[] }) {
   useEffect(() => {
     // PayPal's SDK logs this via console.error on button "commit" as internal
     // telemetry, not an actual failure — it fires because Pay Later is
@@ -47,7 +44,7 @@ export default function PayPalHostedButtons() {
     <div style={{ display: "flex", justifyContent: "center", padding: "40px 20px", width: "100%" }}>
       <div style={{ width: "100%", maxWidth: "800px" }}>
         <div style={{ display: "flex", gap: 40, flexWrap: "wrap", justifyContent: "center", width: "100%" }}>
-          {HOSTED_BUTTONS.map(({ id, title }) => (
+          {buttons.map(({ id, title }) => (
             <div
               key={id}
               style={{
@@ -65,7 +62,12 @@ export default function PayPalHostedButtons() {
           ))}
         </div>
       </div>
-      <Script src={PAYPAL_SDK_SRC} strategy="afterInteractive" onLoad={renderHostedButtons} onReady={renderHostedButtons} />
+      <Script
+        src={PAYPAL_SDK_SRC}
+        strategy="afterInteractive"
+        onLoad={() => renderHostedButtons(buttons)}
+        onReady={() => renderHostedButtons(buttons)}
+      />
     </div>
   );
 }
