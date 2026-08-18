@@ -66,6 +66,11 @@ const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: strin
     slotId: "summer-camp-schedule-slot",
     // No PayPal hosted buttons for this course yet.
   },
+  "programs/ableton-producer-program": {
+    productSlug: "product/ableton-producer-program",
+    slotId: "ableton-producer-program-schedule-slot",
+    // No PayPal hosted buttons for this program yet.
+  },
 };
 // The same products' own pages (visited directly) wrap their raw content in
 // an equivalent inline disclosure - see the ternary at its call site below.
