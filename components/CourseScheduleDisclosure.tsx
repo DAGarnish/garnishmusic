@@ -39,6 +39,7 @@ export default function CourseScheduleDisclosure({ targetId, html }: { targetId:
           textAlign: "center",
           fontSize: "1.5rem",
           fontWeight: "bold",
+          marginTop: "10px",
           marginBottom: "1rem",
           color: "#ce1713",
         }}

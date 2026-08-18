@@ -102,15 +102,20 @@ export default async function RootLayout({
         />
         {/* Site's icon rendering (renderIconMarkup in wp-shortcode-render.ts)
            always emits bare v4-style classes ("fa fa-x"), and the static
-           scraped header/footer HTML only uses v4 classes too (fa-angle-
-           right, fa-shopping-cart) - confirmed no v5/6-prefixed class
-           (fas/far/fab fa-x) appears anywhere in migrated content or
-           component code, so the v6 stylesheet previously loaded alongside
-           this one was dead weight (a full extra icon font + CSS file on
-           every page load). */}
+           scraped header content only uses v4 classes too (fa-angle-right,
+           fa-shopping-cart). The footer's social icons block
+           (mkd_social_icon_widget in footer.html) is the exception: it uses
+           v6 "brands" classes (fa-brands fa-x-twitter, fa-brands
+           fa-bluesky, etc.), including icons that don't exist in v4 at all
+           (X/Twitter's new glyph, Bluesky) - so the v6 stylesheet must stay
+           loaded alongside v4 or those icons render as tofu boxes. */}
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         />
         {themeStylesheets.map((href) => (
           <link key={href} rel="stylesheet" href={href} />
