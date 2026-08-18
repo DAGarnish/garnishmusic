@@ -31,7 +31,18 @@ import { createTtlCache } from "../../../lib/ttl-cache";
 const contentCache = createTtlCache<Awaited<ReturnType<typeof findContentUncached>>>(30_000);
 const resolverCache = createTtlCache<unknown>(30_000);
 const courseScheduleCache = createTtlCache<string | null>(30_000);
-const COURSE_SCHEDULE_SLOT_ID = "dj-course-schedule-slot";
+
+// Course pages whose "View Course Schedule & Details" disclosure portals in
+// content scraped from a separate product doc - see the comment at its call
+// site below for why this is a whole extra doc fetch rather than just
+// linking to the product page.
+const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: string }> = {
+  "courses/electronic-dj-course": { productSlug: "product/electronic-music-dj-course", slotId: "dj-course-schedule-slot" },
+  "courses/ableton-live-course": { productSlug: "product/ableton-production", slotId: "ableton-course-schedule-slot" },
+};
+// The same products' own pages (visited directly) wrap their raw content in
+// an equivalent inline disclosure - see the ternary at its call site below.
+const COURSE_SCHEDULE_PRODUCT_SLUGS = new Set(Object.values(COURSE_SCHEDULE_PAGES).map((c) => c.productSlug));
 
 const EMPTY_RICHTEXT = {
   root: {
@@ -286,18 +297,18 @@ export default async function CatchAllPage({ params }: Args) {
     );
   }
 
-  // The DJ course schedule/pricing disclosure ("View Course Schedule &
+  // The course schedule/pricing disclosure ("View Course Schedule &
   // Details") lives on the product page's own doc, but also needs to
-  // render inside courses/electronic-dj-course's newsletter box - fetch and
+  // render inside the matching course page's newsletter box - fetch and
   // convert the product's content the same way as above, independently of
   // whichever doc this request actually resolved to.
-  const isMiaDjCoursePage = site.slug === "mia" && slug.join("/") === "courses/electronic-dj-course";
-  const courseScheduleHtml = isMiaDjCoursePage
-    ? await courseScheduleCache(`${site.id}:product/electronic-music-dj-course:schedule`, async () => {
+  const courseScheduleConfig = site.slug === "mia" ? COURSE_SCHEDULE_PAGES[slug.join("/")] : undefined;
+  const courseScheduleHtml = courseScheduleConfig
+    ? await courseScheduleCache(`${site.id}:${courseScheduleConfig.productSlug}:schedule`, async () => {
         const payload = await getPayloadClient();
         const productRes = await payload.find({
           collection: "products",
-          where: { and: [{ site: { equals: site.id } }, { slug: { equals: "product/electronic-music-dj-course" } }] },
+          where: { and: [{ site: { equals: site.id } }, { slug: { equals: courseScheduleConfig.productSlug } }] },
           limit: 1,
           depth: 0,
         });
@@ -340,10 +351,10 @@ export default async function CatchAllPage({ params }: Args) {
   // a single well-formed fragment, so server and client render identically
   // and there's no hydration mismatch from unbalanced tags.
   const courseScheduleSlotHtml =
-    isMiaDjCoursePage && courseScheduleHtml && styledHtml
+    courseScheduleConfig && courseScheduleHtml && styledHtml
       ? styledHtml.replace(
           '<div class="wpb_text_column wpb_content_element">\n<div class="wpb_wrapper">\n</div>\n</div>',
-          `<div class="wpb_text_column wpb_content_element">\n<div class="wpb_wrapper" id="${COURSE_SCHEDULE_SLOT_ID}"></div>\n</div>`
+          `<div class="wpb_text_column wpb_content_element">\n<div class="wpb_wrapper" id="${courseScheduleConfig.slotId}"></div>\n</div>`
         )
       : null;
 
@@ -814,8 +825,8 @@ export default async function CatchAllPage({ params }: Args) {
                                       suppressHydrationWarning
                                       dangerouslySetInnerHTML={{ __html: courseScheduleSlotHtml ?? styledHtml }}
                                     />
-                                    {isMiaDjCoursePage && courseScheduleHtml && (
-                                      <CourseScheduleDisclosure targetId={COURSE_SCHEDULE_SLOT_ID} html={courseScheduleHtml} />
+                                    {courseScheduleConfig && courseScheduleHtml && (
+                                      <CourseScheduleDisclosure targetId={courseScheduleConfig.slotId} html={courseScheduleHtml} />
                                     )}
                                   </div>
                                   <PortfolioShare
@@ -843,7 +854,7 @@ export default async function CatchAllPage({ params }: Args) {
                       </div>
                     </div>
                   )}
-                  {slug.join("/") === "product/electronic-music-dj-course" ? (
+                  {COURSE_SCHEDULE_PRODUCT_SLUGS.has(slug.join("/")) ? (
                     <details style={{ marginBottom: "2rem" }}>
                       <summary style={{ cursor: "pointer", textAlign: "center", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem", color: "#ce1713" }}>
                         View Course Schedule & Details
@@ -853,6 +864,15 @@ export default async function CatchAllPage({ params }: Args) {
                         <PayPalHostedButtons />
                       </div>
                     </details>
+                  ) : courseScheduleConfig && courseScheduleHtml ? (
+                    // portfolioCustomTemplate courses (e.g. Ableton's, which
+                    // renders full-width per its own template rather than the
+                    // portfolio-item layout above) still need their schedule
+                    // slot swapped in here, since they never reach that branch.
+                    <>
+                      <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: courseScheduleSlotHtml ?? styledHtml }} />
+                      <CourseScheduleDisclosure targetId={courseScheduleConfig.slotId} html={courseScheduleHtml} />
+                    </>
                   ) : (
                     <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
                   )}
