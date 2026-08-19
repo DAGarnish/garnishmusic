@@ -15,6 +15,23 @@ const nextConfig: NextConfig = {
   // disables Next's own (conflicting) automatic trailing-slash redirects
   // entirely, so only proxy.ts's logic applies.
   skipTrailingSlashRedirect: true,
+  // sharp is externalized (see withPayload's serverExternalPackages below)
+  // rather than bundled, so Next's output file tracing has to independently
+  // discover its native binary to include it in the deployed function.
+  // Tracing sometimes fails to pick up optional-dependency platform
+  // packages like this one - see the Next.js docs' own worked example for
+  // this exact package (node_modules/next/dist/docs/.../output.md) - which
+  // surfaced on Vercel as "Failed to load external module sharp-<hash>:
+  // Could not load the sharp module using the linux-x64 runtime". Forcing
+  // the include here makes it deploy-cache-proof instead of relying on
+  // tracing (and Vercel's build cache) getting it right every time.
+  outputFileTracingIncludes: {
+    "/*": [
+      "./node_modules/sharp/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+    ],
+  },
   // Migrated page/post HTML content has <img> src attributes hardcoded to
   // Payload's old local-disk upload route (baked in during the original
   // WordPress migration, before media moved to S3). Since media now lives in
