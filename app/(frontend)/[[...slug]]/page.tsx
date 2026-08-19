@@ -10,6 +10,7 @@ import PortfolioShare from "../../../components/PortfolioShare";
 import AddToCart from "../../../components/AddToCart";
 import PayPalHostedButtons, { type PayPalButton } from "../../../components/PayPalHostedButtons";
 import CourseScheduleDisclosure from "../../../components/CourseScheduleDisclosure";
+import LegacyAccordionUpgrade from "../../../components/LegacyAccordionUpgrade";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
 import { buildImageResolver } from "../../../lib/wp-image-resolver";
@@ -85,6 +86,13 @@ const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: strin
 // The same products' own pages (visited directly) wrap their raw content in
 // an equivalent inline disclosure - see the ternary at its call site below.
 const COURSE_SCHEDULE_BY_PRODUCT_SLUG = new Map(Object.values(COURSE_SCHEDULE_PAGES).map((c) => [c.productSlug, c]));
+
+// Pages (mia site only) whose legacy [mkd_accordion] sections get
+// progressively enhanced into the new accessible Accordion component - see
+// LegacyAccordionUpgrade for why this exists (fixes a responsive title-
+// overlap bug in the old jQuery accordion) and why it's scoped page-by-page
+// rather than applied to the shared shortcode renderer.
+const LEGACY_ACCORDION_UPGRADE_PAGES = new Set(["academy/emp-electronic-music-producer"]);
 
 const EMPTY_RICHTEXT = {
   root: {
@@ -934,7 +942,12 @@ export default async function CatchAllPage({ params }: Args) {
                       />
                     </>
                   ) : (
-                    <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                    <>
+                      <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                      {site.slug === "mia" && LEGACY_ACCORDION_UPGRADE_PAGES.has(slug.join("/")) && (
+                        <LegacyAccordionUpgrade />
+                      )}
+                    </>
                   )}
                 </>
               )
