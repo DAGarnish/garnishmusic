@@ -4,6 +4,7 @@ import { getCurrentSite } from "../../lib/current-site";
 import { Analytics } from "@vercel/analytics/react";
 import ConsultationPopup from "../../components/ConsultationPopup";
 import { CartProvider } from "../../components/CartContext";
+import LegacyAccordionUpgrade from "../../components/LegacyAccordionUpgrade";
 
 // Loaded as plain blocking <script> tags in <head> (not next/script's
 // beforeInteractive strategy) because that strategy's SSR-injection
@@ -145,6 +146,12 @@ export default async function RootLayout({
         <CartProvider>
           {children}
           <ConsultationPopup />
+          {/* Progressively upgrades every legacy [mkd_accordion] section
+             (any site, any page) into the accessible Accordion component -
+             see LegacyAccordionUpgrade for why. Mounted once here rather
+             than per-page since it's a no-op wherever no
+             .mkd-accordion-holder markup exists. */}
+          <LegacyAccordionUpgrade />
           <div id="modal-root"></div>
         </CartProvider>
       </body>
