@@ -30,6 +30,9 @@
     "stripe": "^22.5.0",
     "tesseract.js": "^7.0.0"
   },
+  "overrides": {
+    "sharp": "$sharp"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
