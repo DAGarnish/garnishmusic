@@ -210,6 +210,19 @@ body {
   margin-bottom: 0 !important;
 }
 
+/* Same gap, different WPBakery row type: a "blog accordion" section (e.g.
+   .../songcraft-production-program's "SongCraft Production Program Blog")
+   puts its .mkd-accordion-holder directly in an outer .vc_row.mkd-section,
+   not a .vc_row_inner, so the rule above doesn't reach it - the column's
+   default 35px padding-top (js-composer.css) still shows as dead space
+   above the accordion's title bar. Scoped to :first-child so it only fires
+   when the accordion is the section's only content - sections with a
+   heading above the accordion (e.g. the Academy Modules curriculum) still
+   want that padding to separate the heading from the box below it. */
+.vc_column-inner:has(> .wpb_wrapper > .mkd-accordion-holder:first-child) {
+  padding-top: 0 !important;
+}
+
 /* Hide empty space elements inside accordion rows to ensure consistent sizing */
 .vc_row.mkd-section:has(.mkd-accordion) .vc_empty_space,
 .vc_row.mkd-section:has(.mkd-toggle) .vc_empty_space {
