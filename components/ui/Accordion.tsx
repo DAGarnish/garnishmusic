@@ -17,11 +17,17 @@ export function Accordion({
   mode = "single",
   defaultOpenIds,
   className,
+  variant = "light",
 }: {
   items: AccordionItemData[];
   mode?: "single" | "multiple";
   defaultOpenIds?: string[];
   className?: string;
+  // "onDark": for accordions the legacy content marked [mkd_accordion
+  // color_style="white"] (see LegacyAccordionUpgrade) - these sit over a
+  // photo/dark section background, where the default near-black title text
+  // is illegible.
+  variant?: "light" | "onDark";
 }) {
   const baseId = useId();
   const ids = items.map((item, i) => item.id ?? `${baseId}-${i}`);
@@ -67,8 +73,10 @@ export function Accordion({
     }
   };
 
+  const onDark = variant === "onDark";
+
   return (
-    <div className={`divide-y divide-gray-200 ${className ?? ""}`}>
+    <div className={`divide-y ${onDark ? "divide-white/20" : "divide-gray-200"} ${className ?? ""}`}>
       {items.map((item, i) => {
         const id = ids[i];
         const open = openIds.has(id);
@@ -83,7 +91,9 @@ export function Accordion({
                 ref={(el) => {
                   triggerRefs.current[i] = el;
                 }}
-                className="group flex w-full items-center justify-between gap-4 py-5 px-4 text-left font-semibold text-gray-900 transition-colors hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#cc0000]"
+                className={`group flex w-full items-center justify-between gap-4 py-5 px-4 text-left font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#cc0000] ${
+                  onDark ? "text-white hover:bg-white/10" : "text-gray-900 hover:bg-gray-50"
+                }`}
                 aria-expanded={open}
                 aria-controls={panelId}
                 onClick={() => toggle(id)}
@@ -92,9 +102,9 @@ export function Accordion({
                 <span className="text-base">{item.title}</span>
                 <svg
                   aria-hidden="true"
-                  className={`h-5 w-5 flex-shrink-0 text-gray-500 transition-transform duration-200 ${
-                    open ? "rotate-180 text-[#cc0000]" : "group-hover:text-[#cc0000]"
-                  }`}
+                  className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
+                    onDark ? "text-white/70" : "text-gray-500"
+                  } ${open ? "rotate-180 text-[#cc0000]" : "group-hover:text-[#cc0000]"}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

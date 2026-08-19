@@ -476,6 +476,18 @@ footer {
   opacity: 1 !important;
 }
 
+/* .mkd-accordion-white (see wp-shortcode-render.ts's mkd_accordion case,
+   for [mkd_accordion color_style="white"]) is the dark-background variant
+   of the same component - its .mkd-tab-title-inner title bar text has no
+   inline color of its own (unlike the tab body, which is free-form WYSIWYG
+   content that's had white spans patched in per page), so it fell through
+   to the black-forcing rule right above and was illegible against the
+   photo/dark backgrounds these accordions are placed on. 3 classes beats
+   that rule's 2, so no extra !important war needed beyond matching it. */
+.mkd-accordion-holder.mkd-accordion-white .mkd-tab-title-inner {
+  color: #fff !important;
+}
+
 /* Aggressively remove all margins between accordion items so they touch */
 .mkd-accordion-holder {
   margin-top: 0 !important;
@@ -614,6 +626,93 @@ p:has(+ .mkd-accordion-holder) {
   .mkd-elements-holder-item {
     padding: var(--item-padding-480, var(--item-padding, 0));
   }
+}
+
+/* buro-modules.css renders mkd_elements_holder as an HTML table
+   (display:table/table-cell, e.g. mkd-two-columns items at width:50%).
+   Percentage padding on a table-cell resolves against the WIDTH OF THE
+   TABLE, not the cell's own (narrower) width - confirmed live on the
+   homepage's "360 Music Production Academy" text+image split: a
+   --item-padding of 21% was measured eating 21% of the full two-column
+   ROW's width on each side, i.e. up to 84% of the 50%-wide text column,
+   collapsing it to a sliver of usable width while the image side (with no
+   base --item-padding, only mobile-tier overrides) got none. Since the
+   row itself has no max-width cap, this got worse - not better - the
+   wider the viewport, which is the "text narrows, image stretches as the
+   window grows" bug. CSS Grid resolves column tracks before percentage
+   padding is computed on the grid items, so the same percentages
+   correctly scope to each column's own width instead. Excludes
+   .mkd-elements-items-float, a different (block+float) layout mode this
+   fix doesn't apply to. */
+.mkd-elements-holder:not(.mkd-elements-items-float) {
+  display: grid;
+}
+.mkd-elements-holder:not(.mkd-elements-items-float) .mkd-elements-holder-item {
+  /* !important: ties buro-modules.css's own width:50%/33%/25%/20%/16% (set
+     per column-count class, same 3-class specificity as this selector) -
+     without it, an item ends up 50% of its own already-50%-wide grid
+     track (25% of the row) instead of filling it. */
+  width: 100% !important;
+  box-sizing: border-box;
+  align-self: center;
+}
+.mkd-elements-holder:not(.mkd-elements-items-float) .mkd-elements-holder-item.mkd-vertical-alignment-top {
+  align-self: start;
+}
+.mkd-elements-holder:not(.mkd-elements-items-float) .mkd-elements-holder-item.mkd-vertical-alignment-bottom {
+  align-self: end;
+}
+
+/* With no grid-template-columns set, a grid container defaults to one
+   implicit column per row - items stack full-width exactly like
+   buro-modules-responsive.css's own mobile override (which switches
+   items to display:inline-block;width:100% below the row's configured
+   mkd-responsive-mode-* breakpoint) already intends. So the actual column
+   split below only needs to activate above that same breakpoint - same
+   thresholds buro-modules-responsive.css uses for its own table-cell
+   reversion - leaving mobile stacking untouched. Rows with none of the
+   mkd-responsive-mode-* classes never stack at any width, so split
+   unconditionally. */
+.mkd-elements-holder.mkd-two-columns:not([class*="mkd-responsive-mode-"]):not(.mkd-elements-items-float) { grid-template-columns: repeat(2, 1fr); }
+.mkd-elements-holder.mkd-three-columns:not([class*="mkd-responsive-mode-"]):not(.mkd-elements-items-float) { grid-template-columns: repeat(3, 1fr); }
+.mkd-elements-holder.mkd-four-columns:not([class*="mkd-responsive-mode-"]):not(.mkd-elements-items-float) { grid-template-columns: repeat(4, 1fr); }
+.mkd-elements-holder.mkd-five-columns:not([class*="mkd-responsive-mode-"]):not(.mkd-elements-items-float) { grid-template-columns: repeat(5, 1fr); }
+.mkd-elements-holder.mkd-six-columns:not([class*="mkd-responsive-mode-"]):not(.mkd-elements-items-float) { grid-template-columns: repeat(6, 1fr); }
+
+@media (min-width: 481px) {
+  .mkd-elements-holder.mkd-responsive-mode-480.mkd-two-columns { grid-template-columns: repeat(2, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-480.mkd-three-columns { grid-template-columns: repeat(3, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-480.mkd-four-columns { grid-template-columns: repeat(4, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-480.mkd-five-columns { grid-template-columns: repeat(5, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-480.mkd-six-columns { grid-template-columns: repeat(6, 1fr); }
+}
+@media (min-width: 601px) {
+  .mkd-elements-holder.mkd-responsive-mode-600.mkd-two-columns { grid-template-columns: repeat(2, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-600.mkd-three-columns { grid-template-columns: repeat(3, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-600.mkd-four-columns { grid-template-columns: repeat(4, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-600.mkd-five-columns { grid-template-columns: repeat(5, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-600.mkd-six-columns { grid-template-columns: repeat(6, 1fr); }
+}
+@media (min-width: 769px) {
+  .mkd-elements-holder.mkd-responsive-mode-768.mkd-two-columns { grid-template-columns: repeat(2, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-768.mkd-three-columns { grid-template-columns: repeat(3, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-768.mkd-four-columns { grid-template-columns: repeat(4, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-768.mkd-five-columns { grid-template-columns: repeat(5, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-768.mkd-six-columns { grid-template-columns: repeat(6, 1fr); }
+}
+@media (min-width: 1025px) {
+  .mkd-elements-holder.mkd-responsive-mode-1024.mkd-two-columns { grid-template-columns: repeat(2, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1024.mkd-three-columns { grid-template-columns: repeat(3, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1024.mkd-four-columns { grid-template-columns: repeat(4, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1024.mkd-five-columns { grid-template-columns: repeat(5, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1024.mkd-six-columns { grid-template-columns: repeat(6, 1fr); }
+}
+@media (min-width: 1281px) {
+  .mkd-elements-holder.mkd-responsive-mode-1280.mkd-two-columns { grid-template-columns: repeat(2, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1280.mkd-three-columns { grid-template-columns: repeat(3, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1280.mkd-four-columns { grid-template-columns: repeat(4, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1280.mkd-five-columns { grid-template-columns: repeat(5, 1fr); }
+  .mkd-elements-holder.mkd-responsive-mode-1280.mkd-six-columns { grid-template-columns: repeat(6, 1fr); }
 }
 
 /* mia's courses/electronic-dj-course "Electronic Music DJ Class" intro

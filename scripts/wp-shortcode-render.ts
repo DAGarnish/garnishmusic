@@ -1098,11 +1098,23 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
     // rendered, but the clickable title header and expand/collapse markup
     // were silently dropped entirely (confirmed on e.g. the academy page's
     // 9-tab curriculum accordion).
-    case "mkd_accordion":
-      return `<div class="mkd-accordion-holder clearfix mkd-accordion mkd-initial ">${renderChildren(
+    case "mkd_accordion": {
+      // color_style="white" is set on every dark-background curriculum
+      // accordion (academy modules, production programs, express courses -
+      // see fix-*-accordion-colors.ts) but was silently dropped here same as
+      // style="toggle" above: only the tab bodies got a per-page inline
+      // white-color fix (they're free-form WYSIWYG content), while the tab
+      // TITLE bar - generated fresh by mkd_accordion_tab below with no color
+      // styling at all - stayed at the theme's default dark title color,
+      // illegible against the photo backgrounds these accordions sit on.
+      // Emitting the color_style as a class lets CSS give every such
+      // instance readable white titles at once instead of patching content.
+      const colorClass = attrs.color_style === "white" ? " mkd-accordion-white" : "";
+      return `<div class="mkd-accordion-holder clearfix mkd-accordion mkd-initial${colorClass}">${renderChildren(
         children,
         ctx
       )}</div>`;
+    }
 
     case "mkd_accordion_tab": {
       const titleTag = /^h[1-6]$/.test(attrs.title_tag || "") ? attrs.title_tag : "h5";

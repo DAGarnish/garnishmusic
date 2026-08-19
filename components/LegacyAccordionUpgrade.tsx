@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Accordion, type AccordionItemData } from "./ui/Accordion";
 
-type Target = { container: HTMLElement; items: AccordionItemData[] };
+type Target = { container: HTMLElement; items: AccordionItemData[]; variant: "light" | "onDark" };
 
 // The legacy WPBakery [mkd_accordion] shortcode (see wp-shortcode-render.ts)
 // renders a jQuery-UI-driven accordion whose title bar is a fixed
@@ -18,10 +18,8 @@ type Target = { container: HTMLElement; items: AccordionItemData[] };
 // component in place - the underlying wpRawContent and shared rendering
 // pipeline are untouched.
 //
-// Currently only mounted on the EMP academy page (see page.tsx). Other
-// pages still rendering through [mkd_accordion] (course curriculum
-// accordions, e.g.) have the same overlap bug and are candidates for the
-// same treatment later.
+// Mounted sitewide (see layout.tsx) - a no-op wherever no
+// .mkd-accordion-holder markup exists.
 export default function LegacyAccordionUpgrade() {
   const [targets, setTargets] = useState<Target[]>([]);
 
@@ -39,7 +37,12 @@ export default function LegacyAccordionUpgrade() {
           content: <div dangerouslySetInnerHTML={{ __html: innerHtml }} />,
         };
       });
-      return { container: holder, items };
+      // [mkd_accordion color_style="white"] (see wp-shortcode-render.ts) is
+      // the dark/photo-background variant - read the marker class before
+      // it's cleared below, so the swapped-in Accordion keeps light text
+      // instead of defaulting to the light-background dark-gray title color.
+      const variant: "light" | "onDark" = holder.classList.contains("mkd-accordion-white") ? "onDark" : "light";
+      return { container: holder, items, variant };
     });
 
     // Clear the legacy markup now that its content has been read out, so
@@ -55,9 +58,9 @@ export default function LegacyAccordionUpgrade() {
   return (
     <>
       {targets.map(
-        ({ container, items }, i) =>
+        ({ container, items, variant }, i) =>
           items.length > 0 &&
-          createPortal(<Accordion key={i} items={items} mode="single" />, container)
+          createPortal(<Accordion key={i} items={items} mode="single" variant={variant} />, container)
       )}
     </>
   );
