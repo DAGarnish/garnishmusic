@@ -196,6 +196,21 @@ body {
   width: 100%;
 }
 
+/* .mkd-section-inner-margin's own display:flex (site-level "Additional CSS",
+   not a file in this repo - e.g. NY's product/electronic-dj-class intro row
+   pairing its text column with a video column) has no mobile override, so
+   flex's row-direction keeps two columns side by side even after the
+   .vc_col-sm-N mobile-stacking fix above sets each one's own width/float -
+   a flex item's width:100% just means "100% of the row's remaining space",
+   not "stack full-width like a block element would". Drop back to block
+   layout below the same breakpoint so those already-correct column rules
+   can actually stack the columns in document order (text before video). */
+@media (max-width: 767px) {
+  .call-action-la-content-row2 .mkd-section-inner-margin {
+    display: block !important;
+  }
+}
+
 /* Remove WPBakery background, border, and padding from accordion wrapper rows
    so the accordion itself touches the edges without a gray border above/below it. */
 .vc_row_inner:has(.mkd-accordion) {
