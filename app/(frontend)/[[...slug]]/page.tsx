@@ -10,6 +10,7 @@ import PortfolioShare from "../../../components/PortfolioShare";
 import AddToCart from "../../../components/AddToCart";
 import PayPalHostedButtons, { type PayPalButton } from "../../../components/PayPalHostedButtons";
 import CourseScheduleDisclosure from "../../../components/CourseScheduleDisclosure";
+import NextCohortBanner from "../../../components/NextCohortBanner";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
 import { buildImageResolver } from "../../../lib/wp-image-resolver";
@@ -1025,6 +1026,7 @@ export default async function CatchAllPage({ params }: Args) {
         </div>
       </div>
       {bottomPaypalButtons && <PayPalHostedButtons buttons={bottomPaypalButtons} />}
+      <NextCohortBanner />
       <Footer site={site} />
     </>
   );
