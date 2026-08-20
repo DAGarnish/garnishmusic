@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import ConsultationPopup from "../../components/ConsultationPopup";
 import { CartProvider } from "../../components/CartContext";
 import LegacyAccordionUpgrade from "../../components/LegacyAccordionUpgrade";
+import ResponsiveRowMargins from "../../components/ResponsiveRowMargins";
 
 // Loaded as plain blocking <script> tags (not next/script's beforeInteractive
 // strategy) because that strategy's SSR-injection mechanism collides with the
@@ -150,6 +151,12 @@ export default async function RootLayout({
              than per-page since it's a no-op wherever no
              .mkd-accordion-holder markup exists. */}
           <LegacyAccordionUpgrade />
+          {/* Shrinks WPBakery rows' own oversized inline left/right margins
+             (e.g. background-image "card" rows' 50px+50px inset) on narrow
+             viewports - see ResponsiveRowMargins for why this can only be
+             done in JS, not CSS. Mounted sitewide, a no-op wherever no row
+             has a large enough inline margin to touch. */}
+          <ResponsiveRowMargins />
           <div id="modal-root"></div>
         </CartProvider>
         {/* eslint-disable @next/next/no-sync-scripts -- intentional: see

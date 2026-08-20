@@ -598,6 +598,19 @@ p:has(+ .mkd-accordion-holder) {
     margin-left: auto !important;
     margin-right: auto !important;
   }
+
+  /* Any [vc_row content_width="grid"] (used sitewide, not just one page -
+     e.g. every row on MIA's courses/ableton-live-course) boxes its content
+     in .mkd-grid-section .mkd-section-inner, whose own responsive rules
+     (buro-modules-responsive.css) step down through hardcoded pixel widths
+     per breakpoint instead of a fluid one - 1300px on desktop, all the way
+     down to a fixed 300px for any phone <=480px wide. On a 390-430px
+     iPhone that leaves a ~45-65px gutter on each side instead of using the
+     actual screen width. Go fluid below the point where the theme's own
+     steps stop being screen-width-aware. */
+  .mkd-grid-section .mkd-section-inner {
+    width: 100% !important;
+  }
 }
 
 /* mkd_elements_holder_item's item_padding attribute (and its
