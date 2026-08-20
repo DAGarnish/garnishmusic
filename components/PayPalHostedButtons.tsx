@@ -42,6 +42,11 @@ export default function PayPalHostedButtons({ buttons }: { buttons: PayPalButton
 
   return (
     <div style={{ display: "flex", justifyContent: "center", padding: "40px 20px", width: "100%" }}>
+      {/* PayPal's hosted-button widget renders its own item title above the
+          price, duplicating the <h3> title we already render above the
+          widget - hide just that title span (not .price-container, which
+          shares the same .item-header) so the price and buttons stay put. */}
+      <style>{`[id^="paypal-container-"] .item-title { display: none; }`}</style>
       <div style={{ width: "100%", maxWidth: "800px" }}>
         <div style={{ display: "flex", gap: 40, flexWrap: "wrap", justifyContent: "center", width: "100%" }}>
           {buttons.map(({ id, title }) => (
