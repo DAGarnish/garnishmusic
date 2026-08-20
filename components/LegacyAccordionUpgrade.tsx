@@ -40,23 +40,34 @@ export default function LegacyAccordionUpgrade() {
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, "");
     const usedSlugs = new Set<string>();
+    // Pages using the "Next Class" banner override (see
+    // add-dj-class-cohort-dates.ts / NextCohortBanner.tsx) sit their
+    // schedule accordion right next to that banner's Rubik-font text, where
+    // the accordion titles' inherited Prompt (from the sitewide h1-h6 rule,
+    // since triggers render inside an <h3>) reads as a mismatched typeface.
+    // Match every accordion title's font to the banner's on exactly those
+    // pages - checked once, page-wide, rather than hardcoding this specific
+    // product - so any other page that adopts the same banner override
+    // automatically gets matching accordion titles too.
+    const matchBannerFont = document.querySelector("[data-cohort-banner-html]") !== null;
     const holders = Array.from(document.querySelectorAll<HTMLElement>(".mkd-accordion-holder"));
     const found: Target[] = holders.map((holder) => {
       const titleEls = Array.from(holder.querySelectorAll<HTMLElement>(":scope > .mkd-title-holder"));
       const defaultOpenIds: string[] = [];
       const items: AccordionItemData[] = titleEls.map((titleEl) => {
         const contentEl = titleEl.nextElementSibling as HTMLElement | null;
-        const title = titleEl.querySelector(".mkd-tab-title-inner")?.textContent?.trim() ?? "";
+        const titleText = titleEl.querySelector(".mkd-tab-title-inner")?.textContent?.trim() ?? "";
         const innerHtml = contentEl?.querySelector(".mkd-accordion-content-inner")?.innerHTML ?? "";
         // A slug per tab (e.g. "Schedules" -> "schedules") rather than a
         // plain positional index, so a URL fragment like #schedules can
         // link straight to - and auto-open - a specific tab (see the hash
         // check below). Deduped page-wide (not just within this holder) in
         // case two tabs anywhere on the page share a title.
-        let id = slugify(title);
+        let id = slugify(titleText);
         while (usedSlugs.has(id)) id = `${id}-2`;
         usedSlugs.add(id);
         if (id === hash) defaultOpenIds.push(id);
+        const title = matchBannerFont ? <span style={{ fontFamily: "Rubik, sans-serif" }}>{titleText}</span> : titleText;
         return {
           id,
           title,
