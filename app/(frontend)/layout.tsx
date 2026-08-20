@@ -6,13 +6,22 @@ import ConsultationPopup from "../../components/ConsultationPopup";
 import { CartProvider } from "../../components/CartContext";
 import LegacyAccordionUpgrade from "../../components/LegacyAccordionUpgrade";
 
-// Loaded as plain blocking <script> tags in <head> (not next/script's
-// beforeInteractive strategy) because that strategy's SSR-injection
-// mechanism collides with the Suspense boundary that wraps not-found.js,
-// silently dropping every theme script on any 404 page. Plain, non-async
-// <script> tags in <head> are natively guaranteed to execute in document
-// order before the body parses, which is the same ordering guarantee the
-// jQuery plugin chain below needs, and are unaffected by Suspense/streaming.
+// Loaded as plain blocking <script> tags (not next/script's beforeInteractive
+// strategy) because that strategy's SSR-injection mechanism collides with the
+// Suspense boundary that wraps not-found.js, silently dropping every theme
+// script on any 404 page. Plain, non-async <script> tags are natively
+// guaranteed to execute in document order as the browser's own HTML parser
+// reaches them (unaffected by Suspense/streaming), which is the ordering
+// guarantee the jQuery plugin chain below needs.
+//
+// Placed at the end of <body> (not in <head>): buro-modules.min.js reads
+// `mkd.body = jQuery("body")` synchronously at parse time, not inside a
+// document-ready handler. A <head>-placed script runs before the browser has
+// parsed <body> at all, so that line captures an empty, permanently-stale
+// jQuery selection - silently breaking every feature gated on body classes
+// (sticky-on-scroll header, dark-header detection, boxed layout width, etc).
+// Running the scripts after <body>'s content has been parsed keeps document
+// order intact while guaranteeing document.body already exists.
 export const themeScripts = [
   "/theme/js/jquery.min.js",
   "/theme/js/jquery-migrate.min.js",
@@ -130,17 +139,6 @@ export default async function RootLayout({
         {site?.customCss && (
           <style id="wp-custom-css" dangerouslySetInnerHTML={{ __html: site.customCss }} />
         )}
-        {/* eslint-disable @next/next/no-sync-scripts -- intentional: see
-           themeScripts' own comment above for why these must block parsing
-           in document order rather than load async. */}
-        {themeScripts.map((src) => (
-          <script key={src} src={src} />
-        ))}
-        <script id="mkd-globals" dangerouslySetInnerHTML={{ __html: MKD_GLOBAL_VARS_SCRIPT }} />
-        {themeScriptsAfterGlobals.map((src) => (
-          <script key={src} src={src} />
-        ))}
-        {/* eslint-enable @next/next/no-sync-scripts */}
       </head>
       <body className="mkd-header-centered mkd-fixed-on-scroll mkd-default-mobile-header mkd-sticky-up-mobile-header mkd-dropdown-default mkd-dark-header mkd-header-style-on-scroll mkd-side-menu-slide-from-right">
         <CartProvider>
@@ -154,6 +152,17 @@ export default async function RootLayout({
           <LegacyAccordionUpgrade />
           <div id="modal-root"></div>
         </CartProvider>
+        {/* eslint-disable @next/next/no-sync-scripts -- intentional: see
+           themeScripts' own comment above for why these must block parsing
+           in document order rather than load async. */}
+        {themeScripts.map((src) => (
+          <script key={src} src={src} />
+        ))}
+        <script id="mkd-globals" dangerouslySetInnerHTML={{ __html: MKD_GLOBAL_VARS_SCRIPT }} />
+        {themeScriptsAfterGlobals.map((src) => (
+          <script key={src} src={src} />
+        ))}
+        {/* eslint-enable @next/next/no-sync-scripts */}
       </body>
     </html>
   );

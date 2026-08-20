@@ -47,13 +47,6 @@ export default async function GlobalNotFound() {
         {themeStylesheets.map((href) => (
           <link key={href} rel="stylesheet" href={href} />
         ))}
-        {themeScripts.map((src) => (
-          <script key={src} src={src} />
-        ))}
-        <script dangerouslySetInnerHTML={{ __html: MKD_GLOBAL_VARS_SCRIPT }} />
-        {themeScriptsAfterGlobals.map((src) => (
-          <script key={src} src={src} />
-        ))}
       </head>
       <body className="mkd-header-centered mkd-fixed-on-scroll mkd-default-mobile-header mkd-sticky-up-mobile-header mkd-dropdown-default mkd-dark-header mkd-header-style-on-scroll mkd-side-menu-slide-from-right">
         <Header menu={site?.mainMenu as any} />
@@ -62,6 +55,17 @@ export default async function GlobalNotFound() {
           <p>This page could not be found.</p>
         </main>
         <Footer site={site} />
+        {/* Scripts placed at the end of <body>, not <head> - see the
+           themeScripts comment in (frontend)/layout.tsx for why: theme JS
+           reads document.body synchronously at parse time, which is empty/
+           stale if the script runs before <body> has been parsed. */}
+        {themeScripts.map((src) => (
+          <script key={src} src={src} />
+        ))}
+        <script dangerouslySetInnerHTML={{ __html: MKD_GLOBAL_VARS_SCRIPT }} />
+        {themeScriptsAfterGlobals.map((src) => (
+          <script key={src} src={src} />
+        ))}
       </body>
     </html>
   );
