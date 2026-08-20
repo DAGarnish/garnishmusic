@@ -87,6 +87,15 @@ const COURSE_SCHEDULE_PAGES: Record<string, { productSlug: string; slotId: strin
 // an equivalent inline disclosure - see the ternary at its call site below.
 const COURSE_SCHEDULE_BY_PRODUCT_SLUG = new Map(Object.values(COURSE_SCHEDULE_PAGES).map((c) => [c.productSlug, c]));
 
+// ny's product/electronic-dj-class used to reuse
+// COURSE_SCHEDULE_PAGES["courses/electronic-dj-course"]'s buttons (shared
+// with MIA) - split out once that pair's PayPal-side price broke (see the
+// bottomPaypalButtons comment below) so fixing NY doesn't touch MIA's.
+const NY_DJ_CLASS_PAYPAL_BUTTONS: PayPalButton[] = [
+  { id: "DVBYCLCZLAZ34", title: "DJ Class Early Bird Registration" },
+  { id: "6E64BWEW8RLQN", title: "DJ Class Regular Registration" },
+];
+
 const EMPTY_RICHTEXT = {
   root: {
     type: "root",
@@ -349,10 +358,15 @@ export default async function CatchAllPage({ params }: Args) {
   // "product/electronic-dj-class" is an older, no-longer-linked alias for
   // the DJ product with no course-page equivalent of its own - it still
   // gets the DJ buttons at the bottom of the page (see render site below).
-  const bottomPaypalButtons =
-    slug.join("/") === "product/electronic-dj-class"
-      ? COURSE_SCHEDULE_PAGES["courses/electronic-dj-course"].paypalButtons
-      : COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))?.paypalButtons;
+  // It used to point at the same hosted buttons as MIA's courses/electronic-
+  // dj-course, but those buttons' PayPal-side price was changed externally
+  // (nothing in this repo touches a hosted button's price) to the full
+  // course price instead of the $500/$600 registration fee, so NY now has
+  // its own replacement button ids - MIA's stay on the original ones.
+  const isNyDjClass = slug.join("/") === "product/electronic-dj-class";
+  const bottomPaypalButtons = isNyDjClass
+    ? NY_DJ_CLASS_PAYPAL_BUTTONS
+    : COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))?.paypalButtons;
   const courseScheduleHtml = courseScheduleConfig
     ? await courseScheduleCache(`${site.id}:${courseScheduleConfig.productSlug}:schedule`, async () => {
         const payload = await getPayloadClient();
@@ -1025,7 +1039,7 @@ export default async function CatchAllPage({ params }: Args) {
           })()}
         </div>
       </div>
-      {bottomPaypalButtons && <PayPalHostedButtons buttons={bottomPaypalButtons} />}
+      {bottomPaypalButtons && <PayPalHostedButtons buttons={bottomPaypalButtons} checkoutOnly={isNyDjClass} />}
       <NextCohortBanner />
       <Footer site={site} />
     </>

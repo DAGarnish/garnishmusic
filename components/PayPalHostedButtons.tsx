@@ -10,18 +10,42 @@ const PAYPAL_SDK_SRC = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_
 
 export type PayPalButton = { id: string; title: string };
 
-function renderHostedButtons(buttons: PayPalButton[]) {
+function renderHostedButtons(buttons: PayPalButton[], checkoutOnly: boolean) {
   const paypal = (window as any).paypal;
   if (!paypal?.HostedButtons) return;
   for (const { id } of buttons) {
     const container = document.getElementById(`paypal-container-${id}`);
     if (container && !container.hasChildNodes()) {
-      paypal.HostedButtons({ hostedButtonId: id }).render(`#paypal-container-${id}`);
+      const rendered = paypal.HostedButtons({ hostedButtonId: id }).render(`#paypal-container-${id}`);
+      if (checkoutOnly) {
+        rendered.then(() => {
+          // The "Checkout" button (the only one left visible once
+          // checkoutOnly hides the "Pay with PayPal" smart button - see the
+          // per-container iframe[title="PayPal-paypal"] rule below) is a
+          // real <form method="POST" target="_top"> submit button, not SDK-
+          // internal navigation - target="_blank" is native, standard form
+          // behavior and doesn't touch how PayPal builds/submits the order
+          // itself, it only changes which browsing context the response
+          // opens in.
+          const form = container.querySelector("form");
+          if (form) form.target = "_blank";
+        });
+      }
     }
   }
 }
 
-export default function PayPalHostedButtons({ buttons }: { buttons: PayPalButton[] }) {
+export default function PayPalHostedButtons({
+  buttons,
+  // Only NY's product/electronic-dj-class buttons should hide "Pay with
+  // PayPal" and open Checkout in a new tab (by request) - every other page
+  // using this shared component (MIA's course-schedule disclosures, other
+  // product pages) keeps PayPal's default two-button, same-tab behavior.
+  checkoutOnly = false,
+}: {
+  buttons: PayPalButton[];
+  checkoutOnly?: boolean;
+}) {
   useEffect(() => {
     // PayPal's SDK logs this via console.error on button "commit" as internal
     // telemetry, not an actual failure — it fires because Pay Later is
@@ -54,6 +78,26 @@ export default function PayPalHostedButtons({ buttons }: { buttons: PayPalButton
            before class to receive $100 off") that's the only one of its
            kind across every hosted button on the site - hidden by request. */
         #paypal-container-HN8269LYEWPSG .item-description { display: none; }
+        ${
+          checkoutOnly
+            ? buttons
+                .map(
+                  ({ id }) =>
+                    // The "Pay with PayPal" smart button renders in its own
+                    // cross-origin iframe (title "PayPal-paypal", a fixed
+                    // Zoid/PayPal SDK naming convention - not something we
+                    // can reach into with CSS since it's a different
+                    // origin). Scoped to this instance's own container ids
+                    // (not every [id^="paypal-container-"] on the page) so
+                    // only checkoutOnly instances (NY) hide it. !important
+                    // because Zoid actively manages this iframe's inline
+                    // style attribute (sizing/visibility), which otherwise
+                    // wins over a plain display:none here.
+                    `#paypal-container-${id} iframe[title="PayPal-paypal"] { display: none !important; }`
+                )
+                .join("\n")
+            : ""
+        }
       `}</style>
       <div style={{ width: "100%", maxWidth: "800px" }}>
         <div style={{ display: "flex", gap: 40, flexWrap: "wrap", justifyContent: "center", width: "100%" }}>
@@ -78,8 +122,8 @@ export default function PayPalHostedButtons({ buttons }: { buttons: PayPalButton
       <Script
         src={PAYPAL_SDK_SRC}
         strategy="afterInteractive"
-        onLoad={() => renderHostedButtons(buttons)}
-        onReady={() => renderHostedButtons(buttons)}
+        onLoad={() => renderHostedButtons(buttons, checkoutOnly)}
+        onReady={() => renderHostedButtons(buttons, checkoutOnly)}
       />
     </div>
   );
