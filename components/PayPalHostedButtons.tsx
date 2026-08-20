@@ -83,17 +83,34 @@ export default function PayPalHostedButtons({
             ? buttons
                 .map(
                   ({ id }) =>
-                    // The "Pay with PayPal" smart button renders in its own
-                    // cross-origin iframe (title "PayPal-paypal", a fixed
-                    // Zoid/PayPal SDK naming convention - not something we
-                    // can reach into with CSS since it's a different
-                    // origin). Scoped to this instance's own container ids
-                    // (not every [id^="paypal-container-"] on the page) so
-                    // only checkoutOnly instances (NY) hide it. !important
-                    // because Zoid actively manages this iframe's inline
-                    // style attribute (sizing/visibility), which otherwise
-                    // wins over a plain display:none here.
-                    `#paypal-container-${id} iframe[title="PayPal-paypal"] { display: none !important; }`
+                    // The "Pay with PayPal" smart button lives in
+                    // #js-sdk-container-${id} (a Zoid-managed wrapper around
+                    // its own cross-origin iframe, title "PayPal-paypal" -
+                    // not something CSS can reach into since it's a
+                    // different origin). Hiding the whole wrapper - not just
+                    // the iframe inside it - matters because the wrapper
+                    // itself carries a ~25px reserved height independent of
+                    // its now-hidden child, which otherwise left a dead gap
+                    // between the schedule-letter textarea and Checkout.
+                    // Scoped to this instance's own container ids (not every
+                    // [id^="paypal-container-"] on the page) so only
+                    // checkoutOnly instances (NY) hide it. !important
+                    // because Zoid actively manages this element's own
+                    // inline style (sizing/visibility), which otherwise wins
+                    // over a plain display:none here.
+                    `#paypal-container-${id} #js-sdk-container-${id} { display: none !important; }
+        /* .paypal-buttons-layout's declared margin-top: 32px looks right in
+           isolation, but PayPal's own form fields above it (the
+           schedule-letter textarea plus a couple of empty, negative-margin
+           error-label spans) collapse against it per normal CSS margin-
+           collapsing rules, landing the actual visible gap around 51.5px
+           instead of 32px. 12.5px here is not a real spacing value - it's
+           reverse-engineered so that after collapsing with those fixed
+           siblings, the rendered gap comes out to exactly 32px (confirmed
+           empirically); it isn't derived from a formula, so if PayPal ever
+           changes that surrounding markup this will need re-tuning against
+           the live page. */
+        #paypal-container-${id} .paypal-buttons-layout.vertical { margin-top: 12.5px !important; }`
                 )
                 .join("\n")
             : ""
