@@ -16,8 +16,13 @@ function placeBanner(): boolean {
 
   document.querySelectorAll(`.${BANNER_CLASS}`).forEach((el) => el.remove());
 
+  // Pick whichever upcoming row starts soonest, not the first upcoming one
+  // in document order - some course pages don't list cohorts in
+  // chronological order (letters get reused and re-sorted across years).
   const todayIso = new Date().toISOString().slice(0, 10);
-  const nextRow = rows.find((row) => (row.dataset.cohortStart as string) >= todayIso);
+  const nextRow = rows
+    .filter((row) => (row.dataset.cohortStart as string) >= todayIso)
+    .sort((a, b) => (a.dataset.cohortStart as string).localeCompare(b.dataset.cohortStart as string))[0];
   if (!nextRow) return true;
 
   const banner = document.createElement("p");
