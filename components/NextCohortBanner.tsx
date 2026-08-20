@@ -10,6 +10,13 @@ const BANNER_CLASS = "next-cohort-banner";
 // fixed spot in the content: this finds whichever row is the next one that
 // hasn't started yet at render time, so the banner keeps moving down to the
 // next cohort on its own as each start date passes, with no manual edits.
+//
+// A row can optionally carry data-cohort-banner-html to override the banner
+// markup just for that page (see product/electronic-dj-class's "Next 👇🏽
+// Class" - add-dj-class-cohort-dates.ts tags every row with the same
+// override so whichever one ends up "next" still shows it), without
+// changing BANNER_TEXT/BANNER_CLASS's default for every other page using
+// this component.
 function placeBanner(): boolean {
   const rows = Array.from(document.querySelectorAll<HTMLElement>("[data-cohort-start]"));
   if (rows.length === 0) return false;
@@ -27,11 +34,17 @@ function placeBanner(): boolean {
 
   const banner = document.createElement("p");
   banner.className = BANNER_CLASS;
-  banner.style.textAlign = "center";
   banner.style.fontWeight = "bold";
   banner.style.color = "#ce1713";
   banner.style.fontSize = "1.2rem";
-  banner.textContent = BANNER_TEXT;
+  const overrideHtml = nextRow.dataset.cohortBannerHtml;
+  if (overrideHtml) {
+    banner.style.textAlign = nextRow.style.textAlign || "left";
+    banner.innerHTML = overrideHtml;
+  } else {
+    banner.style.textAlign = "center";
+    banner.textContent = BANNER_TEXT;
+  }
   nextRow.before(banner);
   return true;
 }

@@ -4,7 +4,21 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Accordion, type AccordionItemData } from "./ui/Accordion";
 
-type Target = { container: HTMLElement; items: AccordionItemData[]; variant: "light" | "onDark" };
+type Target = {
+  container: HTMLElement;
+  items: AccordionItemData[];
+  variant: "light" | "onDark";
+  defaultOpenIds: string[];
+};
+
+function slugify(title: string): string {
+  return (
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "section"
+  );
+}
 
 // The legacy WPBakery [mkd_accordion] shortcode (see wp-shortcode-render.ts)
 // renders a jQuery-UI-driven accordion whose title bar is a fixed
@@ -24,15 +38,27 @@ export default function LegacyAccordionUpgrade() {
   const [targets, setTargets] = useState<Target[]>([]);
 
   useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    const usedSlugs = new Set<string>();
     const holders = Array.from(document.querySelectorAll<HTMLElement>(".mkd-accordion-holder"));
     const found: Target[] = holders.map((holder) => {
       const titleEls = Array.from(holder.querySelectorAll<HTMLElement>(":scope > .mkd-title-holder"));
-      const items: AccordionItemData[] = titleEls.map((titleEl, i) => {
+      const defaultOpenIds: string[] = [];
+      const items: AccordionItemData[] = titleEls.map((titleEl) => {
         const contentEl = titleEl.nextElementSibling as HTMLElement | null;
         const title = titleEl.querySelector(".mkd-tab-title-inner")?.textContent?.trim() ?? "";
         const innerHtml = contentEl?.querySelector(".mkd-accordion-content-inner")?.innerHTML ?? "";
+        // A slug per tab (e.g. "Schedules" -> "schedules") rather than a
+        // plain positional index, so a URL fragment like #schedules can
+        // link straight to - and auto-open - a specific tab (see the hash
+        // check below). Deduped page-wide (not just within this holder) in
+        // case two tabs anywhere on the page share a title.
+        let id = slugify(title);
+        while (usedSlugs.has(id)) id = `${id}-2`;
+        usedSlugs.add(id);
+        if (id === hash) defaultOpenIds.push(id);
         return {
-          id: `${i}`,
+          id,
           title,
           content: <div dangerouslySetInnerHTML={{ __html: innerHtml }} />,
         };
@@ -42,7 +68,7 @@ export default function LegacyAccordionUpgrade() {
       // it's cleared below, so the swapped-in Accordion keeps light text
       // instead of defaulting to the light-background dark-gray title color.
       const variant: "light" | "onDark" = holder.classList.contains("mkd-accordion-white") ? "onDark" : "light";
-      return { container: holder, items, variant };
+      return { container: holder, items, variant, defaultOpenIds };
     });
 
     // Clear the legacy markup now that its content has been read out, so
@@ -55,12 +81,25 @@ export default function LegacyAccordionUpgrade() {
     setTargets(found);
   }, []);
 
+  // The browser's own "scroll to #hash on load" pass runs before this
+  // upgrade has mounted anything with that id, so it finds nothing - redo it
+  // once the matching tab's trigger button actually exists in the DOM.
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+    const trigger = document.getElementById(`${hash}-trigger`);
+    trigger?.scrollIntoView({ block: "start" });
+  }, [targets]);
+
   return (
     <>
       {targets.map(
-        ({ container, items, variant }, i) =>
+        ({ container, items, variant, defaultOpenIds }, i) =>
           items.length > 0 &&
-          createPortal(<Accordion key={i} items={items} mode="single" variant={variant} />, container)
+          createPortal(
+            <Accordion key={i} items={items} mode="single" variant={variant} defaultOpenIds={defaultOpenIds} />,
+            container
+          )
       )}
     </>
   );
