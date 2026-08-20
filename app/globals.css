@@ -776,3 +776,49 @@ p:has(+ .mkd-accordion-holder) {
 .paragraph-spacing {
   padding: 5px;
 }
+
+/* mkd_icon_with_text's "left-from-title" layout (scripts/wp-shortcode-
+   render.ts's mkd_icon_with_text case) lays the icon and title out with
+   buro-modules.css's `display: inline-block; vertical-align: middle` and no
+   breakpoint of its own - the title wraps below the icon purely once it runs
+   out of room, which depends on how long that instance's own title text is.
+   Two instances sitting side by side in equal-width columns (e.g. ny's
+   /private-instruction/: "Private Instruction" next to the much longer
+   "Locations in Brooklyn & Manhattan") then wrap at different viewport
+   widths instead of together, since one title is longer than the other -
+   confirmed no @media rule for .mkd-iwt exists in either buro-modules.css or
+   buro-modules-responsive.css. Switch to a flex row that keeps the icon
+   pinned beside the title at every width; the title's own text wraps
+   internally instead of the whole title ever dropping below the icon, so
+   every instance behaves identically regardless of its title length. */
+.mkd-iwt.mkd-iwt-left-from-title .mkd-iwt-icon-title-holder {
+  display: flex;
+  align-items: center;
+}
+.mkd-iwt.mkd-iwt-left-from-title .mkd-iwt-icon-holder {
+  display: block;
+  flex-shrink: 0;
+}
+.mkd-iwt.mkd-iwt-left-from-title .mkd-iwt-title-holder {
+  display: block;
+  min-width: 0;
+}
+
+/* Bouncing down-arrow for the "Next ↓ Class" marker inserted above the
+   currently-next-to-start cohort row on schedule listings (e.g.
+   product/electronic-dj-class's Schedules accordion). A shared class rather
+   than a one-off inline <style> block, since wpRawContent is rendered as
+   plain HTML with no per-instance style injection for content like this. */
+@keyframes next-class-arrow-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+.next-class-arrow {
+  display: inline-block;
+  animation: next-class-arrow-bounce 1s ease-in-out infinite;
+}
