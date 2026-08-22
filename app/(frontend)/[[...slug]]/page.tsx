@@ -21,6 +21,7 @@ import { buildHeroSliderResolver } from "../../../lib/wp-hero-slider-resolver";
 import { buildBlogListResolver } from "../../../lib/wp-blog-list-resolver";
 import { resolvePartners } from "../../../lib/wp-partners-resolver";
 import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
+import { isCoursePagePath } from "../../../lib/course-pages";
 import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
 import { createTtlCache } from "../../../lib/ttl-cache";
 
@@ -339,6 +340,13 @@ export default async function CatchAllPage({ params }: Args) {
         Awaited<ReturnType<typeof buildBlogListResolver>>,
         Awaited<ReturnType<typeof resolvePartners>>,
       ];
+    // Course/program landing pages should send every body-content link to
+    // a new tab (see lib/course-pages.ts for how "course page" is
+    // determined - via the site's own courses/programs nav branch, which
+    // is accurate and self-maintaining network-wide, unlike sniffing page
+    // content for a heading that turned out not to be present on every
+    // site's course pages).
+    const isCourseLikePage = isCoursePagePath(site.mainMenu as any, site.domain, slug.join("/"));
     styledHtml = wpContentToStyledHtml(
       doc.wpRawContent as string,
       resolveImage,
@@ -346,7 +354,8 @@ export default async function CatchAllPage({ params }: Args) {
       resolveTestimonials,
       resolveHeroSlider,
       resolveBlogList,
-      partners
+      partners,
+      isCourseLikePage
     );
   }
 

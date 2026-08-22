@@ -1259,6 +1259,25 @@ function wpautopPreservingShortcodes(rawContent: string): string {
     .replace(/ SC(\d+) /g, (_m, idx) => placeholders[Number(idx)]);
 }
 
+// Matches any <a ...> open tag so callers that want every outbound link on
+// a page to open in a new tab (e.g. course/program landing pages, see
+// openLinksInNewTab below) can do it as one pass over the final HTML string
+// rather than threading a flag through every renderNode case that can ever
+// emit an <a> (free-form WYSIWYG body copy, [vc_btn], instructor links,
+// etc.) - those anchors are almost all literal HTML already present in the
+// WPBakery content, not shortcode-authored, so there's no single choke
+// point to intercept them at during the tree walk.
+const ANCHOR_OPEN_TAG_RE = /<a\b[^>]*>/gi;
+
+function addTargetBlankToLinks(html: string): string {
+  return html.replace(ANCHOR_OPEN_TAG_RE, (tag) => {
+    if (!/\bhref\s*=/i.test(tag)) return tag; // not a real link (e.g. a bare <a name="..."> anchor)
+    if (/\btarget\s*=/i.test(tag)) return tag; // already has an explicit target - respect whatever the content author chose
+    // <a ...> tags are never self-closed, so the tag always ends in ">".
+    return `${tag.slice(0, -1)} target="_blank" rel="noopener noreferrer">`;
+  });
+}
+
 export function wpContentToStyledHtml(
   rawContent: string,
   resolveImage: ImageUrlResolver,
@@ -1266,10 +1285,17 @@ export function wpContentToStyledHtml(
   resolveTestimonials: TestimonialsResolver = () => [],
   resolveHeroSlider: HeroSliderResolver = () => [],
   resolveBlogList: BlogListResolver = () => [],
-  partners: PartnerItem[] = []
+  partners: PartnerItem[] = [],
+  // Course/program landing pages (identified by the caller - see page.tsx's
+  // isCourseLikePage) should send every body-content link to a new tab, so
+  // a visitor following an outbound link (partner site, "here" download,
+  // Contact Admissions, etc.) never loses their place on the course page
+  // itself. Off by default so every other page (blog posts, instructor
+  // bios, the homepage, contact pages...) keeps normal same-tab links.
+  openLinksInNewTab = false
 ): string {
   const tree = parseShortcodes(wpautopPreservingShortcodes(rawContent || ""));
-  return renderChildren(tree, {
+  const html = renderChildren(tree, {
     resolveImage,
     resolvePortfolioList,
     resolveTestimonials,
@@ -1278,6 +1304,6 @@ export function wpContentToStyledHtml(
     partners,
     firstRowState: { done: false },
   });
+  return openLinksInNewTab ? addTargetBlankToLinks(html) : html;
 }
 // force rebuild for accordion revert
-// force rebuild Next
