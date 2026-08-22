@@ -516,6 +516,27 @@ footer {
   color: #fff !important;
 }
 
+/* LegacyAccordionUpgrade (components/LegacyAccordionUpgrade.tsx) replaces
+   the raw .mkd-accordion-holder markup client-side with the React
+   Accordion component, which already gives its trigger title span the
+   right color via Tailwind (white text on the "red"/"onDark" variants) -
+   but on any page where the [mkd_accordion] shortcode sits inside a
+   [vc_column_text] (e.g. songcraft-production-program's "Who is this
+   Program for?" accordion), that title span is still a descendant of
+   .wpb_text_column, so the black-forcing rule above still matches it by
+   plain "span" and silently overrides Tailwind's non-!important
+   text-white/text-inherit class - confirmed live: the trigger bar itself
+   rendered the intended red/white correctly, only the title text inside it
+   stayed black. Force it back to whatever color the surrounding
+   button/holder already resolved to (white for "red"/"onDark", the normal
+   dark text for "light") rather than hardcoding one color here. Needs
+   class+class+type (not just the one class) to actually outrank
+   `.wpb_text_column span` above - a bare `.mkd-accordion-trigger-title`
+   is lower specificity than that 2-part selector and still lost. */
+span.mkd-accordion-trigger-title.text-base {
+  color: inherit !important;
+}
+
 /* WPBakery <ul> content lost its bullet markers entirely under Tailwind's
    preflight reset (list-style: none on every ul/ol sitewide), with nothing
    restoring them for plain WPBakery text-column lists - e.g. the homepage

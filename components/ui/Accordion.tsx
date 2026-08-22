@@ -107,7 +107,7 @@ export function Accordion({
                 onClick={() => toggle(id)}
                 onKeyDown={(e) => onKeyDown(e, i)}
               >
-                <span className="text-base">{item.title}</span>
+                <span className="text-base mkd-accordion-trigger-title">{item.title}</span>
                 <svg
                   aria-hidden="true"
                   className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
