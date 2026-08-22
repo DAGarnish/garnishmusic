@@ -516,6 +516,30 @@ footer {
   color: #fff !important;
 }
 
+/* WPBakery <ul> content lost its bullet markers entirely under Tailwind's
+   preflight reset (list-style: none on every ul/ol sitewide), with nothing
+   restoring them for plain WPBakery text-column lists - e.g. the homepage
+   program-card curricula rendered as a run of unbulleted lines,
+   indistinguishable from a paragraph. Mirrors the .raw-html-block bullet
+   treatment above: a red "•" via ::before rather than list-style, for the
+   same cross-browser marker-box-sizing reasons. */
+.wpb_text_column ul {
+  list-style-type: none;
+  padding-left: 1.5rem;
+}
+
+.wpb_text_column ul li {
+  position: relative;
+}
+
+.wpb_text_column ul li::before {
+  content: "•";
+  color: #cc0000;
+  position: absolute;
+  left: -1rem;
+  font-weight: bold;
+}
+
 /* Aggressively remove all margins between accordion items so they touch */
 .mkd-accordion-holder {
   margin-top: 0 !important;
