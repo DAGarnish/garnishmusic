@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import PayPalHostedButtons, { type PayPalButton } from "./PayPalHostedButtons";
+import { Accordion } from "./ui/Accordion";
 
 // Portals into a slot marked by id inside a larger dangerouslySetInnerHTML
 // blob, rather than splicing this markup directly into that raw HTML
@@ -40,25 +41,20 @@ export default function CourseScheduleDisclosure({
   if (!target) return null;
 
   return createPortal(
-    <details style={{ width: "100%", margin: "0 0 1rem" }}>
-      <summary
-        style={{
-          cursor: "pointer",
-          textAlign: "center",
-          fontSize: "1.5rem",
-          fontWeight: "bold",
-          marginTop: "10px",
-          marginBottom: "1rem",
-          color: "#ce1713",
-        }}
-      >
-        View Course Schedule & Details
-      </summary>
-      <div style={{ padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
-        <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: html }} />
-        {paypalButtons && paypalButtons.length > 0 && <PayPalHostedButtons buttons={paypalButtons} />}
-      </div>
-    </details>,
+    <Accordion
+      items={[
+        {
+          id: targetId,
+          title: "View Course Schedule & Details",
+          content: (
+            <div className="text-center">
+              <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: html }} />
+              {paypalButtons && paypalButtons.length > 0 && <PayPalHostedButtons buttons={paypalButtons} />}
+            </div>
+          ),
+        },
+      ]}
+    />,
     target
   );
 }

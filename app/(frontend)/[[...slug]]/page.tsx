@@ -10,6 +10,7 @@ import PortfolioShare from "../../../components/PortfolioShare";
 import AddToCart from "../../../components/AddToCart";
 import PayPalHostedButtons, { type PayPalButton } from "../../../components/PayPalHostedButtons";
 import CourseScheduleDisclosure from "../../../components/CourseScheduleDisclosure";
+import { Accordion } from "../../../components/ui/Accordion";
 import NextCohortBanner from "../../../components/NextCohortBanner";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
@@ -923,18 +924,22 @@ export default async function CatchAllPage({ params }: Args) {
                     </div>
                   )}
                   {COURSE_SCHEDULE_BY_PRODUCT_SLUG.has(slug.join("/")) ? (
-                    <details style={{ marginBottom: "2rem" }}>
-                      <summary style={{ cursor: "pointer", textAlign: "center", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem", color: "#ce1713" }}>
-                        View Course Schedule & Details
-                      </summary>
-                      <div style={{ padding: "1rem", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
-                        <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
-                        {(() => {
-                          const buttons = COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))!.paypalButtons;
-                          return buttons && buttons.length > 0 && <PayPalHostedButtons buttons={buttons} />;
-                        })()}
-                      </div>
-                    </details>
+                    <Accordion
+                      items={[
+                        {
+                          title: "View Course Schedule & Details",
+                          content: (
+                            <div className="text-center">
+                              <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: styledHtml }} />
+                              {(() => {
+                                const buttons = COURSE_SCHEDULE_BY_PRODUCT_SLUG.get(slug.join("/"))!.paypalButtons;
+                                return buttons && buttons.length > 0 && <PayPalHostedButtons buttons={buttons} />;
+                              })()}
+                            </div>
+                          ),
+                        },
+                      ]}
+                    />
                   ) : courseScheduleConfig && courseScheduleHtml ? (
                     // portfolioCustomTemplate courses (e.g. Ableton's, which
                     // renders full-width per its own template rather than the
