@@ -1109,7 +1109,11 @@ function renderNode(node: ShortcodeNode, ctx: RenderContext): string {
       // illegible against the photo backgrounds these accordions sit on.
       // Emitting the color_style as a class lets CSS give every such
       // instance readable white titles at once instead of patching content.
-      const colorClass = attrs.color_style === "white" ? " mkd-accordion-white" : "";
+      // color_style="red" is the same idea for a solid brand-red trigger bar
+      // (see LegacyAccordionUpgrade's "red" variant) - a call-to-action
+      // accordion rather than a dark-background readability fix.
+      const colorClass =
+        attrs.color_style === "white" ? " mkd-accordion-white" : attrs.color_style === "red" ? " mkd-accordion-red" : "";
       return `<div class="mkd-accordion-holder clearfix mkd-accordion mkd-initial${colorClass}">${renderChildren(
         children,
         ctx

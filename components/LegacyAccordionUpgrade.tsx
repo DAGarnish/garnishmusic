@@ -7,7 +7,7 @@ import { Accordion, type AccordionItemData } from "./ui/Accordion";
 type Target = {
   container: HTMLElement;
   items: AccordionItemData[];
-  variant: "light" | "onDark";
+  variant: "light" | "onDark" | "red";
   defaultOpenIds: string[];
 };
 
@@ -74,11 +74,16 @@ export default function LegacyAccordionUpgrade() {
           content: <div dangerouslySetInnerHTML={{ __html: innerHtml }} />,
         };
       });
-      // [mkd_accordion color_style="white"] (see wp-shortcode-render.ts) is
-      // the dark/photo-background variant - read the marker class before
-      // it's cleared below, so the swapped-in Accordion keeps light text
-      // instead of defaulting to the light-background dark-gray title color.
-      const variant: "light" | "onDark" = holder.classList.contains("mkd-accordion-white") ? "onDark" : "light";
+      // [mkd_accordion color_style="white"|"red"] (see wp-shortcode-render.ts)
+      // - read the marker class before it's cleared below, so the swapped-in
+      // Accordion keeps the intended non-default title color: "white" for
+      // legible titles over a dark/photo section background, "red" for a
+      // solid brand-red call-to-action trigger bar.
+      const variant: "light" | "onDark" | "red" = holder.classList.contains("mkd-accordion-red")
+        ? "red"
+        : holder.classList.contains("mkd-accordion-white")
+          ? "onDark"
+          : "light";
       return { container: holder, items, variant, defaultOpenIds };
     });
 

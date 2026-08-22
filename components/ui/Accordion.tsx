@@ -27,7 +27,10 @@ export function Accordion({
   // color_style="white"] (see LegacyAccordionUpgrade) - these sit over a
   // photo/dark section background, where the default near-black title text
   // is illegible.
-  variant?: "light" | "onDark";
+  // "red": [mkd_accordion color_style="red"] - a solid brand-red trigger bar
+  // with white title/arrow, for accordions meant to stand out as a call to
+  // action rather than blend into the surrounding content.
+  variant?: "light" | "onDark" | "red";
 }) {
   const baseId = useId();
   const ids = items.map((item, i) => item.id ?? `${baseId}-${i}`);
@@ -74,9 +77,10 @@ export function Accordion({
   };
 
   const onDark = variant === "onDark";
+  const red = variant === "red";
 
   return (
-    <div className={`divide-y ${onDark ? "divide-white/20" : "divide-gray-200"} ${className ?? ""}`}>
+    <div className={`divide-y ${onDark ? "divide-white/20" : red ? "divide-white/25" : "divide-gray-200"} ${className ?? ""}`}>
       {items.map((item, i) => {
         const id = ids[i];
         const open = openIds.has(id);
@@ -92,7 +96,11 @@ export function Accordion({
                   triggerRefs.current[i] = el;
                 }}
                 className={`group flex w-full items-center justify-between gap-4 py-5 px-4 text-left font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#cc0000] ${
-                  onDark ? "text-white hover:bg-white/10" : "text-gray-900 hover:bg-gray-50"
+                  red
+                    ? "bg-[#ce1713] text-white hover:bg-[#b31411]"
+                    : onDark
+                      ? "text-white hover:bg-white/10"
+                      : "text-gray-900 hover:bg-gray-50"
                 }`}
                 aria-expanded={open}
                 aria-controls={panelId}
@@ -103,8 +111,8 @@ export function Accordion({
                 <svg
                   aria-hidden="true"
                   className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
-                    onDark ? "text-white/70" : "text-gray-500"
-                  } ${open ? "rotate-180 text-[#cc0000]" : "group-hover:text-[#cc0000]"}`}
+                    red ? "text-white" : onDark ? "text-white/70" : "text-gray-500"
+                  } ${open ? (red ? "rotate-180" : "rotate-180 text-[#cc0000]") : red ? "" : "group-hover:text-[#cc0000]"}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
