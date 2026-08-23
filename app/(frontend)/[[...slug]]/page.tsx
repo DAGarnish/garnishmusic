@@ -948,6 +948,7 @@ export default async function CatchAllPage({ params }: Args) {
                           ),
                         },
                       ]}
+                      variant="red"
                     />
                   ) : courseScheduleConfig && courseScheduleHtml ? (
                     // portfolioCustomTemplate courses (e.g. Ableton's, which

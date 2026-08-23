@@ -54,6 +54,7 @@ export default function CourseScheduleDisclosure({
           ),
         },
       ]}
+      variant="red"
     />,
     target
   );
