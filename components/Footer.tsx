@@ -34,3 +34,4 @@ export default async function Footer({ site }: { site?: FooterSite } = {}) {
 // trigger rebuild
 // trigger rebuild
 // trigger rebuild css
+// trigger rebuild after removing Bournemouth footer link
