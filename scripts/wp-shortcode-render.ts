@@ -364,7 +364,7 @@ function renderPartners(ctx: RenderContext): string {
   }
 
   return `<div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper">
-  <div class="wpb_text_column wpb_content_element"><div class="wpb_wrapper"><h2 style="text-align:center">Some of our partners</h2></div></div>
+  <div class="wpb_text_column wpb_content_element"><div class="wpb_wrapper"><h2 style="text-align:center; font-size: 27px; line-height: 1.25;">Some of Our Partners</h2></div></div>
   ${rows.join("")}
 </div></div></div>`;
 }
