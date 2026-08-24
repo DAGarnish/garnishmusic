@@ -333,24 +333,26 @@ function renderPartners(ctx: RenderContext): string {
   // logos across three separate [vc_row_inner el_class="alignment-of-
   // images"] blocks of 4 each, not one row of 12 - confirmed by pulling the
   // raw shortcode source directly (bcn's homepage, the same content bytes
-  // this global replaces). That distinction matters here specifically
-  // because .alignment-of-images .mkd-section-inner-margin carries a
-  // site/page-level custom-CSS rule (display:flex, no wrap) meant to
-  // vertically-center exactly 4 same-width flex items per row. Flattening
-  // all 12 into one such flex row (as this function used to) doesn't just
-  // look different - flex's default no-wrap means those 12 items each
-  // claiming 25% width (1200% of the row) get shrunk down to ~8% each
-  // instead, visibly crushing all 12 logos into a single illegible strip.
+  // this global replaces). Per-page custom CSS (pulled from Payload's
+  // pages.customCss on the pages that carry it) sets
+  // `.alignment-of-images .mkd-section-inner-margin{display:flex}` with no
+  // explicit flex-wrap (default nowrap) and `img.vc_single_image-img.
+  // attachment-full{width:75%}` - so each column's own WPBakery grid width
+  // (vc_col-sm-N) becomes its flex-basis, and an inline `width` on the img
+  // (not just max-width) is needed to beat that external 75% rule outright
+  // regardless of the now-wider column. 2 per row (vc_col-sm-6, 50% width)
+  // instead of 4 (vc_col-sm-3) means 6 rows instead of 3, each logo fixed
+  // to a small pixel size rather than scaling with the column.
   const rows: string[] = [];
-  for (let i = 0; i < ctx.partners.length; i += 4) {
+  for (let i = 0; i < ctx.partners.length; i += 2) {
     const rowLogos = ctx.partners
-      .slice(i, i + 4)
+      .slice(i, i + 2)
       .map((p) => {
         const isApple = (p.name || "").toLowerCase().includes("apple") || p.imageUrl.toLowerCase().includes("apple");
-        const maxWidth = isApple ? "52%" : "75%";
-        const img = `<figure class="wpb_wrapper vc_figure" style="text-align: center; margin: 0;"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img" style="max-width: ${maxWidth}; height: auto; margin: 0 auto; display: block;"/></figure>`;
+        const logoWidth = isApple ? "70px" : "100px";
+        const img = `<figure class="wpb_wrapper vc_figure" style="text-align: center; margin: 0;"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img" style="width: ${logoWidth}; max-width: 100%; height: auto; margin: 0 auto; display: block;"/></figure>`;
         const linked = p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">${img}</a>` : img;
-        return `<div class="wpb_column vc_column_container vc_col-sm-3"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
+        return `<div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
       })
       .join("");
     rows.push(
