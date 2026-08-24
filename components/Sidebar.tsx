@@ -9,15 +9,29 @@ type SidebarSite = {
   sidebarYelpImage?: unknown;
 };
 
-// The "sidebar" widget area (Yelp banner, Recent Posts, Search) is
+// The "sidebar" widget area (Yelp banner, Featured Posts, Search) is
 // network-wide static chrome, not page content - confirmed against
 // production, where the Yelp widget's shortcode (mkd_image_with_text,
 // attachment id 10041, same title/link text) is byte-identical across
 // every site's wp_options, and only the resolved image URL differs
 // because each site independently has its own copy of the same file in
-// its own media library. Recent Posts always pulls from edu's posts now
+// its own media library. Featured Posts always pulls from edu's posts now
 // (see scripts/migrate-blog-posts.ts - every site's blog content was
 // consolidated there for SEO), opening in a new tab from any other site.
+//
+// FEATURED_CATEGORY_ID (806, edu's "Featured" category, slug "featured" -
+// not to be confused with the separate 1-post "featured-archives" category
+// that happens to share the display name) is the real, already-established
+// curation mechanism: 23 posts already carry this tag from the original WP
+// migration. Tag any post with it in the admin to make it eligible here.
+const FEATURED_CATEGORY_ID = 806;
+// "360-Degree Video Footage Of A Class" is explicitly pinned per an
+// editorial request - it's tagged with FEATURED_CATEGORY_ID like any other
+// featured post, but its 2017 publishedDate means a plain "N most recent
+// featured posts" query would never surface it against 2022-dated peers,
+// so it's guaranteed a slot below rather than left to compete on recency.
+const PINNED_SLUG = "360-degree-video-footage-of-a-class";
+
 export default async function Sidebar({ site }: { site: SidebarSite }) {
   const payload = await getPayloadClient();
   const ctx = await getUrlRewriteContext();
@@ -25,13 +39,30 @@ export default async function Sidebar({ site }: { site: SidebarSite }) {
   const eduSite = allSites.find((s: any) => s.slug === "edu") || site;
   const linksOffSite = site.slug !== "edu";
 
-  const recentPosts = await payload.find({
-    collection: "posts",
-    where: { site: { equals: eduSite.id } },
-    sort: "-publishedDate",
-    limit: 5,
-    depth: 0,
-  });
+  const [pinned, otherFeatured] = await Promise.all([
+    payload.find({
+      collection: "posts",
+      where: { and: [{ site: { equals: eduSite.id } }, { slug: { equals: PINNED_SLUG } }] },
+      limit: 1,
+      depth: 0,
+    }),
+    payload.find({
+      collection: "posts",
+      where: {
+        and: [
+          { site: { equals: eduSite.id } },
+          { status: { equals: "published" } },
+          { categories: { in: [FEATURED_CATEGORY_ID] } },
+          { slug: { not_equals: PINNED_SLUG } },
+        ],
+      },
+      sort: "-publishedDate",
+      limit: 4,
+      depth: 0,
+    }),
+  ]);
+
+  const recentPosts = { docs: [...pinned.docs, ...otherFeatured.docs] };
 
   const yelpImage =
     site.sidebarYelpImage && typeof site.sidebarYelpImage === "object"
@@ -71,7 +102,7 @@ export default async function Sidebar({ site }: { site: SidebarSite }) {
       </div>
       {recentPosts.docs.length > 0 && (
         <div id="recent-posts-2" className="widget widget_recent_entries">
-          <h5 className="mkd-widget-title">Recent Posts</h5>
+          <h5 className="mkd-widget-title">Featured Posts</h5>
           <ul>
             {recentPosts.docs.map((post) => (
               <li key={post.id}>

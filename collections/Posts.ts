@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
-import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { BlocksFeature, lexicalEditor } from "@payloadcms/richtext-lexical";
+import { VideoBlock } from "../blocks/Video";
 
 export const Posts: CollectionConfig = {
   slug: "posts",
@@ -60,7 +61,14 @@ export const Posts: CollectionConfig = {
     {
       name: "content",
       type: "richText",
-      editor: lexicalEditor(),
+      // Blog post bodies otherwise have no way to embed a playable video -
+      // BlocksFeature adds the same "video" block already used by the
+      // pages `layout` field (blocks/Video.ts, rendered by
+      // components/blocks/BlockRenderer.tsx's VideoBlock) so a post's
+      // Lexical content can embed one inline between paragraphs.
+      editor: lexicalEditor({
+        features: ({ defaultFeatures }) => [...defaultFeatures, BlocksFeature({ blocks: [VideoBlock] })],
+      }),
     },
     {
       name: "excerpt",

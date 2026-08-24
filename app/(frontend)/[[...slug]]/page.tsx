@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { RichText } from "@payloadcms/richtext-lexical/react";
+import { RichText, type JSXConvertersFunction } from "@payloadcms/richtext-lexical/react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import Sidebar from "../../../components/Sidebar";
@@ -24,6 +24,37 @@ import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
 import { isCoursePagePath } from "../../../lib/course-pages";
 import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
 import { createTtlCache } from "../../../lib/ttl-cache";
+
+// Blog post bodies get the "video" block (blocks/Video.ts, added to
+// Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
+// playable YouTube video inline between paragraphs, not just at the top as
+// a featuredImage. Mirrors the styling BlockRenderer's VideoBlock uses for
+// the same block type on pages' `layout` field.
+const postRichTextConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
+  ...defaultConverters,
+  blocks: {
+    video: ({ node }) => (
+      <div style={{ margin: "2rem 0", borderRadius: 14, overflow: "hidden", aspectRatio: "16 / 9" }}>
+        <iframe
+          src={(node.fields as any).link}
+          style={{ width: "100%", height: "100%", border: 0, display: "block" }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          // The legacy theme still loads fluidvids.js on every page (see
+          // layout.tsx's themeScripts), which scans for any
+          // youtube.com/vimeo iframe on DOMContentLoaded and rewraps it in
+          // a `.fluidvids` div via direct DOM mutation - racing React's own
+          // hydration of this exact node and throwing a hydration-mismatch
+          // error. data-fluidvids is the attribute fluidvids.js itself
+          // checks to skip already-processed iframes; this embed is already
+          // responsive via the aspect-ratio wrapper above, so marking it
+          // pre-handled opts it out instead of fighting the script.
+          data-fluidvids="loaded"
+        />
+      </div>
+    ),
+  },
+});
 
 // Same 30s-window tradeoff already accepted for site config in
 // sites-cache.ts: content edits can take up to this long to show up on a
@@ -512,7 +543,7 @@ export default async function CatchAllPage({ params }: Args) {
                                   />
                                 </div>
                               )}
-                            <RichText data={doc.content || EMPTY_RICHTEXT} />
+                            <RichText data={doc.content || EMPTY_RICHTEXT} converters={postRichTextConverters} />
                           </div>
                         </div>
                       </div>
