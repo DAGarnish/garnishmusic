@@ -78,7 +78,20 @@ export default async function Header({
     // lazily on scroll - doubles as the "no visible offset" the previous
     // transform:none here provided, since translateZ(0,0,0) has no visual
     // effect on its own.
-    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: translateZ(0) !important; -webkit-transform: translateZ(0) !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } .mkd-mobile-nav { position: fixed !important; top: 100px !important; left: 0 !important; right: 0 !important; z-index: 999 !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; transform: translateZ(0) !important; -webkit-transform: translateZ(0) !important; } .mkd-mobile-nav a, .mkd-mobile-nav h4 { padding-left: 8px !important; } }</style>";
+    // buro-modules.css gives .mkd-mobile-header (the outer, non-fixed
+    // wrapper around the header-inner/nav below) a base z-index:101 -
+    // fine on its own, but page heroes styled with the "has background
+    // image" title variant (.mkd-title.mkd-has-background, e.g. this
+    // page's "1-on-1 Private Instruction" banner) get that exact same
+    // z-index:101 from the same stylesheet. Equal z-index ties resolve by
+    // DOM order, and the hero renders after the header - so it paints on
+    // top. z-index on a descendant (.mkd-mobile-nav's 999 below) can only
+    // out-rank *siblings within its own ancestor's stacking context*; it
+    // can't escape a losing z-index tie at the .mkd-mobile-header level
+    // itself, which is exactly what made the opened dropdown - tall
+    // enough to reach into the hero's vertical space - disappear behind
+    // it despite its own much higher z-index.
+    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; z-index: 1001 !important; } .mkd-mobile-header-inner { position: fixed !important; transform: translateZ(0) !important; -webkit-transform: translateZ(0) !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } .mkd-mobile-nav { position: fixed !important; top: 100px !important; left: 0 !important; right: 0 !important; z-index: 999 !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; transform: translateZ(0) !important; -webkit-transform: translateZ(0) !important; } .mkd-mobile-nav a, .mkd-mobile-nav h4 { padding-left: 8px !important; } }</style>";
 
   // header-after-nav.html's .mkd-mobile-header shell has a placeholder
   // comment where the mobile nav list goes - see menuTreeToMobileHtml for
