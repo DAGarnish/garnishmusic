@@ -621,8 +621,17 @@ p:has(+ .mkd-accordion-holder) {
    floated, un-stacked columns squeezed into a narrow phone screen instead
    of the intended full-width stacked layout. Restore that missing
    breakpoint so columns stack edge-to-edge on mobile, same as they would
-   under stock Bootstrap 3. */
-@media (max-width: 767px) {
+   under stock Bootstrap 3.
+   Widened from the phone-only 767px this block otherwise uses (see below)
+   to 1024px - the same tablet/mobile-header breakpoint used elsewhere in
+   this codebase - specifically for this rule: at iPad width (768-1024px,
+   above 767px) these same multi-column rows were still splitting into
+   their raw WPBakery percentage widths, most visibly a 3-column text
+   layout (e.g. a course page's "Course Highlights" / "Prerequisites"
+   columns) squeezed into ~150px-wide slivers wrapping nearly every word
+   onto its own line. Sitewide, since every page reuses these same
+   .vc_col-sm-N classes. */
+@media (max-width: 1024px) {
   .vc_col-sm-1,
   .vc_col-sm-2,
   .vc_col-sm-3,
@@ -639,16 +648,18 @@ p:has(+ .mkd-accordion-holder) {
   }
 
   /* "Some of our partners" (renderPartners in wp-shortcode-render.ts)
-     wants 2 columns on mobile, not the single stacked column the blanket
-     rule above gives every other multi-column row. Several pages' own
-     custom CSS puts this row's inner wrapper in display:flex (sometimes
-     even forcing flex-direction:column on mobile, which stacks flex
-     children one per line regardless of their own width) - force
-     row+wrap here so exactly 2 fit per line under that flex layout too,
-     not just the plain floated fallback on pages without it. The compound
-     two-class selector on .mkd-partner-col.vc_col-sm-3 outweighs the
-     blanket rule above on specificity (0-2-0 vs 0-1-0) regardless of
-     source order, so this doesn't depend on rule placement. */
+     wants 2 columns from 0 up to this same 1024px point, not the single
+     stacked column the blanket rule above gives every other multi-column
+     row - kept at the same breakpoint as that rule above (widened along
+     with it) so it doesn't regress to 1 column in the 768-1024px range
+     the general stacking rule newly covers. Several pages' own custom CSS
+     puts this row's inner wrapper in display:flex (sometimes even forcing
+     flex-direction:column on mobile, which stacks flex children one per
+     line regardless of their own width) - force row+wrap here so exactly
+     2 fit per line under that flex layout too, not just the plain floated
+     fallback on pages without it. The compound two-class selector on
+     .mkd-partner-col.vc_col-sm-3 outweighs the blanket rule above on
+     specificity (0-2-0 vs 0-1-0) regardless of source order. */
   .alignment-of-images .mkd-section-inner-margin {
     display: flex !important;
     flex-direction: row !important;
@@ -658,7 +669,9 @@ p:has(+ .mkd-accordion-holder) {
     width: 50% !important;
     float: left !important;
   }
+}
 
+@media (max-width: 767px) {
   /* WPBakery's column padding is horizontal only (15px left/right, no
      vertical margin), so once 2 sit per line the row below starts with
      zero gap from the row above. Give stacked partner-logo rows breathing
