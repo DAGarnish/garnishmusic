@@ -33,7 +33,30 @@ export default async function Header({
   
   // Hide cart and logo on all sites; remove gap between partners and footer
   let finalAfterNav = afterNav;
-  finalAfterNav += "<style>.mkd-shopping-cart-outer { display: none !important; } .mkd-logo-wrapper { display: none !important; } .heading-some-of-our-partners { margin-bottom: 0 !important; } footer { margin-top: 0 !important; } .mkd-mobile-header { position: sticky !important; top: 0 !important; z-index: 1000 !important; background-color: #fff !important; }</style>";
+  finalAfterNav +=
+    "<style>.mkd-shopping-cart-outer { display: none !important; } .mkd-logo-wrapper { display: none !important; } .heading-some-of-our-partners { margin-bottom: 0 !important; } footer { margin-top: 0 !important; }" +
+    // The mobile hamburger bar doesn't actually stay put while scrolling.
+    // The theme's own CSS (buro-modules.css) already marks
+    // .mkd-mobile-header-inner as position:fixed, but only reveals it via
+    // a translateY(-100%) -> translateY(0) transform toggled by legacy
+    // jQuery scroll-direction JS (buro-modules.min.js's "sticky up" mobile
+    // header behavior, driven by the mkd-sticky-up-mobile-header body
+    // class) - that JS doesn't reliably initialize against this app's
+    // React-rendered DOM, so the header just sits translated off-screen.
+    // A plain `position: sticky` on the outer .mkd-mobile-header (the
+    // previous attempt here) doesn't work either: buro-modules.css sets
+    // `body { overflow-x: hidden !important }` (needed to stop the many
+    // absolutely/wide-positioned legacy elements from causing horizontal
+    // scroll), and per the CSS spec, setting only overflow-x on an element
+    // forces its computed overflow-y to "auto" too - which makes body a
+    // scroll container in its own right and breaks position:sticky's
+    // scroll-anchor detection. `position: fixed` on the inner bar sidesteps
+    // both problems (unaffected by ancestor overflow, no JS dependency) and
+    // is the standard approach for an always-visible mobile nav bar - the
+    // matching padding-top on the outer header reserves the same 100px the
+    // inner bar's own CSS already gives it, so fixing it out of flow
+    // doesn't cover the content that follows.
+    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: none !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } }</style>";
 
   // header-after-nav.html's .mkd-mobile-header shell has a placeholder
   // comment where the mobile nav list goes - see menuTreeToMobileHtml for
