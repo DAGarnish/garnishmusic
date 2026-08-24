@@ -33,7 +33,7 @@ import { createTtlCache } from "../../../lib/ttl-cache";
 const postRichTextConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
   blocks: {
-    video: ({ node }) => (
+    video: ({ node }: { node: any }) => (
       <div style={{ margin: "2rem 0", borderRadius: 14, overflow: "hidden", aspectRatio: "16 / 9" }}>
         <iframe
           src={(node.fields as any).link}
