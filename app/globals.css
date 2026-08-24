@@ -952,3 +952,16 @@ p:has(+ .mkd-accordion-holder) {
 .mkd-post-text-inner li {
   color: #000;
 }
+
+/* .img-bg-1 (see scripts/fix-img-bg-1-push-up.ts) is a "photo with a
+   caption pill" pattern - its per-page custom CSS styles any <p> inside
+   as a white, rounded, padded pill pushed up to overlap the image/video
+   above it (`.img-bg-1 p{background-color:white;border-radius:25px;
+   padding:20px;...transform:translateY(-16px)}`). On pages where that
+   class ended up on a video column instead of a photo one, no caption
+   text was ever migrated into the <p> - so instead of a captioned pill
+   over a photo, it's an empty white oval floating below the video. Hide
+   only the empty ones; real captions elsewhere keep rendering. */
+.img-bg-1 p:empty {
+  display: none !important;
+}
