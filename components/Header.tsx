@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import Script from "next/script";
 import { menuTreeToHtml, menuTreeToMobileHtml, type ActiveMatch, type MenuNode } from "./menu-html";
 import { getUrlRewriteContext, rewriteHtmlLinksForLocalDev } from "../lib/current-site";
 
@@ -93,6 +94,44 @@ export default async function Header({
   return (
     <>
       <div dangerouslySetInnerHTML={{ __html: fullHtml }} suppressHydrationWarning />
+      {/* The legacy jQuery handler for the hamburger (buro-modules.min.js's
+          .on("tap click", ...) on .mkd-mobile-menu-opener) intermittently
+          never fires on a genuine click/tap despite the icon correctly
+          resolving as the hit-test target - reproduced repeatedly even in
+          Chrome, with no consistent trigger found (not tied to scroll
+          position, elapsed time since load, or click count). A capture-
+          phase listener on document fires before the event ever reaches
+          that bubble-phase handler (capture always runs before bubbling
+          for the same event, so this doesn't depend on script load order
+          the way unbinding jQuery's handler would), and
+          stopImmediatePropagation there means the legacy handler never
+          even sees the event - no risk of it double-toggling back closed.
+          Handles both touchend and click so a real tap (which normally
+          fires both - touchend's preventDefault here suppresses the
+          browser's compatibility click that would otherwise follow) only
+          toggles once either way. A plain <script> tag placed inside the
+          dangerouslySetInnerHTML div above never runs (confirmed live:
+          present verbatim in the server HTML, but silently inert - only
+          the browser's native parse of a full static HTML response
+          executes inline scripts that way; Next.js's hydration instead
+          adopts that div's existing DOM without re-running anything
+          inside it), so this needs next/script specifically. */}
+      <Script id="mkd-mobile-menu-toggle" strategy="afterInteractive">
+        {`(function(){
+          function toggle(e){
+            var o = e.target.closest && e.target.closest(".mkd-mobile-header .mkd-mobile-menu-opener");
+            if (!o) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var nav = document.querySelector(".mkd-mobile-header .mkd-mobile-nav");
+            if (!nav) return;
+            var isOpen = getComputedStyle(nav).display !== "none";
+            nav.style.display = isOpen ? "none" : "block";
+          }
+          document.addEventListener("touchend", toggle, true);
+          document.addEventListener("click", toggle, true);
+        })();`}
+      </Script>
     </>
   );
 }
