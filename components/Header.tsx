@@ -67,7 +67,7 @@ export default async function Header({
     // current scroll position, off-screen, which looks like the hamburger
     // "doesn't work". Anchoring it as fixed too, directly under the 100px
     // header bar, keeps it under the tap target regardless of scroll.
-    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: none !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } .mkd-mobile-nav { position: fixed !important; top: 100px !important; left: 0 !important; right: 0 !important; z-index: 999 !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; } }</style>";
+    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: none !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } .mkd-mobile-nav { position: fixed !important; top: 100px !important; left: 0 !important; right: 0 !important; z-index: 999 !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; } .mkd-mobile-nav a, .mkd-mobile-nav h4 { padding-left: 8px !important; } }</style>";
 
   // header-after-nav.html's .mkd-mobile-header shell has a placeholder
   // comment where the mobile nav list goes - see menuTreeToMobileHtml for
