@@ -621,13 +621,31 @@ p:has(+ .mkd-accordion-holder) {
     float: none !important;
   }
 
-  /* The stacking above turns each "Some of our partners" row (see
-     renderPartners in wp-shortcode-render.ts) from 4 logos side by side
-     into 4 full-width blocks - but WPBakery's column padding is
-     horizontal only (15px left/right, no vertical margin), so once
-     stacked the logos sit with zero gap between them, each one's bottom
-     edge touching the next one's top edge. Give stacked partner logos
-     breathing room on mobile. */
+  /* "Some of our partners" (renderPartners in wp-shortcode-render.ts)
+     wants 2 columns on mobile, not the single stacked column the blanket
+     rule above gives every other multi-column row. Several pages' own
+     custom CSS puts this row's inner wrapper in display:flex (sometimes
+     even forcing flex-direction:column on mobile, which stacks flex
+     children one per line regardless of their own width) - force
+     row+wrap here so exactly 2 fit per line under that flex layout too,
+     not just the plain floated fallback on pages without it. The compound
+     two-class selector on .mkd-partner-col.vc_col-sm-3 outweighs the
+     blanket rule above on specificity (0-2-0 vs 0-1-0) regardless of
+     source order, so this doesn't depend on rule placement. */
+  .alignment-of-images .mkd-section-inner-margin {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+  }
+  .mkd-partner-col.vc_col-sm-3 {
+    width: 50% !important;
+    float: left !important;
+  }
+
+  /* WPBakery's column padding is horizontal only (15px left/right, no
+     vertical margin), so once 2 sit per line the row below starts with
+     zero gap from the row above. Give stacked partner-logo rows breathing
+     room on mobile. */
   .alignment-of-images .vc_column_container {
     margin-bottom: 24px !important;
   }

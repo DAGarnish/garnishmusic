@@ -339,20 +339,23 @@ function renderPartners(ctx: RenderContext): string {
   // explicit flex-wrap (default nowrap) and `img.vc_single_image-img.
   // attachment-full{width:75%}` - so each column's own WPBakery grid width
   // (vc_col-sm-N) becomes its flex-basis, and an inline `width` on the img
-  // (not just max-width) is needed to beat that external 75% rule outright
-  // regardless of the now-wider column. 2 per row (vc_col-sm-6, 50% width)
-  // instead of 4 (vc_col-sm-3) means 6 rows instead of 3, each logo fixed
-  // to a small pixel size rather than scaling with the column.
+  // (not just max-width) is needed to beat that external 75% rule outright.
+  // 4 per row (vc_col-sm-3, 25% width) matches the desktop column count;
+  // the mobile column count (2, not 1) is handled entirely in CSS
+  // (app/globals.css's .mkd-partner-col rules) rather than by changing how
+  // many logos are grouped into each row here, since forcing flex-wrap
+  // there lets 4-per-flex-row reflow to 2-per-line on narrow screens
+  // regardless of a per-page flex-direction:column override.
   const rows: string[] = [];
-  for (let i = 0; i < ctx.partners.length; i += 2) {
+  for (let i = 0; i < ctx.partners.length; i += 4) {
     const rowLogos = ctx.partners
-      .slice(i, i + 2)
+      .slice(i, i + 4)
       .map((p) => {
         const isApple = (p.name || "").toLowerCase().includes("apple") || p.imageUrl.toLowerCase().includes("apple");
         const logoWidth = isApple ? "70px" : "100px";
         const img = `<figure class="wpb_wrapper vc_figure" style="text-align: center; margin: 0;"><img src="${esc(p.imageUrl)}" alt="${esc(p.name || "")}" class="vc_single_image-img" style="width: ${logoWidth}; max-width: 100%; height: auto; margin: 0 auto; display: block;"/></figure>`;
         const linked = p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener noreferrer">${img}</a>` : img;
-        return `<div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
+        return `<div class="wpb_column vc_column_container vc_col-sm-3 mkd-partner-col"><div class="vc_column-inner"><div class="wpb_wrapper">${linked}</div></div></div>`;
       })
       .join("");
     rows.push(
