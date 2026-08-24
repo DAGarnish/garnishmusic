@@ -329,7 +329,7 @@ export default async function CatchAllPage({ params }: Args) {
           buildHeroSliderResolver(site.id, doc.wpRawContent as string)
         ),
         resolverCache(`${resolverKey}:blogList`, () =>
-          buildBlogListResolver(site.id, doc.wpRawContent as string)
+          buildBlogListResolver(site, doc.wpRawContent as string)
         ),
         resolverCache(`${resolverKey}:partners`, () => resolvePartners(doc.wpRawContent as string)),
       ]) as [
@@ -395,7 +395,7 @@ export default async function CatchAllPage({ params }: Args) {
             resolverCache(`${resolverKey}:portfolio`, () => buildPortfolioListResolver(site.id, productDoc.wpRawContent)),
             resolverCache(`${resolverKey}:testimonials`, () => buildTestimonialsResolver(site.id, productDoc.wpRawContent)),
             resolverCache(`${resolverKey}:heroSlider`, () => buildHeroSliderResolver(site.id, productDoc.wpRawContent)),
-            resolverCache(`${resolverKey}:blogList`, () => buildBlogListResolver(site.id, productDoc.wpRawContent)),
+            resolverCache(`${resolverKey}:blogList`, () => buildBlogListResolver(site, productDoc.wpRawContent)),
             resolverCache(`${resolverKey}:partners`, () => resolvePartners(productDoc.wpRawContent)),
           ])) as [
             Awaited<ReturnType<typeof buildImageResolver>>,
@@ -489,6 +489,29 @@ export default async function CatchAllPage({ params }: Args) {
                                 </div>
                               </div>
                             </div>
+                            {"featuredImage" in doc &&
+                              doc.featuredImage &&
+                              typeof doc.featuredImage === "object" && (
+                                <div
+                                  style={{
+                                    margin: "0 0 2rem",
+                                    borderRadius: 14,
+                                    overflow: "hidden",
+                                    boxShadow: "0 8px 30px rgba(0,0,0,0.14)",
+                                  }}
+                                >
+                                  <img
+                                    src={doc.featuredImage.url ?? undefined}
+                                    alt={doc.featuredImage.alt || doc.title}
+                                    style={{
+                                      width: "100%",
+                                      aspectRatio: "16 / 9",
+                                      objectFit: "cover",
+                                      display: "block",
+                                    }}
+                                  />
+                                </div>
+                              )}
                             <RichText data={doc.content || EMPTY_RICHTEXT} />
                           </div>
                         </div>
@@ -974,13 +997,25 @@ export default async function CatchAllPage({ params }: Args) {
                 {"featuredImage" in doc &&
                   doc.featuredImage &&
                   typeof doc.featuredImage === "object" && (
-                    <img
-                      src={doc.featuredImage.url ?? undefined}
-                      alt={doc.featuredImage.alt || ""}
-                      width={doc.featuredImage.width ?? undefined}
-                      height={doc.featuredImage.height ?? undefined}
-                      style={{ maxWidth: "100%", height: "auto", marginBottom: "1.5rem" }}
-                    />
+                    <div
+                      style={{
+                        marginBottom: "2rem",
+                        borderRadius: 14,
+                        overflow: "hidden",
+                        boxShadow: "0 8px 30px rgba(0,0,0,0.14)",
+                      }}
+                    >
+                      <img
+                        src={doc.featuredImage.url ?? undefined}
+                        alt={doc.featuredImage.alt || ""}
+                        style={{
+                          width: "100%",
+                          aspectRatio: "16 / 9",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </div>
                   )}
                 {type === "product" && "images" in doc && Array.isArray(doc.images) && (
                   <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>

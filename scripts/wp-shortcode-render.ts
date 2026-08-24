@@ -35,6 +35,7 @@ export type HeroSliderResolver = (alias: string) => HeroSlide[];
 export type BlogListItem = {
   title: string;
   href: string;
+  targetBlank?: boolean;
   categoryLabels: string[];
   dateLabel?: string;
   excerpt?: string;
@@ -433,6 +434,9 @@ function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): stri
   // production on /courses/mixing-sound-design-film-tv/, whose widget has
   // no number_of_posts attribute at all yet still caps at exactly 10 posts
   // even though its category filter matches 16 in this network's content.
+  // "-1" is WordPress's own posts_per_page convention for "no limit" - a
+  // bare parseInt would pass it straight to .slice(0, -1), which drops the
+  // last post instead of showing everything.
   const postLimit = parseInt(attrs.number_of_posts || "10", 10) || 10;
   const sorted = [...items]
     .sort((a, b) => {
@@ -440,7 +444,7 @@ function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): stri
       const bv = orderBy === "date" ? b.dateLabel || "" : b.title;
       return av < bv ? -order : av > bv ? order : 0;
     })
-    .slice(0, postLimit);
+    .slice(0, postLimit < 0 ? undefined : postLimit);
 
   // "0" means "don't truncate at all" - confirmed against production on
   // /courses/songwriting/ (text_length="0"), whose excerpts render at full
@@ -461,12 +465,14 @@ function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): stri
       const excerpt = item.excerpt || "";
       const trimmed =
         textLength > 0 && excerpt.length > textLength ? `${excerpt.slice(0, textLength).trimEnd()}...` : excerpt;
+      const linkAttrs = item.targetBlank ? ' target="_blank" rel="noopener noreferrer"' : "";
+      const readMoreAttrs = item.targetBlank ? 'target="_blank" rel="noopener noreferrer"' : 'target="_self"';
       if (isMinimal) {
         return `<li class="mkd-blog-list-item clearfix">
 	<div class="mkd-blog-list-item-inner">
 		<div class="mkd-item-text-holder">
 			<${titleTag} class="mkd-item-title">
-				<a href="${esc(item.href)}">
+				<a href="${esc(item.href)}"${linkAttrs}>
 					${esc(item.title)}				</a>
 			</${titleTag}>
 							<p class="mkd-excerpt">${esc(trimmed)}</p>
@@ -483,14 +489,14 @@ function renderBlogList(attrs: Record<string, string>, ctx: RenderContext): stri
 			${esc(item.dateLabel || "")}	</div>			</div>
 
 			<${titleTag} class="mkd-item-title">
-				<a href="${esc(item.href)}">
+				<a href="${esc(item.href)}"${linkAttrs}>
 					${esc(item.title)}				</a>
 			</${titleTag}>
 
 							<p class="mkd-excerpt">${esc(trimmed)}</p>
 
 			<div class="mkd-item-read-more">
-				<a href="${esc(item.href)}" target="_self" class="mkd-btn mkd-btn-medium mkd-btn-circled mkd-btn-icon mkd-btn-bckg-hover">	    		<span class="mkd-btn-icon-holder" >			<span aria-hidden="true" class="mkd-icon-font-elegant arrow_right " ></span>		</span>	</a>			</div>
+				<a href="${esc(item.href)}" ${readMoreAttrs} class="mkd-btn mkd-btn-medium mkd-btn-circled mkd-btn-icon mkd-btn-bckg-hover">	    		<span class="mkd-btn-icon-holder" >			<span aria-hidden="true" class="mkd-icon-font-elegant arrow_right " ></span>		</span>	</a>			</div>
 		</div>
 	</div>
 </li>`;

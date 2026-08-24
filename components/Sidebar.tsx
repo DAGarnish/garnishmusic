@@ -1,8 +1,10 @@
 import { getPayloadClient } from "../lib/get-payload";
+import { getAllSitesCached } from "../lib/sites-cache";
 import { getUrlRewriteContext, rewriteUrlForLocalDev } from "../lib/current-site";
 
 type SidebarSite = {
   id: number | string;
+  slug: string;
   domain: string;
   sidebarYelpImage?: unknown;
 };
@@ -13,16 +15,19 @@ type SidebarSite = {
 // attachment id 10041, same title/link text) is byte-identical across
 // every site's wp_options, and only the resolved image URL differs
 // because each site independently has its own copy of the same file in
-// its own media library. Recent Posts is the one genuinely per-site,
-// per-request piece - generated live from that site's own posts rather
-// than scraped, since we already have the data migrated.
+// its own media library. Recent Posts always pulls from edu's posts now
+// (see scripts/migrate-blog-posts.ts - every site's blog content was
+// consolidated there for SEO), opening in a new tab from any other site.
 export default async function Sidebar({ site }: { site: SidebarSite }) {
   const payload = await getPayloadClient();
   const ctx = await getUrlRewriteContext();
+  const allSites = await getAllSitesCached();
+  const eduSite = allSites.find((s: any) => s.slug === "edu") || site;
+  const linksOffSite = site.slug !== "edu";
 
   const recentPosts = await payload.find({
     collection: "posts",
-    where: { site: { equals: site.id } },
+    where: { site: { equals: eduSite.id } },
     sort: "-publishedDate",
     limit: 5,
     depth: 0,
@@ -70,7 +75,12 @@ export default async function Sidebar({ site }: { site: SidebarSite }) {
           <ul>
             {recentPosts.docs.map((post) => (
               <li key={post.id}>
-                <a href={rewriteUrlForLocalDev(`https://${site.domain}/${post.slug}/`, ctx)}>{post.title}</a>
+                <a
+                  href={rewriteUrlForLocalDev(`https://${eduSite.domain}/${post.slug}/`, ctx)}
+                  {...(linksOffSite ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                >
+                  {post.title}
+                </a>
               </li>
             ))}
           </ul>

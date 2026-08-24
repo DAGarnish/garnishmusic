@@ -1,8 +1,17 @@
 import { getPayloadClient } from "./get-payload";
+import { getAllSitesCached } from "./sites-cache";
+import { getUrlRewriteContext, rewriteUrlForLocalDev } from "./current-site";
 import type { BlogListResolver, BlogListItem } from "../scripts/wp-shortcode-render";
 
+// All blog posts live on the "edu" site now (see scripts/migrate-blog-posts.ts
+// - the network's ~750 posts were consolidated there to fix duplicate-content
+// SEO drag). This resolver always queries edu's own posts/categories
+// regardless of which site is rendering the [mkd_blog_list] shortcode, and
+// marks every item with targetBlank=true unless the current site IS edu, so
+// a course page on any other subdomain links out to the edu copy in a new
+// tab instead of querying content that no longer exists locally.
 export async function buildBlogListResolver(
-  siteId: number | string,
+  site: { id: number | string; slug: string },
   rawContent: string
 ): Promise<BlogListResolver> {
   const usesBlogList = /\[mkd_blog_list\b/.test(rawContent || "");
@@ -15,13 +24,18 @@ export async function buildBlogListResolver(
   if (categoryCsvs.size === 0) return () => [];
 
   const payload = await getPayloadClient();
+  const allSites = await getAllSitesCached();
+  const eduSite = allSites.find((s: any) => s.slug === "edu");
+  if (!eduSite) return () => [];
+  const targetBlank = site.slug !== "edu";
+  const ctx = await getUrlRewriteContext();
   const map = new Map<string, BlogListItem[]>();
 
   for (const csv of categoryCsvs) {
     const slugs = csv.split(",").map((s) => s.trim()).filter(Boolean);
     const categories = await payload.find({
       collection: "categories",
-      where: { and: [{ site: { equals: siteId } }, { slug: { in: slugs } }] },
+      where: { and: [{ site: { equals: eduSite.id } }, { slug: { in: slugs } }] },
       limit: 100,
     });
     if (categories.docs.length === 0) {
@@ -33,7 +47,7 @@ export async function buildBlogListResolver(
       collection: "posts",
       where: {
         and: [
-          { site: { equals: siteId } },
+          { site: { equals: eduSite.id } },
           { status: { equals: "published" } },
           { categories: { in: categoryIds } },
         ],
@@ -44,7 +58,8 @@ export async function buildBlogListResolver(
     });
     const items: BlogListItem[] = result.docs.map((p: any) => ({
       title: p.title,
-      href: `/${p.slug}/`,
+      href: rewriteUrlForLocalDev(`https://${eduSite.domain}/${p.slug}/`, ctx),
+      targetBlank,
       categoryLabels: Array.isArray(p.categories)
         ? p.categories.map((c: any) => (typeof c === "object" ? c.name : null)).filter(Boolean)
         : [],

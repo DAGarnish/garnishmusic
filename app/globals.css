@@ -895,3 +895,42 @@ p:has(+ .mkd-accordion-holder) {
   display: inline-block;
   animation: next-class-arrow-bounce 1s ease-in-out infinite;
 }
+
+/* Blog list titles and excerpts (edu's /blog/<topic>/ archive grids,
+   renderBlogList in scripts/wp-shortcode-render.ts) can contain long
+   unbroken runs - raw migrated slugs like
+   "A08_Recording_Punching_Overdubs_and_Looping" in titles, or slash-joined
+   phrases like "Producers/Composers/Beatmakers" in excerpts - so the
+   browser has no natural break point and the text overflows its floated
+   21.25%-wide column horizontally into the next card instead of wrapping,
+   visually overlapping that card's own text. overflow-wrap lets it break
+   mid-word as a last resort so it wraps down within its own card instead. */
+.mkd-blog-list-holder .mkd-item-title,
+.mkd-blog-list-holder .mkd-item-title a,
+.mkd-blog-list-holder .mkd-excerpt {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Single blog-post body text (.mkd-post-text-inner, the Lexical RichText
+   wrapper in app/(frontend)/[[...slug]]/page.tsx) inherits the legacy Buro
+   theme's base body color, #888 gray (buro-modules.css), because only <p>
+   was ever overridden to black by a theme-customizer rule in
+   buro-dynamic.css - headings and list items were never given that same
+   override. The result is blotchy-looking articles where paragraphs read
+   black but any h4 subheading or numbered/bulleted step (both common in
+   the how-to-style posts) renders in a noticeably lighter gray right next
+   to them, looking like randomly faded blocks rather than one consistent
+   article. Force the same near-black paragraph color across all text-level
+   elements within a post's body. */
+.mkd-post-text-inner h1,
+.mkd-post-text-inner h2,
+.mkd-post-text-inner h3,
+.mkd-post-text-inner h4,
+.mkd-post-text-inner h5,
+.mkd-post-text-inner h6,
+.mkd-post-text-inner ol,
+.mkd-post-text-inner ul,
+.mkd-post-text-inner li {
+  color: #000;
+}
