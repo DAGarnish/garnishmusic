@@ -89,14 +89,19 @@ export default function ConsultationPopup() {
         }
         .consultation-popup-close {
           position: absolute;
-          top: 6px;
-          right: 6px;
-          width: 32px;
-          height: 32px;
+          top: 8px;
+          right: 8px;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           border: none;
-          background: transparent;
-          color: #F43918;
-          font-size: 22px;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.55);
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+          color: #fff;
+          font-size: 20px;
           line-height: 1;
           cursor: pointer;
           z-index: 1;
@@ -140,17 +145,42 @@ export default function ConsultationPopup() {
         }
         @media (max-width: 640px) {
           .consultation-popup-overlay {
-            left: 20px;
-            right: 20px;
-            bottom: 0;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            max-width: calc(100vw - 24px);
           }
           .consultation-popup {
             width: 100%;
             flex-direction: column;
           }
           .consultation-popup-image {
-            flex-basis: 140px;
+            /* flex-basis alone isn't enough here: this item's automatic
+               min-height defaults to its content's min-content size, and
+               the <img>'s own intrinsic aspect ratio (rendered at 100% of
+               the popup's width) computes well past 140px tall, silently
+               overriding the intended basis. An explicit height plus
+               overflow:hidden gives the img a definite box to be cropped
+               into via object-fit:cover instead. */
+            flex: 0 0 90px;
+            height: 90px;
             max-width: 100%;
+            overflow: hidden;
+          }
+          .consultation-popup-content {
+            padding: 24px 16px 16px;
+          }
+          .consultation-popup-title {
+            font-size: 16px;
+            margin: 0 0 8px;
+          }
+          .consultation-popup-text {
+            font-size: 13px;
+            margin: 0 0 12px;
+          }
+          .consultation-popup-button {
+            padding: 8px 28px;
+            font-size: 13px;
           }
         }
       `}</style>
