@@ -33,7 +33,7 @@ export default async function Header({
   
   // Hide cart and logo on all sites; remove gap between partners and footer
   let finalAfterNav = afterNav;
-  finalAfterNav += "<style>.mkd-shopping-cart-outer { display: none !important; } .mkd-logo-wrapper { display: none !important; } .heading-some-of-our-partners { margin-bottom: 0 !important; } footer { margin-top: 0 !important; }</style>";
+  finalAfterNav += "<style>.mkd-shopping-cart-outer { display: none !important; } .mkd-logo-wrapper { display: none !important; } .heading-some-of-our-partners { margin-bottom: 0 !important; } footer { margin-top: 0 !important; } .mkd-mobile-header { position: sticky !important; top: 0 !important; z-index: 1000 !important; background-color: #fff !important; }</style>";
 
   // header-after-nav.html's .mkd-mobile-header shell has a placeholder
   // comment where the mobile nav list goes - see menuTreeToMobileHtml for
