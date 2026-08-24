@@ -67,7 +67,17 @@ export default async function Header({
     // current scroll position, off-screen, which looks like the hamburger
     // "doesn't work". Anchoring it as fixed too, directly under the 100px
     // header bar, keeps it under the tap target regardless of scroll.
-    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: none !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } .mkd-mobile-nav { position: fixed !important; top: 100px !important; left: 0 !important; right: 0 !important; z-index: 999 !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; } .mkd-mobile-nav a, .mkd-mobile-nav h4 { padding-left: 8px !important; } }</style>";
+    // iOS Safari specifically doesn't respond to taps on this fixed header
+    // at all until the page has been scrolled at least once - a well-known
+    // WebKit quirk where `overflow-x: hidden` on <body> (set above, needed
+    // to stop legacy wide-positioned elements from causing horizontal
+    // scroll) prevents Safari from creating a proper touch-hit-testable
+    // compositing layer for a fixed descendant until a scroll event fires.
+    // translateZ(0) forces that layer to exist from first paint instead of
+    // lazily on scroll - doubles as the "no visible offset" the previous
+    // transform:none here provided, since translateZ(0,0,0) has no visual
+    // effect on its own.
+    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: translateZ(0) !important; -webkit-transform: translateZ(0) !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } .mkd-mobile-nav { position: fixed !important; top: 100px !important; left: 0 !important; right: 0 !important; z-index: 999 !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; transform: translateZ(0) !important; -webkit-transform: translateZ(0) !important; } .mkd-mobile-nav a, .mkd-mobile-nav h4 { padding-left: 8px !important; } }</style>";
 
   // header-after-nav.html's .mkd-mobile-header shell has a placeholder
   // comment where the mobile nav list goes - see menuTreeToMobileHtml for
