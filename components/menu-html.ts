@@ -133,15 +133,12 @@ function renderMobileNode(node: MenuNode, ctx: UrlRewriteContext, active?: Activ
   const classAttr = liClass.trim() ? ` class="${liClass.trim()}"` : "";
 
   const label_ = hasChildren ? `<h4>${label}</h4>` : `<a ${linkAttrs(node, ctx)}>${label}</a>`;
-  // Pre-expand (inline style, not a class - the theme has no CSS rule that
-  // reveals a nested <ul> from a class alone, only jQuery's slideDown/Up)
-  // the branch containing the current page, so a visitor several levels
-  // deep in the menu doesn't land on a fully collapsed list. The click
-  // handler still works normally afterward: it toggles based on jQuery's
-  // :visible check, which correctly reads this inline style.
-  const childrenStyle = hasChildren && activeBranch ? ` style="display: block;"` : "";
+  // Every branch starts collapsed - opening the hamburger should always
+  // show just the top-level categories (About, Programs, Instructors,
+  // Contact), never pre-expand into a deep, already-open submenu just
+  // because the current page happens to live down that branch.
   const childrenHtml = hasChildren
-    ? `<ul${childrenStyle}>${node.children.map((c) => renderMobileNode(c, ctx, active)).join("")}</ul>`
+    ? `<ul>${node.children.map((c) => renderMobileNode(c, ctx, active)).join("")}</ul>`
     : "";
   return `<li${classAttr}>${label_}${childrenHtml}</li>`;
 }
