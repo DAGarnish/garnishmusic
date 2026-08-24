@@ -56,7 +56,18 @@ export default async function Header({
     // matching padding-top on the outer header reserves the same 100px the
     // inner bar's own CSS already gives it, so fixing it out of flow
     // doesn't cover the content that follows.
-    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: none !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } }</style>";
+    // .mkd-mobile-nav (the slide-down menu the hamburger opens) has no
+    // positioning rule of its own in buro-modules.css - it's plain
+    // position:static, a normal-flow sibling of .mkd-mobile-header-inner
+    // sitting right after the page's own masthead near the very top of the
+    // document. That was fine when the header wasn't sticky (the page was
+    // always scrolled to top when it opened), but now that the header is
+    // pinned via position:fixed above, opening the menu while scrolled down
+    // still toggles it open correctly - it just renders far above the
+    // current scroll position, off-screen, which looks like the hamburger
+    // "doesn't work". Anchoring it as fixed too, directly under the 100px
+    // header bar, keeps it under the tap target regardless of scroll.
+    "@media only screen and (max-width: 1024px) { .mkd-mobile-header { padding-top: 100px !important; } .mkd-mobile-header-inner { position: fixed !important; transform: none !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1000 !important; } .mkd-mobile-nav { position: fixed !important; top: 100px !important; left: 0 !important; right: 0 !important; z-index: 999 !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; } }</style>";
 
   // header-after-nav.html's .mkd-mobile-header shell has a placeholder
   // comment where the mobile nav list goes - see menuTreeToMobileHtml for
