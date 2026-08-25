@@ -1,0 +1,138 @@
+import "../../app/modern-globals.css";
+import Link from "next/link";
+import ModernHeader from "./ModernHeader";
+import ModernFooter from "./ModernFooter";
+import ModernFaqAccordion from "./ModernFaqAccordion";
+import type { MenuNode } from "../menu-html";
+import type { CourseSection, CurriculumModule, CoursePricing, Faq } from "../../lib/modern-course-content";
+
+export default function ModernCoursePage({
+  site,
+  title,
+  heroImageUrl,
+  sections,
+  curriculum,
+  intro,
+  pricing,
+  faqs,
+}: {
+  site: any;
+  title: string;
+  heroImageUrl?: string;
+  sections: CourseSection[];
+  curriculum: CurriculumModule[];
+  intro: string[];
+  pricing: CoursePricing;
+  faqs: Faq[];
+}) {
+  return (
+    <div className="gmpm-root min-h-screen">
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} />
+
+      <section className="relative overflow-hidden gmpm-grid-bg">
+        <div className="absolute inset-0">
+          {heroImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-60" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--gmpm-bg)] via-[var(--gmpm-bg)]/55 to-[var(--gmpm-bg)]/10" />
+        </div>
+
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 pt-24 pb-16 md:pt-32 md:pb-20">
+          <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
+            <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
+            Course — Portland
+          </div>
+          <h1 className="gmpm-display font-bold text-[11vw] leading-[0.95] md:text-[5vw] md:leading-[0.95] max-w-3xl">
+            {title}
+          </h1>
+
+          {pricing.priceLine && (
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="gmpm-mono text-sm text-[var(--gmpm-text-dim)] border border-[var(--gmpm-line)] px-4 py-2">
+                {pricing.priceLine}
+              </div>
+              {pricing.enrollLink && (
+                <Link
+                  href={pricing.enrollLink}
+                  target="_blank"
+                  className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-black font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+                >
+                  Enroll now
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {intro.length > 0 && (
+        <section className="max-w-[900px] mx-auto px-6 md:px-10 py-16 space-y-5">
+          {intro.map((p, i) => (
+            <p key={i} className="text-[var(--gmpm-text-dim)] leading-relaxed">
+              {p}
+            </p>
+          ))}
+        </section>
+      )}
+
+      {sections.map((s, i) => (
+        <section key={i} className="max-w-[900px] mx-auto px-6 md:px-10 py-12 border-t border-[var(--gmpm-line)]">
+          <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-6">{s.heading}</h2>
+          <div
+            className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
+            dangerouslySetInnerHTML={{ __html: s.bodyHtml }}
+          />
+        </section>
+      ))}
+
+      {curriculum.length > 0 && (
+        <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-24">
+          <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Curriculum</div>
+          <h2 className="gmpm-display font-bold text-3xl md:text-5xl max-w-2xl mb-16">
+            What you&apos;ll cover.
+          </h2>
+          <div className="grid md:grid-cols-3 gap-px bg-[var(--gmpm-line)] border border-[var(--gmpm-line)]">
+            {curriculum.map((mod, i) => (
+              <div key={i} className="gmpm-corner bg-[var(--gmpm-bg)] p-8">
+                <div className="gmpm-mono text-[11px] text-[var(--gmpm-text-dim)] mb-4">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <h3 className="gmpm-display font-bold text-lg mb-4">{mod.heading}</h3>
+                <ul className="space-y-2">
+                  {mod.items.map((item, j) => (
+                    <li key={j} className="text-sm text-[var(--gmpm-text-dim)] flex gap-2">
+                      <span className="text-[var(--gmpm-accent)]">→</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <ModernFaqAccordion faqs={faqs} />
+
+      {pricing.enrollLink && (
+        <section className="border-t border-[var(--gmpm-line)] py-20">
+          <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+            <h2 className="gmpm-display font-bold text-2xl md:text-4xl max-w-xl">
+              Ready to get started?
+            </h2>
+            <Link
+              href={pricing.enrollLink}
+              target="_blank"
+              className="shrink-0 gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-black font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+            >
+              Enroll now
+            </Link>
+          </div>
+        </section>
+      )}
+
+      <ModernFooter siteName={site.name} />
+    </div>
+  );
+}

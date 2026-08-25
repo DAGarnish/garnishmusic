@@ -1,0 +1,74 @@
+/* Design system for the "modern" (non-legacy) site experience — currently
+   pdx only, see app/(frontend)/layout.tsx and ModernHomePage. Additive
+   tokens only (namespaced --gmpm-*), so importing this alongside the
+   legacy theme's globals.css/buro-*.css cannot collide with or override
+   anything the other 17 sites rely on. */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap');
+
+:root {
+  --gmpm-bg: #0a0a0b;
+  --gmpm-bg-raised: #131316;
+  --gmpm-line: #26262b;
+  --gmpm-text: #f2f2ef;
+  --gmpm-text-dim: #9a9aa2;
+  --gmpm-accent: #d7ff3f;
+  --gmpm-accent-dim: #a8cc2f;
+
+  --gmpm-font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --gmpm-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --gmpm-font-body: 'Inter', -apple-system, sans-serif;
+}
+
+.gmpm-root {
+  background: var(--gmpm-bg);
+  color: var(--gmpm-text);
+  font-family: var(--gmpm-font-body);
+}
+
+.gmpm-root * {
+  box-sizing: border-box;
+}
+
+.gmpm-display {
+  font-family: var(--gmpm-font-display);
+  letter-spacing: -0.02em;
+}
+
+.gmpm-mono {
+  font-family: var(--gmpm-font-mono);
+  letter-spacing: 0.06em;
+}
+
+/* Faint technical grid backdrop, used behind the hero. Pure CSS, no JS,
+   no image request — the "sharp/technical" texture without any weight. */
+.gmpm-grid-bg {
+  background-image:
+    linear-gradient(var(--gmpm-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gmpm-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.gmpm-corner {
+  position: relative;
+}
+.gmpm-corner::before,
+.gmpm-corner::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--gmpm-accent);
+}
+.gmpm-corner::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+.gmpm-corner::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}

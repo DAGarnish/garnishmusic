@@ -104,6 +104,20 @@ export default async function RootLayout({
 }>) {
   const site = await getCurrentSite();
 
+  // pdx is the pilot for a from-scratch design system with none of the
+  // migrated WordPress theme's weight: no jQuery/jQuery-UI/Slick/parallax
+  // script chain, no buro-*.css, no mkd-* body classes. Scoped to this one
+  // site (currently unused by real traffic) so the other 17 sites - which
+  // still depend on all of the below for their header/footer/accordion
+  // behavior - are completely unaffected.
+  if (site?.slug === "pdx") {
+    return (
+      <html lang="en">
+        <body>{children}</body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

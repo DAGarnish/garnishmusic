@@ -24,6 +24,20 @@ import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
 import { isCoursePagePath } from "../../../lib/course-pages";
 import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
 import { createTtlCache } from "../../../lib/ttl-cache";
+import ModernHomePage from "../../../components/modern/ModernHomePage";
+import ModernContactPage from "../../../components/modern/ModernContactPage";
+import { extractContactDetails } from "../../../lib/modern-contact-content";
+import ModernCoursePage from "../../../components/modern/ModernCoursePage";
+import {
+  collectNavCourseSlugs,
+  extractCourseSections,
+  extractCurriculumModules,
+  extractCourseIntro,
+  extractCoursePricing,
+  extractFaqs,
+} from "../../../lib/modern-course-content";
+import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
+import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
 
 // Blog post bodies get the "video" block (blocks/Video.ts, added to
 // Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
@@ -305,6 +319,96 @@ export default async function CatchAllPage({ params }: Args) {
         <Footer />
       </>
     );
+  }
+
+  // pdx is the pilot for the fresh, non-legacy design system (webpro50-style
+  // tokens, no jQuery/WPBakery-era markup) - see components/modern/. Scoped
+  // to this one site and a handful of rebuilt routes so the other 17 live
+  // sites' rendering path is completely untouched.
+  if (site.slug === "pdx" && slug.length === 0) {
+    return <ModernHomePage site={site} />;
+  }
+  if (site.slug === "pdx" && slug.join("/") === "contact-map") {
+    const payload = await getPayloadClient();
+    const contactPages = await payload.find({
+      collection: "pages",
+      where: { and: [{ site: { equals: site.id } }, { slug: { equals: "contact-map" } }] },
+      limit: 1,
+    });
+    const contactDoc = contactPages.docs[0] as any;
+    const contact = extractContactDetails(contactDoc?.wpRawContent || "");
+    return <ModernContactPage site={site} contact={contact} />;
+  }
+  // Also covers the "Comprehensive Programs" pages (academy, ableton-producer,
+  // logic-producer) - confirmed via inspection to use the identical
+  // [mkd_section_title]+[vc_column_text] shortcode shape as the course pages
+  // this template was built for, so no separate component/extractor needed.
+  // private-instruction was checked too and does NOT fit either shape this
+  // extractor handles (nested accordion + pricing list) - deliberately left
+  // off this list rather than risk a garbled render; still on the legacy path.
+  const modernTemplatedSlugs = new Set([
+    ...collectNavCourseSlugs(site.mainMenu),
+    "academy",
+    "ableton-producer",
+    "logic-producer",
+  ]);
+  if (site.slug === "pdx" && modernTemplatedSlugs.has(slug.join("/"))) {
+    const payload = await getPayloadClient();
+    const coursePages = await payload.find({
+      collection: "pages",
+      where: { and: [{ site: { equals: site.id } }, { slug: { equals: slug.join("/") } }] },
+      limit: 1,
+      depth: 1,
+    });
+    const courseDoc = coursePages.docs[0] as any;
+    if (courseDoc) {
+      const raw = courseDoc.wpRawContent || "";
+      const heroImage =
+        (typeof courseDoc.titleBackgroundImage === "object" && courseDoc.titleBackgroundImage?.url) ||
+        (typeof courseDoc.featuredImage === "object" && courseDoc.featuredImage?.url) ||
+        undefined;
+      // Two mutually exclusive content shapes exist across these pages (see
+      // modern-course-content.ts) - sections is the newer [mkd_section_title]
+      // shape, curriculum/intro is the older bare-<h2>/<ul> shape. Only fall
+      // back to the older extractors when the newer one found nothing, so a
+      // page using one shape doesn't also get garbled output from the
+      // extractor built for the other.
+      const sections = extractCourseSections(raw);
+      const curriculum = sections.length > 0 ? [] : extractCurriculumModules(raw);
+      const intro = sections.length > 0 ? [] : extractCourseIntro(raw);
+      return (
+        <ModernCoursePage
+          site={site}
+          title={courseDoc.title.replace(/\s*\|\s*Portland\s*$/i, "")}
+          heroImageUrl={heroImage}
+          sections={sections}
+          curriculum={curriculum}
+          intro={intro}
+          pricing={extractCoursePricing(raw)}
+          faqs={extractFaqs(raw)}
+        />
+      );
+    }
+  }
+  if (site.slug === "pdx" && slug.join("/") === "private-instruction") {
+    const payload = await getPayloadClient();
+    const privatePages = await payload.find({
+      collection: "pages",
+      where: { and: [{ site: { equals: site.id } }, { slug: { equals: "private-instruction" } }] },
+      limit: 1,
+    });
+    const privateDoc = privatePages.docs[0] as any;
+    if (privateDoc) {
+      const raw = privateDoc.wpRawContent || "";
+      return (
+        <ModernPrivateInstructionPage
+          site={site}
+          title={privateDoc.title.replace(/\s*\|\s*Portland\s*$/i, "")}
+          content={extractPrivateInstructionContent(raw)}
+          faqs={extractFaqs(raw)}
+        />
+      );
+    }
   }
 
   const result = await findContentCached(site, slug);
