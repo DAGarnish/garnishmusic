@@ -17,7 +17,13 @@ function decodeEntities(s: string): string {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#0?39;|&apos;/g, "'");
+    .replace(/&#0?39;|&apos;/g, "'")
+    // Some headings are already wrapped in a real <strong> tag AND have
+    // literal "**" markdown-style bold markers typed inside it (e.g. la's
+    // academy page: "**Apply by Sept 7...**") - redundant since the <strong>
+    // already bolds it, and left as literal asterisks in the rendered text
+    // otherwise.
+    .replace(/\*\*(.+?)\*\*/g, "$1");
 }
 
 // Some content was pasted in from an editor that stamps every span with
@@ -77,6 +83,26 @@ function iconParagraphToHtml(p: string): string {
       .map((i) => `<li class="flex gap-2"><span class="text-[var(--gmpm-accent)]">→</span><span>${i}</span></li>`)
       .join("")}</ul>`;
   }
+  // A literal "•" character (each one individually wrapped in its own
+  // <span style="color: ...">) used the same inline-bullet-list way, e.g.
+  // la academy's "Course Highlights: 360 Hrs • Music Production, Sound
+  // Design... • Grammy Nominated... • ..." - tags are stripped from the
+  // whole paragraph before splitting (not per-segment like the [mkd_icon]
+  // case above) since the bullet marker itself sits inside a <span> here.
+  // Any lead-in text before the first bullet (e.g. "Course Highlights: 360
+  // Hrs") becomes its own bold line instead of a bullet item.
+  const plainText = decodeEntities(stripShortcodesExceptIcon(p).replace(/<[^>]+>/g, ""));
+  const bulletCount = (plainText.match(/•/g) || []).length;
+  if (bulletCount >= 2) {
+    const [lead, ...items] = plainText.split("•").map((s) => s.trim()).filter(Boolean);
+    if (items.length) {
+      const leadHtml = lead ? `<p class="font-semibold text-[var(--gmpm-text)] mb-2">${lead}</p>` : "";
+      const listHtml = `<ul class="space-y-2 my-4">${items
+        .map((i) => `<li class="flex gap-2"><span class="text-[var(--gmpm-accent)]">→</span><span>${i}</span></li>`)
+        .join("")}</ul>`;
+      return leadHtml + listHtml;
+    }
+  }
   const text = decodeEntities(stripShortcodesExceptIcon(p).replace(/\[mkd_icon[^\]]*\]/gi, "→ ")).trim();
   return text && text !== "→" ? `<p>${text}</p>` : "";
 }
@@ -95,9 +121,12 @@ function iconParagraphToHtml(p: string): string {
 // after it isn't), rather than stopping extraction outright.
 const SKIP_FROM_HEADING = /^main menu bar$/i;
 
-// A plain WPBakery/HTML <ul><li> list (as opposed to the [mkd_icon]-bulleted
-// paragraphs iconParagraphToHtml handles) - e.g. a "You'll learn how to:"
-// list sitting between two <p> tags. Same visual treatment as an icon list.
+// A plain WPBakery/HTML <ul>/<ol><li> list (as opposed to the
+// [mkd_icon]-bulleted paragraphs iconParagraphToHtml handles) - e.g. a
+// "You'll learn how to:" list sitting between two <p> tags, or la academy
+// page's numbered "Enrollment Steps (1-2-3)" <ol>. Same visual treatment
+// (an arrow bullet) for both - the numbering itself isn't the point, the
+// step order already reads fine as prose-adjacent bullets.
 function plainListToHtml(li: string): string {
   const items = [...li.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
     .map((m) => decodeEntities(m[1].replace(/<[^>]+>/g, "")).trim())
@@ -106,6 +135,36 @@ function plainListToHtml(li: string): string {
   return `<ul class="space-y-2 my-4">${items
     .map((i) => `<li class="flex gap-2"><span class="text-[var(--gmpm-accent)]">→</span><span>${i}</span></li>`)
     .join("")}</ul>`;
+}
+
+// A bare <img> sitting directly in the flow with no <p>/<div> wrapper at
+// all - e.g. la's academy page has two certification-logo images
+// (Ableton/Apple) sitting as plain siblings between two paragraphs. Images
+// already inside a <p> survive automatically (iconParagraphToHtml doesn't
+// strip inner HTML tags), so this only needs to handle the bare case.
+function bareImageToHtml(imgTag: string): string {
+  // resolveSingleImages already produced a fully-styled <img> (see its own
+  // gmpm-resolved-image marker) for a [vc_single_image] shortcode - e.g. a
+  // full photo or graphic, sized and styled on its own terms. Passed
+  // through untouched rather than rebuilt below, which would both shrink
+  // it (the small-logo max-h-12 sizing) and run it through the
+  // invert-to-white filter meant for dark logo marks - applied to a real
+  // photo, that filter blows every photo out to a featureless gray block.
+  if (imgTag.includes("gmpm-resolved-image")) return imgTag;
+  const src = imgTag.match(/\bsrc="([^"]*)"/i)?.[1];
+  if (!src) return "";
+  const alt = imgTag.match(/\balt="([^"]*)"/i)?.[1] || "";
+  // Anything else reaching here is a bare, unstyled <img> straight from
+  // wpRawContent - every case seen so far is a small certification-badge
+  // logo (la academy's Ableton/Apple marks): dark marks on a transparent
+  // background, drawn for the legacy theme's light page background and
+  // otherwise unreadable against this design's near-black one. Inverted to
+  // full-white (no opacity dimming) so the mark reads exactly as bright as
+  // the real white heading text next to it, instead of a dimmer gray.
+  // mb-6 (rather than a symmetric my-2) - the next block down is usually
+  // the "Apply"/"Enroll now" CTA link, which reads as cramped sitting right
+  // under the badge with only a small symmetric margin.
+  return `<img src="${src}" alt="${decodeEntities(alt)}" class="max-h-12 w-auto inline-block mt-2 mb-6 mr-6 [filter:brightness(0)_invert(1)]" />`;
 }
 
 // The FAQ accordion's own answer text (a <p> inside each [mkd_accordion_tab])
@@ -140,48 +199,82 @@ function extractBareParagraphs(rawChunk: string): string {
 }
 
 // Converts a raw chunk of WPBakery content (which mixes literal paragraph
-// HTML with bracket shortcodes) into safe, readable HTML: <h3> sub-headings
-// become sub-heading markup, <p> content becomes either a paragraph or a
-// bullet list (see iconParagraphToHtml), a plain <ul> becomes the same
-// bullet-list markup, every other [shortcode] token is stripped, and the
-// wpb_text_column/wpb_wrapper divs WPBakery puts around every text block are
-// left behind since only <p>/<h3>/<ul> are read out of them.
+// HTML with bracket shortcodes) into safe, readable HTML: <h1>-<h4>
+// sub-headings become sub-heading markup, <p> content becomes either a
+// paragraph or a bullet list (see iconParagraphToHtml), a plain <ul>/<ol>
+// becomes the same bullet-list markup, a bare <img> (no wrapping tag at
+// all) is kept as an image, a bare styled <div> (see its own branch below)
+// is treated the same as a <p>, every other [shortcode] token is stripped,
+// and the wpb_text_column/wpb_wrapper divs WPBakery puts around every text
+// block are left behind since only these tags are read out of them.
+// Capture groups, by index: 1 heading (<h1>-<h4>), 2 <ol>, 3 <ul>, 4 <p>,
+// 5 bare <img>, 6 bare styled <div> (numbered rather than named - this
+// repo's ts target predates ES2018 named capture groups).
+const BLOCK_RE =
+  /<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>|<ol[^>]*>([\s\S]*?)<\/ol>|<ul[^>]*>([\s\S]*?)<\/ul>|<p[^>]*>([\s\S]*?)<\/p>|(<img\b[^>]*>)|<div\b[^>]*\bstyle="text-align:\s*(?:left|center)"[^>]*>((?:(?!<div|<ul|<ol|<p\b)[\s\S])*?)<\/div>/gi;
+
 function extractParagraphs(rawChunk: string): string {
   const blocks: string[] = [];
   let skipping = false;
-  for (const m of stripAccordionBlocks(rawChunk).matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>|<ul[^>]*>([\s\S]*?)<\/ul>|<p[^>]*>([\s\S]*?)<\/p>/gi)) {
-    if (m[1] !== undefined) {
-      const heading = decodeEntities(m[1].replace(/<[^>]+>/g, "")).trim();
-      if (SKIP_FROM_HEADING.test(heading)) skipping = true;
-      if (!skipping && heading) blocks.push(`<h4 class="gmpm-display font-bold text-lg mt-8 mb-3">${heading}</h4>`);
+  for (const m of stripAccordionBlocks(rawChunk).matchAll(BLOCK_RE)) {
+    const [, heading, ol, ul, p, img, div] = m;
+    if (heading !== undefined) {
+      const headingText = decodeEntities(heading.replace(/<[^>]+>/g, "")).trim();
+      if (SKIP_FROM_HEADING.test(headingText)) skipping = true;
+      if (!skipping && headingText)
+        blocks.push(`<h4 class="gmpm-display font-bold text-lg mt-8 mb-3">${headingText}</h4>`);
 
       // This content alternates between two-column rows where one column's
       // [mkd_icon]-bulleted text sits inside a <p> (handled below via the
       // regular <p> match) and the other column's identical bullet list sits
-      // bare, straight after the <h3> with no <p> wrapper at all - the same
-      // icon-list content, just missing the tag the main loop matches on.
-      // Caught here by looking ahead to the next real tag boundary and
+      // bare, straight after the heading with no <p> wrapper at all - the
+      // same icon-list content, just missing the tag the main loop matches
+      // on. Caught here by looking ahead to the next real tag boundary and
       // treating that span as an icon list if it has no <p>/<ul> of its own.
       if (!skipping) {
         const afterHeading = (m.index ?? 0) + m[0].length;
-        const nextTag = rawChunk.slice(afterHeading).search(/<h3[^>]*>|<p[^>]*>|<ul[^>]*>|\[\/vc_column_text\]/i);
+        const nextTag = rawChunk
+          .slice(afterHeading)
+          .search(/<h[1-4][^>]*>|<p[^>]*>|<ul[^>]*>|<ol[^>]*>|\[\/vc_column_text\]/i);
         const bareSpan = rawChunk.slice(afterHeading, nextTag === -1 ? undefined : afterHeading + nextTag);
         if (/\[mkd_icon/i.test(bareSpan)) {
           const html = iconParagraphToHtml(bareSpan);
           if (html) blocks.push(html);
         }
       }
-    } else if (m[2] !== undefined) {
+    } else if (ol !== undefined) {
       if (skipping) continue;
-      const html = plainListToHtml(m[2]);
+      const html = plainListToHtml(ol);
       if (html) blocks.push(html);
-    } else if (m[3] !== undefined) {
+    } else if (ul !== undefined) {
+      if (skipping) continue;
+      const html = plainListToHtml(ul);
+      if (html) blocks.push(html);
+    } else if (img !== undefined) {
+      if (skipping) continue;
+      const html = bareImageToHtml(img);
+      if (html) blocks.push(html);
+    } else if (p !== undefined) {
       if (skipping) {
-        if (!/\[mkd_icon[^\]]*\]/i.test(m[3])) skipping = false;
+        if (!/\[mkd_icon[^\]]*\]/i.test(p)) skipping = false;
         else continue;
       }
-      const html = iconParagraphToHtml(m[3]);
+      const html = iconParagraphToHtml(p);
       if (html) blocks.push(html);
+    } else if (div !== undefined) {
+      if (skipping) continue;
+      // A bare styled <div> holding real editorial copy with no <p> wrapper
+      // at all - e.g. la homepage's "Degree Programs"/"Social Media and
+      // Branding" cards, previously dropped entirely (invisible to every
+      // branch above, and extractBareParagraphs's own fallback never ran
+      // here since these rows already have other real blocks, like the
+      // "Apply" button paragraph). Wrapped as a plain <p> - none of these
+      // divs use "•"/[mkd_icon] bullet markers, so iconParagraphToHtml's
+      // own splitting doesn't apply, and rendering it as a <p> lets
+      // bulletizeIfProseOnly (offering cards only) find and reformat it the
+      // same as any other descriptive paragraph.
+      const text = decodeEntities(div.replace(/<[^>]+>/g, "")).trim();
+      if (text) blocks.push(`<p>${text}</p>`);
     }
   }
   if (!blocks.length) {
@@ -215,25 +308,66 @@ function isBoilerplateHeading(heading: string): boolean {
   return BOILERPLATE_HEADING_SUBSTRING.test(heading) || BOILERPLATE_HEADING_EXACT.test(heading.trim());
 }
 
+// Every course/program page (and the homepage) lays its content out as a
+// sequence of top-level [vc_row]...[/vc_row] blocks, one real topic per row
+// (intro, pricing/enrollment, instructors, syllabus, testimonials, ...) -
+// confirmed network-wide across every course/program page checked. This is
+// the page's own real section boundary, independent of which heading shape
+// a given row happens to use inside it (see extractRowHeading). vc_row_inner
+// (nested layout rows within a row) is deliberately NOT matched here - its
+// own shortcode name and closing tag differ enough (a trailing "_inner")
+// that this regex/indexOf pairing already skips right over it.
+function splitTopLevelRows(raw: string): string[] {
+  const rows: string[] = [];
+  const openRe = /\[vc_row(?![a-zA-Z_])[^\]]*\]/gi;
+  let match: RegExpExecArray | null;
+  while ((match = openRe.exec(raw))) {
+    const openEnd = match.index + match[0].length;
+    const closeIdx = raw.indexOf("[/vc_row]", openEnd);
+    if (closeIdx === -1) break;
+    rows.push(raw.slice(openEnd, closeIdx));
+    openRe.lastIndex = closeIdx + "[/vc_row]".length;
+  }
+  return rows;
+}
+
+// A few pages use a bare "-" as a purely visual section divider with no
+// real title - not content, so it shouldn't act as this row's heading.
+const BARE_DIVIDER = /^[-–—.]*$/;
+
+// A row's own heading is either a [mkd_section_title] shortcode (sometimes
+// two back to back - a "Title" then a "Subtitle" with nothing of its own
+// between them, e.g. "360 Los Angeles Academy" -> "Los Angeles & Live
+// Online" - the first, more descriptive one is kept as the label, and real
+// body content is read starting after the last one), or, when a row has
+// none of those at all, its first literal <h1>/<h2>/<h3> tag (<h4> is never
+// this row's own topic heading - see extractParagraphs, which demotes every
+// *other* heading found within a row's body to <h4> sub-headings of
+// whichever of these two came first, e.g. a pricing row's own "$2250
+// Tuition..." <h1> and "Enrollment Steps" <h3> both nest under the row's
+// first <h1> this way).
+function extractRowHeading(row: string): { heading: string; contentStart: number } | null {
+  const titleMatches = [...row.matchAll(/\[mkd_section_title[^\]]*\btitle_text="([^"]*)"[^\]]*\]/gi)].filter(
+    (m) => !BARE_DIVIDER.test(decodeEntities(m[1] || "").trim())
+  );
+  if (titleMatches.length > 0) {
+    const heading = decodeEntities(titleMatches[0][1] || "").trim();
+    const last = titleMatches[titleMatches.length - 1];
+    return heading ? { heading, contentStart: (last.index ?? 0) + last[0].length } : null;
+  }
+  const hMatch = row.match(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/i);
+  if (!hMatch) return null;
+  const heading = decodeEntities(hMatch[1].replace(/<[^>]+>/g, "")).trim();
+  return heading ? { heading, contentStart: (hMatch.index ?? 0) + hMatch[0].length } : null;
+}
+
 export function extractCourseSections(wpRawContent: string, limit = 6): CourseSection[] {
   const raw = wpRawContent || "";
-  const headingRe = /\[mkd_section_title[^\]]*\btitle_text="([^"]*)"/gi;
-  // A few pages use a bare "-" as a purely visual section divider with no
-  // real title - not content, so it shouldn't render as a heading. Dropped
-  // from the match list entirely (rather than skipped in the loop below)
-  // so it doesn't act as a span boundary either: mixing-mastering's real
-  // intro/curriculum content sits right after one of these, and treating it
-  // as a boundary was cutting that content's span short before extracting
-  // any of it - the "-" isn't a real section break, so the content after it
-  // belongs to the same span as the heading before it.
-  const matches = [...raw.matchAll(headingRe)].filter(
-    (m) => !/^[-–—.]*$/.test(decodeEntities(m[1] || "").trim())
-  );
-
   const sections: CourseSection[] = [];
-  for (let i = 0; i < matches.length && sections.length < limit; i++) {
-    const heading = decodeEntities(matches[i][1] || "").trim();
-    if (!heading) continue;
+  for (const row of splitTopLevelRows(raw)) {
+    if (sections.length >= limit) break;
+    const parsed = extractRowHeading(row);
+    if (!parsed) continue;
     // Only treat a boilerplate-looking heading as the real cutoff once at
     // least one real section has already been captured - some la pages'
     // course-title + city/online-availability subtitle pair (e.g.
@@ -242,16 +376,121 @@ export function extractCourseSections(wpRawContent: string, limit = 6): CourseSe
     // mistaken for the wrapper this check exists to catch, before any real
     // content has even been seen. Real boilerplate sections (Testimonials
     // etc.) only ever show up after genuine course content, never as the
-    // first or second heading on the page.
-    if (sections.length > 0 && isBoilerplateHeading(heading)) break;
-    const start = (matches[i].index ?? 0) + matches[i][0].length;
-    const end = matches[i + 1]?.index ?? raw.length;
-    const bodyHtml = extractParagraphs(raw.slice(start, end));
+    // first or second row on the page.
+    if (sections.length > 0 && isBoilerplateHeading(parsed.heading)) break;
+    const bodyHtml = extractParagraphs(row.slice(parsed.contentStart));
     if (!bodyHtml) continue;
-    sections.push({ heading, bodyHtml });
+    sections.push({ heading: parsed.heading, bodyHtml });
   }
-
   return sections;
+}
+
+// la's homepage presents each real offering (Degree Programs, the 360
+// Academy, each of the four Music Production Programs sub-cards, ...) as an
+// image + text pair: [mkd_elements_holder] with two items - the first just a
+// bare background_image (the real photo, no content of its own), the second
+// holding the real copy in [vc_column_text]. The second item's own
+// background_image (always id 16855 in practice) is a decorative doodle
+// graphic behind the text, not a real content photo - distinguished from the
+// real photo item below by requiring background_image to be the shortcode's
+// very first attribute, which only the real-photo item's tag has (the
+// decorative one always starts with background_color first).
+export type OfferingCard = { heading: string; bodyHtml: string; imageId: string | null };
+export type OfferingGroup = { groupHeading: string; cards: OfferingCard[] };
+
+// Splits flowing prose into individual sentences on simple ./!/? boundaries
+// (no lookbehind - unsupported by this repo's pre-ES2018 ts target). Good
+// enough for the short, clean marketing copy this is used on; not meant to
+// handle abbreviations or decimals in general prose.
+function splitIntoSentences(text: string): string[] {
+  return (text.match(/[^.!?]+[.!?]+(?:\s+|$)/g) || [text]).map((s) => s.trim()).filter(Boolean);
+}
+
+// Most offering cards' real description already comes from a genuine <ul>
+// (Course Highlights, curriculum items, ...), rendered with the same arrow
+// bullets used everywhere else in this design. A handful (la homepage's
+// "Degree Programs", "Social Media and Branding for Artists", "Express
+// Courses", ...) only ever had a single flowing paragraph in the CMS -
+// split into one bullet per sentence here so those cards read the same
+// scannable way as their neighbors instead of standing out as the only
+// dense wall of text on the page. Only the longest paragraph (the real
+// description) is touched - short CTA-only paragraphs like "Apply" or
+// "Book Now!" are left alone. Tags are stripped from that paragraph before
+// splitting (the same tradeoff iconParagraphToHtml's own "•" splitting
+// already makes) - naive sentence-boundary matching on raw HTML risks
+// splitting mid-tag or mid-URL.
+function bulletizeIfProseOnly(bodyHtml: string): string {
+  if (/<ul[\s>]/i.test(bodyHtml)) return bodyHtml;
+  let longest: { match: string; text: string } | null = null;
+  for (const m of bodyHtml.matchAll(/<p>([\s\S]*?)<\/p>/gi)) {
+    const text = decodeEntities(m[1].replace(/<[^>]+>/g, "")).trim();
+    if (!longest || text.length > longest.text.length) longest = { match: m[0], text };
+  }
+  if (!longest) return bodyHtml;
+  const sentences = splitIntoSentences(longest.text);
+  if (sentences.length < 2) return bodyHtml;
+  const ul = `<ul class="space-y-2 my-4">${sentences
+    .map((s) => `<li class="flex gap-2"><span class="text-[var(--gmpm-accent)]">→</span><span>${s}</span></li>`)
+    .join("")}</ul>`;
+  return bodyHtml.replace(longest.match, ul);
+}
+
+// A row can hold more than one image+text pair - the "Music Production
+// Programs" row has four, one per sub-program, each with its own <h2> (e.g.
+// "Ableton Production Program") inside its own [vc_column_text]. Only in
+// that multi-card case is the per-card heading pulled out of the card's own
+// content; a single-card row's [vc_column_text] never has a heading of its
+// own (the row's own [mkd_section_title] already names it), and pulling a
+// misc inline heading out of it there would just discard that real title in
+// favor of a less specific one, the same mislabeling extractCourseSections's
+// own row-splitting was built to avoid.
+function extractOfferingCardsFromRow(row: string, rowHeading: string): OfferingCard[] {
+  const matches = [...row.matchAll(/\[mkd_elements_holder_item\s+background_image="(\d+)"/gi)];
+  if (matches.length === 0) return [];
+  if (matches.length === 1) {
+    const imageId = matches[0][1];
+    const bodyHtml = bulletizeIfProseOnly(
+      extractParagraphs(row.slice((matches[0].index ?? 0) + matches[0][0].length))
+    );
+    return bodyHtml ? [{ heading: rowHeading, bodyHtml, imageId }] : [];
+  }
+  const cards: OfferingCard[] = [];
+  for (let i = 0; i < matches.length; i++) {
+    const imageId = matches[i][1];
+    const chunkStart = (matches[i].index ?? 0) + matches[i][0].length;
+    const chunkEnd = matches[i + 1]?.index ?? row.length;
+    const chunk = row.slice(chunkStart, chunkEnd);
+    const inner = extractRowHeading(chunk);
+    const heading = inner?.heading || `${rowHeading} ${i + 1}`;
+    const bodyHtml = bulletizeIfProseOnly(extractParagraphs(inner ? chunk.slice(inner.contentStart) : chunk));
+    if (bodyHtml) cards.push({ heading, bodyHtml, imageId });
+  }
+  return cards;
+}
+
+// One group per real top-level row, each with the one or more offering
+// cards found in it - a single-card row's card always shares the group's own
+// heading (see extractOfferingCardsFromRow), so callers only need to render
+// a separate group label above a group's cards when it holds more than one.
+export function extractHomepageOfferings(wpRawContent: string): OfferingGroup[] {
+  const raw = wpRawContent || "";
+  const groups: OfferingGroup[] = [];
+  for (const row of splitTopLevelRows(raw)) {
+    const parsed = extractRowHeading(row);
+    if (!parsed) continue;
+    if (groups.length > 0 && isBoilerplateHeading(parsed.heading)) break;
+    const cards = extractOfferingCardsFromRow(row, parsed.heading);
+    if (cards.length > 0) {
+      groups.push({ groupHeading: parsed.heading, cards });
+      continue;
+    }
+    // No real photo in this row (e.g. Express Courses) - still a real
+    // offering, just text-only, matching extractCourseSections's own
+    // fallback for the same case.
+    const bodyHtml = bulletizeIfProseOnly(extractParagraphs(row.slice(parsed.contentStart)));
+    if (bodyHtml) groups.push({ groupHeading: parsed.heading, cards: [{ heading: parsed.heading, bodyHtml, imageId: null }] });
+  }
+  return groups;
 }
 
 // A second, older content shape some course pages use instead of
@@ -324,6 +563,119 @@ export function extractFaqs(wpRawContent: string): Faq[] {
     if (question && answer) faqs.push({ question, answer });
   }
   return faqs;
+}
+
+// [mkd_accordion_tab] is also used for genuinely long-form content, not
+// just short FAQ answers - la's academy page has a "360 Garnish Music
+// Production Academy Modules" accordion (10 modules, each a real <ul> of
+// what's covered) immediately preceded by a heading whose text contains
+// "Modules". extractFaqs's answer capture (a single <p>) finds nothing for
+// these, so this is a separate, richer extractor: full HTML body (list or
+// paragraph) per tab, kept as real markup instead of flattened to plain
+// text. Deliberately excludes any tab whose own content is itself just
+// another [shortcode] widget with no real <p>/<ul> of its own (e.g. the
+// same accordion's trailing "Music Production Academy Blog" tab, which is
+// only a [mkd_blog_list] pulling in unrelated network-wide posts).
+export type AccordionModule = { title: string; bodyHtml: string };
+
+export function extractAccordionModules(wpRawContent: string): AccordionModule[] {
+  const raw = wpRawContent || "";
+  const modules: AccordionModule[] = [];
+  for (const m of raw.matchAll(/\[mkd_accordion_tab title="([^"]*)"[^\]]*\]([\s\S]*?)\[\/mkd_accordion_tab\]/gi)) {
+    const title = decodeEntities(m[1] || "").trim();
+    const bodyHtml = extractParagraphs(m[2]);
+    if (title && bodyHtml) modules.push({ title, bodyHtml });
+  }
+  return modules;
+}
+
+// Whether wpRawContent's accordion (if any) is a curriculum/program-modules
+// breakdown rather than a real FAQ - checked by looking for a heading
+// containing "modules"/"syllabus"/"curriculum" shortly before the first
+// [mkd_accordion_tab], since mislabeling one as the other (an accordion of
+// real curriculum content under a "Frequently asked questions" heading) is
+// exactly the bug this exists to avoid. la's academy/program pages title
+// this heading "... Modules"; individual course pages (e.g. "Hip Hop
+// Production Syllabus") use "... Syllabus" instead for the identical
+// curriculum-breakdown accordion - "modules" alone was missing every one of
+// those, which fell through to the generic FAQ accordion instead.
+export function hasModulesAccordion(wpRawContent: string): boolean {
+  const raw = wpRawContent || "";
+  const accordionIdx = raw.search(/\[mkd_accordion_tab/i);
+  if (accordionIdx === -1) return false;
+  return /modules|syllabus|curriculum/i.test(raw.slice(Math.max(0, accordionIdx - 800), accordionIdx));
+}
+
+// [vc_video link="https://youtu.be/ID" title="..."] - la's academy page
+// embeds two real student-testimonial YouTube videos this way. title is
+// optional - individual course pages' own "quick sample" video (e.g. hip-hop
+// production's) omits it entirely, and requiring it here was silently
+// dropping every one of those videos. Handles both youtu.be/ID and
+// youtube.com/watch?v=ID link shapes, since WPBakery's own video widget
+// accepts either.
+export type VideoEmbed = { embedUrl: string; title: string };
+
+export function extractVideoEmbeds(wpRawContent: string): VideoEmbed[] {
+  const raw = wpRawContent || "";
+  const videos: VideoEmbed[] = [];
+  for (const m of raw.matchAll(/\[vc_video\s+link="([^"]*)"[^\]]*\]/gi)) {
+    const link = m[1] || "";
+    const titleMatch = m[0].match(/\btitle="([^"]*)"/i);
+    const title = titleMatch ? decodeEntities(titleMatch[1] || "").trim() : "";
+    const idMatch = link.match(/(?:youtu\.be\/|[?&]v=)([a-zA-Z0-9_-]{6,})/);
+    if (!idMatch) continue;
+    videos.push({ embedUrl: `https://www.youtube.com/embed/${idMatch[1]}`, title });
+  }
+  return videos;
+}
+
+// [vc_raw_html]BASE64[/vc_raw_html] - a base64-then-URL-encoded blob of
+// literal HTML the WPBakery editor doesn't have a shortcode for (confirmed
+// on la's homepage: an autoplay/muted/loop <video> hero background,
+// "Garnish-Landing-Page-Promo-Video.mp4" - the reason that hero renders
+// blank on the legacy theme locally, since autoplay video needs a moment
+// even when it works). Only ever seen used for a plain <video><source>
+// pair so far - returns the first real video src found, or null.
+export function extractRawHtmlVideoSrc(wpRawContent: string): string | null {
+  const raw = wpRawContent || "";
+  for (const m of raw.matchAll(/\[vc_raw_html[^\]]*\]([A-Za-z0-9+/=]+)\[\/vc_raw_html\]/gi)) {
+    try {
+      const decoded = decodeURIComponent(Buffer.from(m[1], "base64").toString("utf-8"));
+      const src = decoded.match(/<source[^>]*\bsrc="([^"]*\.mp4[^"]*)"/i)?.[1];
+      if (src) return src;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+// [vc_single_image image="18427" ...] references a Payload media doc by id
+// - unlike every other extractor in this file, this can't be resolved from
+// wpRawContent alone (no image URL lives in the shortcode, just an id), so
+// callers collect the referenced ids, resolve them to real media docs (a
+// DB round trip - see the course-page route), and splice the resolved
+// <img> tags back into the raw string before running the extractors above,
+// the same "resolve ids, then substitute" shape as the legacy pipeline's
+// own wp-image-resolver.ts.
+export function extractSingleImageIds(wpRawContent: string): string[] {
+  const raw = wpRawContent || "";
+  const ids = new Set<string>();
+  for (const m of raw.matchAll(/\[vc_single_image\s+image="(\d+)"/gi)) ids.add(m[1]);
+  return [...ids];
+}
+
+export function resolveSingleImages(wpRawContent: string, urlsById: Map<string, string>): string {
+  return (wpRawContent || "").replace(/\[vc_single_image\s+image="(\d+)"[^\]]*\]/gi, (whole, id) => {
+    const url = urlsById.get(id);
+    // gmpm-resolved-image is a marker, not a real style - see
+    // bareImageToHtml's own check for why: this tag will still pass back
+    // through extractParagraphs's bare-<img> matching once spliced in, and
+    // needs to be recognized there as already-styled rather than rebuilt
+    // with the small-logo treatment that's only right for a genuinely bare
+    // <img> straight from wpRawContent.
+    return url ? `<img src="${url}" alt="" class="gmpm-resolved-image w-full h-auto gmpm-corner my-4" />` : "";
+  });
 }
 
 export type CoursePricing = { priceLine: string | null; enrollLink: string | null };

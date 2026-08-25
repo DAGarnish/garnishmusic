@@ -24,7 +24,13 @@ export async function buildImageResolver(
       where: {
         and: [{ site: { equals: siteId } }, { wpAttachmentId: { in: [...ids].map(Number) } }],
       },
-      limit: ids.size,
+      // A couple of wpAttachmentIds have more than one media doc migrated
+      // under them (confirmed: id 17604 has 2) - a limit sized exactly to
+      // the number of *unique* ids requested can silently truncate the
+      // result set before reaching every id, dropping whichever image(s)
+      // sorted last. Padded well past that to guarantee every requested id
+      // gets a matching doc back.
+      limit: ids.size + 20,
     });
     for (const doc of result.docs) {
       if (doc.wpAttachmentId != null && doc.url) {

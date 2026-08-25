@@ -5,10 +5,12 @@ export default function ModernHero({
   heroImageUrl,
   stats,
   cityName,
+  contactHref = "/contact-map",
 }: {
   heroImageUrl?: string;
   stats: string[];
   cityName: string;
+  contactHref?: string;
 }) {
   return (
     <section className="relative overflow-hidden gmpm-grid-bg">
@@ -27,7 +29,7 @@ export default function ModernHero({
         </div>
 
         <ModernTypewriterHeading
-          text="The world's boutique music production school"
+          text={`The world's boutique music production school | ${cityName}`}
           highlight="boutique"
           className="font-bold text-[13vw] leading-[0.95] md:text-[6.5vw] md:leading-[0.95] max-w-4xl"
         />
@@ -39,7 +41,7 @@ export default function ModernHero({
 
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
-            href="/contact-map"
+            href={contactHref}
             className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-black font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
           >
             Book a free consultation

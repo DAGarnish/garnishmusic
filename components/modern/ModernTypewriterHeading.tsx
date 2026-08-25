@@ -80,9 +80,17 @@ export default function ModernTypewriterHeading({
           it doesn't reflow the box - and doesn't shift anything below it on
           the page - as the line count grows during typing. Without this, the
           H1 wraps from one line to two mid-animation, a real Cumulative
-          Layout Shift. */}
+          Layout Shift. Built from the exact same renderRevealed() call (full
+          count) plus the same trailing cursor character as the overlay below
+          - a plain-text reserve span wraps by itself, since splitting
+          `highlight` into its own inline <span> (and appending the cursor
+          glyph) can shift a wrap point by one line on longer headings versus
+          plain text at the same width, leaving the reserved box shorter than
+          the overlay actually rendered and letting it spill into whatever
+          follows. */}
       <span aria-hidden="true" style={{ visibility: "hidden" }}>
-        {displayText}
+        {renderRevealed(displayText, displayText.length, highlight)}
+        <span className="gmpm-typewriter-cursor">█</span>
       </span>
       <span aria-hidden="true" className="absolute inset-0">
         {renderRevealed(displayText, count, highlight)}

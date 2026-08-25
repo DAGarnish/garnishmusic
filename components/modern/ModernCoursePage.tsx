@@ -3,11 +3,19 @@ import Link from "next/link";
 import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
+import ModernAccordionSection from "./ModernAccordionSection";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import ModernRelatedPosts from "./ModernRelatedPosts";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
-import type { CourseSection, CurriculumModule, CoursePricing, Faq } from "../../lib/modern-course-content";
+import type {
+  CourseSection,
+  CurriculumModule,
+  CoursePricing,
+  Faq,
+  AccordionModule,
+  VideoEmbed,
+} from "../../lib/modern-course-content";
 import type { RelatedPost } from "../../lib/modern-related-posts";
 
 export default function ModernCoursePage({
@@ -19,6 +27,8 @@ export default function ModernCoursePage({
   intro,
   pricing,
   faqs,
+  curriculumAccordion = [],
+  videoEmbeds = [],
   relatedPosts,
   eduDomain,
 }: {
@@ -30,6 +40,8 @@ export default function ModernCoursePage({
   intro: string[];
   pricing: CoursePricing;
   faqs: Faq[];
+  curriculumAccordion?: AccordionModule[];
+  videoEmbeds?: VideoEmbed[];
   relatedPosts: RelatedPost[];
   eduDomain: string;
 }) {
@@ -122,6 +134,34 @@ export default function ModernCoursePage({
           </div>
         </section>
       )}
+
+      {videoEmbeds.length > 0 && (
+        <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
+          <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Student stories</div>
+          <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            {videoEmbeds.map((v, i) => (
+              <div key={i} className="gmpm-corner border border-[var(--gmpm-line)]">
+                <div className="aspect-video">
+                  <iframe
+                    src={v.embedUrl}
+                    title={v.title}
+                    className="w-full h-full"
+                    style={{ border: 0 }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
+                {v.title && (
+                  <div className="px-4 py-3 gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">{v.title}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <ModernAccordionSection eyebrow="Curriculum" heading="Program modules." items={curriculumAccordion} />
 
       <ModernFaqAccordion faqs={faqs} />
 

@@ -37,6 +37,11 @@ import {
   extractCourseIntro,
   extractCoursePricing,
   extractFaqs,
+  extractAccordionModules,
+  hasModulesAccordion,
+  extractVideoEmbeds,
+  extractSingleImageIds,
+  resolveSingleImages,
 } from "../../../lib/modern-course-content";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
@@ -390,7 +395,33 @@ export default async function CatchAllPage({ params }: Args) {
     });
     const courseDoc = coursePages.docs[0] as any;
     if (courseDoc) {
-      const raw = courseDoc.wpRawContent || "";
+      let raw = courseDoc.wpRawContent || "";
+      // [vc_single_image] shortcodes reference a media doc by id only - no
+      // URL lives in the shortcode itself, so those ids are resolved to
+      // real media docs and spliced back into the raw string as <img> tags
+      // before any of the text extractors below run (they can only see
+      // literal <img> tags, not shortcodes needing a DB round trip). The id
+      // in [vc_single_image image="..."] is the *original WordPress*
+      // attachment id (wpAttachmentId), not this media doc's own Payload
+      // id - migration renumbered every doc, so looking up by `id` finds
+      // nothing (confirmed: id 18427 doesn't exist at all, but a doc with
+      // wpAttachmentId 18427 does).
+      const singleImageIds = extractSingleImageIds(raw);
+      if (singleImageIds.length > 0) {
+        const mediaRes = await payload.find({
+          collection: "media",
+          where: { wpAttachmentId: { in: singleImageIds.map(Number) } },
+          // Padded well past the number of unique ids requested - some
+          // wpAttachmentIds have more than one media doc migrated under them
+          // (confirmed: id 17604 has 2), and a limit sized exactly to the
+          // unique-id count can silently truncate the result set before
+          // reaching every id.
+          limit: singleImageIds.length + 20,
+          depth: 0,
+        });
+        const urlsById = new Map(mediaRes.docs.map((d: any) => [String(d.wpAttachmentId), d.url as string]));
+        raw = resolveSingleImages(raw, urlsById);
+      }
       const heroImage =
         (typeof courseDoc.titleBackgroundImage === "object" && courseDoc.titleBackgroundImage?.url) ||
         (typeof courseDoc.featuredImage === "object" && courseDoc.featuredImage?.url) ||
@@ -404,6 +435,14 @@ export default async function CatchAllPage({ params }: Args) {
       const sections = extractCourseSections(raw);
       const curriculum = sections.length > 0 ? [] : extractCurriculumModules(raw);
       const intro = sections.length > 0 ? [] : extractCourseIntro(raw);
+      // A page's one [mkd_accordion] can be a real FAQ or a curriculum-
+      // modules breakdown (la's academy page: 10 real program modules, not
+      // Q&A) - hasModulesAccordion tells the two apart so modules don't
+      // render mislabeled under a "Frequently asked questions" heading.
+      const isModulesAccordion = hasModulesAccordion(raw);
+      const faqs = isModulesAccordion ? [] : extractFaqs(raw);
+      const curriculumAccordion = isModulesAccordion ? extractAccordionModules(raw) : [];
+      const videoEmbeds = extractVideoEmbeds(raw);
       const allSites = await getAllSitesCached();
       const eduSite = allSites.find((s: any) => s.slug === "edu");
       const relatedPosts = eduSite ? await getRelatedPosts(payload, eduSite.id, slug.join("/")) : [];
@@ -416,7 +455,9 @@ export default async function CatchAllPage({ params }: Args) {
           curriculum={curriculum}
           intro={intro}
           pricing={extractCoursePricing(raw)}
-          faqs={extractFaqs(raw)}
+          faqs={faqs}
+          curriculumAccordion={curriculumAccordion}
+          videoEmbeds={videoEmbeds}
           relatedPosts={relatedPosts}
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
         />
