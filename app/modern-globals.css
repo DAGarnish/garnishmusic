@@ -74,9 +74,13 @@
 }
 
 /* Blinking block cursor for ModernTypewriterHeading - flashes 4 times then
-   parks hidden. 3.5 iterations (not 4) of the on/off/on keyframe below ends
-   mid-cycle on the "off" half rather than completing back to "on"; forwards
-   keeps that final opacity: 0 instead of reverting to the base style.
+   parks lit. A whole-number iteration count (4, not 3.5) ends exactly on
+   the keyframe's 100% state (opacity: 1) instead of mid-cycle on the "off"
+   half; forwards keeps that final opacity: 1 instead of reverting to the
+   base style. font-size: 0.25em (25% of the heading's inherited size, i.e.
+   75% smaller) is set directly rather than via a transform: scale, since
+   scale would shrink the glyph without shrinking the layout space it
+   reserves, leaving a gap around it.
    Deliberately NOT display: inline-block - horizontal margin works fine on
    a plain inline element, and inline-block turns the cursor into an atomic
    inline box, which browsers may wrap onto its own line on any overflow
@@ -85,9 +89,21 @@
    itself on a blank line below the title. */
 .gmpm-typewriter-cursor {
   margin-left: 10px;
+  font-size: 0.25em;
   color: var(--gmpm-accent);
-  animation: gmpm-blink 1s step-end 3.5;
+  animation: gmpm-blink 1s step-end 4;
   animation-fill-mode: forwards;
+}
+
+/* The "." in the GARNISH. wordmark (header + footer) - same lime block
+   glyph as the typewriter cursor above (just static, no blink), so the
+   logo's full stop reads as the same oblong mark rather than a round dot.
+   font-size: 0.25em keeps it a small accent mark rather than a tile the
+   height of the text. */
+.gmpm-logo-dot {
+  margin-left: 3px;
+  font-size: 0.25em;
+  color: var(--gmpm-accent);
 }
 @keyframes gmpm-blink {
   0%, 100% { opacity: 1; }

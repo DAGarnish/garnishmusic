@@ -1,7 +1,15 @@
 import Link from "next/link";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
 
-export default function ModernHero({ heroImageUrl, stats }: { heroImageUrl?: string; stats: string[] }) {
+export default function ModernHero({
+  heroImageUrl,
+  stats,
+  cityName,
+}: {
+  heroImageUrl?: string;
+  stats: string[];
+  cityName: string;
+}) {
   return (
     <section className="relative overflow-hidden gmpm-grid-bg">
       <div className="absolute inset-0">
@@ -15,7 +23,7 @@ export default function ModernHero({ heroImageUrl, stats }: { heroImageUrl?: str
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 pt-28 pb-20 md:pt-40 md:pb-28">
         <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
           <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
-          Portland — Music Production &amp; DJ School
+          {cityName} — Music Production &amp; DJ School
         </div>
 
         <ModernTypewriterHeading

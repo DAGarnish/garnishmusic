@@ -3,6 +3,7 @@ import Link from "next/link";
 import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
+import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import type { ContactDetails } from "../../lib/modern-contact-content";
 
@@ -15,7 +16,7 @@ export default function ModernContactPage({
 }) {
   return (
     <div className="gmpm-root min-h-screen">
-      <ModernHeader menu={site.mainMenu as MenuNode[] | null} />
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
 
       <section className="gmpm-grid-bg">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-24 pb-16 md:pt-32 md:pb-20">
@@ -25,7 +26,7 @@ export default function ModernContactPage({
           </div>
           <ModernTypewriterHeading
             text="Let's talk music."
-            highlight="music."
+            highlight="music"
             className="font-bold text-[13vw] leading-[0.95] md:text-[6vw] md:leading-[0.95] max-w-3xl"
           />
         </div>
@@ -74,7 +75,7 @@ export default function ModernContactPage({
         </div>
       </section>
 
-      <ModernFooter siteName={site.name} />
+      <ModernFooter siteName={site.name} cityName={getCityName(site)} />
     </div>
   );
 }

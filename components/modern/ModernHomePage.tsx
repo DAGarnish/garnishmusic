@@ -6,6 +6,7 @@ import ModernHero from "./ModernHero";
 import ModernFooter from "./ModernFooter";
 import ModernPartners from "./ModernPartners";
 import { PARTNER_LOGOS_LIME } from "../../lib/modern-partner-logos";
+import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 
 export default async function ModernHomePage({ site }: { site: any }) {
@@ -42,10 +43,16 @@ export default async function ModernHomePage({ site }: { site: any }) {
     .map((t: string) => t.replace(/<br\s*\/?>/gi, " "))
     .slice(0, 4);
 
+  const cityName = getCityName(site);
+
   return (
     <div className="gmpm-root min-h-screen">
-      <ModernHeader menu={site.mainMenu as MenuNode[] | null} />
-      <ModernHero heroImageUrl={heroImage} stats={stats.length ? stats : ["10 years running", "Small class sizes", "Working producers as tutors", "Portland studio"]} />
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
+      <ModernHero
+        heroImageUrl={heroImage}
+        cityName={cityName}
+        stats={stats.length ? stats : ["10 years running", "Small class sizes", "Working producers as tutors", `${cityName} studio`]}
+      />
 
       {cards.length > 0 && (
         <section id="programs" className="max-w-[1400px] mx-auto px-6 md:px-10 py-24">
@@ -69,7 +76,7 @@ export default async function ModernHomePage({ site }: { site: any }) {
 
       <ModernPartners logos={PARTNER_LOGOS_LIME} />
 
-      <ModernFooter siteName={site.name} />
+      <ModernFooter siteName={site.name} cityName={cityName} />
     </div>
   );
 }

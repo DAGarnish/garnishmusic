@@ -4,6 +4,7 @@ import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
+import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import type { Faq } from "../../lib/modern-course-content";
 import type { PrivateInstructionContent } from "../../lib/modern-private-instruction-content";
@@ -21,13 +22,13 @@ export default function ModernPrivateInstructionPage({
 }) {
   return (
     <div className="gmpm-root min-h-screen">
-      <ModernHeader menu={site.mainMenu as MenuNode[] | null} />
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
 
       <section className="gmpm-grid-bg">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-24 pb-16 md:pt-32 md:pb-20">
           <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
-            Portland — One to one
+            {getCityName(site)} — One to one
           </div>
           <ModernTypewriterHeading
             text={title}
@@ -68,7 +69,7 @@ export default function ModernPrivateInstructionPage({
 
       <ModernFaqAccordion faqs={faqs} />
 
-      <ModernFooter siteName={site.name} />
+      <ModernFooter siteName={site.name} cityName={getCityName(site)} />
     </div>
   );
 }

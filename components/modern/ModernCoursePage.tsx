@@ -5,6 +5,7 @@ import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import ModernRelatedPosts from "./ModernRelatedPosts";
+import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import type { CourseSection, CurriculumModule, CoursePricing, Faq } from "../../lib/modern-course-content";
 import type { RelatedPost } from "../../lib/modern-related-posts";
@@ -34,7 +35,7 @@ export default function ModernCoursePage({
 }) {
   return (
     <div className="gmpm-root min-h-screen">
-      <ModernHeader menu={site.mainMenu as MenuNode[] | null} />
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
 
       <section className="relative overflow-hidden gmpm-grid-bg">
         <div className="absolute inset-0">
@@ -48,7 +49,7 @@ export default function ModernCoursePage({
         <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 pt-24 pb-16 md:pt-32 md:pb-20">
           <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
-            Course — Portland
+            Course — {getCityName(site)}
           </div>
           <ModernTypewriterHeading
             key={title}
@@ -143,7 +144,7 @@ export default function ModernCoursePage({
 
       <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} />
 
-      <ModernFooter siteName={site.name} />
+      <ModernFooter siteName={site.name} cityName={getCityName(site)} />
     </div>
   );
 }

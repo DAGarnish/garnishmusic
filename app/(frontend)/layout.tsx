@@ -6,6 +6,7 @@ import ConsultationPopup from "../../components/ConsultationPopup";
 import { CartProvider } from "../../components/CartContext";
 import LegacyAccordionUpgrade from "../../components/LegacyAccordionUpgrade";
 import ResponsiveRowMargins from "../../components/ResponsiveRowMargins";
+import { MODERN_SITE_SLUGS } from "../../lib/modern-sites";
 
 // Loaded as plain blocking <script> tags (not next/script's beforeInteractive
 // strategy) because that strategy's SSR-injection mechanism collides with the
@@ -104,13 +105,13 @@ export default async function RootLayout({
 }>) {
   const site = await getCurrentSite();
 
-  // pdx is the pilot for a from-scratch design system with none of the
+  // pdx was the pilot for a from-scratch design system with none of the
   // migrated WordPress theme's weight: no jQuery/jQuery-UI/Slick/parallax
-  // script chain, no buro-*.css, no mkd-* body classes. Scoped to this one
-  // site (currently unused by real traffic) so the other 17 sites - which
-  // still depend on all of the below for their header/footer/accordion
-  // behavior - are completely unaffected.
-  if (site?.slug === "pdx") {
+  // script chain, no buro-*.css, no mkd-* body classes. hou is the first
+  // network-wide rollout of it. Scoped to MODERN_SITE_SLUGS so the
+  // remaining sites - which still depend on all of the below for their
+  // header/footer/accordion behavior - are completely unaffected.
+  if (site && MODERN_SITE_SLUGS.has(site.slug)) {
     return (
       <html lang="en">
         <body>{children}</body>

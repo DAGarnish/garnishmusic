@@ -133,8 +133,10 @@ function MobileNavItem({ item, onNavigate }: { item: MenuNode; onNavigate: () =>
 
 export default function ModernHeader({
   menu,
+  cityAbbr,
 }: {
   menu?: MenuNode[] | null;
+  cityAbbr?: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -142,8 +144,10 @@ export default function ModernHeader({
     <header className="sticky top-0 z-50 bg-[var(--gmpm-bg)]/95 backdrop-blur border-b border-[var(--gmpm-line)]">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between gap-8">
         <Link href="/" className="gmpm-display text-lg font-bold shrink-0" onClick={() => setMobileOpen(false)}>
-          GARNISH<span className="text-[var(--gmpm-accent)]">.</span>
-          <span className="gmpm-mono text-[10px] align-top text-[var(--gmpm-text-dim)] ml-1">PDX</span>
+          GARNISH<span className="gmpm-logo-dot">█</span>
+          {cityAbbr && (
+            <span className="gmpm-mono text-[10px] align-top text-[var(--gmpm-text-dim)] ml-1">{cityAbbr}</span>
+          )}
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">

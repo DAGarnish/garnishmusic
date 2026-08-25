@@ -117,6 +117,28 @@ function stripAccordionBlocks(s: string): string {
   return s.replace(/\[mkd_accordion\b[^\]]*\][\s\S]*?\[\/mkd_accordion\]/gi, "");
 }
 
+// A [vc_column_text] block whose editorial copy was pasted in as plain
+// blank-line-separated text with no <p> wrapper at all (unlike the shape
+// extractParagraphs's main loop matches, which needs real <p>/<h3>/<ul>
+// tags to find anything) - confirmed on hou's electronic-sound-art page,
+// where the whole marketing intro is written this way and the main loop
+// above returns nothing for it. Same blank-line-splitting technique as
+// extractCourseIntro uses for the older intro/curriculum shape.
+function extractBareParagraphs(rawChunk: string): string {
+  const m = rawChunk.match(/\[vc_column_text[^\]]*\]([\s\S]*?)\[\/vc_column_text\]/i);
+  if (!m) return "";
+  // A vc_column_text block with real <p> tags is already handled by the
+  // main regex loop - this fallback only applies when that loop found
+  // nothing to match on.
+  if (/<p[^>]*>/i.test(m[1])) return "";
+  const paragraphs = m[1]
+    .split(/\n\s*\n/)
+    .map((line) => decodeEntities(stripShortcodesExceptIcon(line).replace(/<[^>]+>/g, "")).trim())
+    .filter((line) => line.length > 3 && !/^\d{1,4}$/.test(line));
+  if (!paragraphs.length) return "";
+  return paragraphs.map((p) => `<p>${p}</p>`).join("");
+}
+
 // Converts a raw chunk of WPBakery content (which mixes literal paragraph
 // HTML with bracket shortcodes) into safe, readable HTML: <h3> sub-headings
 // become sub-heading markup, <p> content becomes either a paragraph or a
@@ -161,6 +183,10 @@ function extractParagraphs(rawChunk: string): string {
       const html = iconParagraphToHtml(m[3]);
       if (html) blocks.push(html);
     }
+  }
+  if (!blocks.length) {
+    const bare = extractBareParagraphs(rawChunk);
+    if (bare) blocks.push(bare);
   }
   return restyleLegacyConnectButton(stripCruftAttributes(blocks.join("")));
 }

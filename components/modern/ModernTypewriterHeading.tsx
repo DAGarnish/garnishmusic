@@ -52,11 +52,18 @@ export default function ModernTypewriterHeading({
   // interval, not also assign state synchronously on every run.
   const [count, setCount] = useState(0);
 
+  // The block cursor is itself the visual terminator (it stays lit after
+  // the last flash - see .gmpm-typewriter-cursor), so a literal "." right
+  // before it reads as a redundant round dot sitting next to the oblong
+  // cursor. Dropped from what's actually typed/rendered; the sr-only span
+  // below keeps the real, grammatically complete text for screen readers.
+  const displayText = text.endsWith(".") ? text.slice(0, -1) : text;
+
   useEffect(() => {
-    if (!text) return;
+    if (!displayText) return;
     const interval = setInterval(() => {
       setCount((c) => {
-        if (c >= text.length) {
+        if (c >= displayText.length) {
           clearInterval(interval);
           return c;
         }
@@ -64,7 +71,7 @@ export default function ModernTypewriterHeading({
       });
     }, 32);
     return () => clearInterval(interval);
-  }, [text]);
+  }, [displayText]);
 
   return (
     <Tag className={`relative ${className ?? ""}`} style={{ fontFamily: "var(--gmpm-font-mono)" }}>
@@ -75,10 +82,10 @@ export default function ModernTypewriterHeading({
           H1 wraps from one line to two mid-animation, a real Cumulative
           Layout Shift. */}
       <span aria-hidden="true" style={{ visibility: "hidden" }}>
-        {text}
+        {displayText}
       </span>
       <span aria-hidden="true" className="absolute inset-0">
-        {renderRevealed(text, count, highlight)}
+        {renderRevealed(displayText, count, highlight)}
         <span className="gmpm-typewriter-cursor">█</span>
       </span>
       <span className="sr-only">{text}</span>

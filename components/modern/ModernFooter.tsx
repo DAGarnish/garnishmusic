@@ -1,12 +1,12 @@
 import Link from "next/link";
 
-export default function ModernFooter({ siteName }: { siteName: string }) {
+export default function ModernFooter({ siteName, cityName }: { siteName: string; cityName: string }) {
   return (
     <footer className="border-t border-[var(--gmpm-line)] bg-[var(--gmpm-bg)]">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 grid gap-12 md:grid-cols-3">
         <div>
           <div className="gmpm-display text-lg font-bold mb-3">
-            GARNISH<span className="text-[var(--gmpm-accent)]">.</span>
+            GARNISH<span className="gmpm-logo-dot">█</span>
           </div>
           <p className="text-sm text-[var(--gmpm-text-dim)] max-w-xs">
             {siteName}. World-class music production and DJ training, taught by working
@@ -35,7 +35,7 @@ export default function ModernFooter({ siteName }: { siteName: string }) {
 
       <div className="border-t border-[var(--gmpm-line)]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6 gmpm-mono text-[11px] text-[var(--gmpm-text-dim)]">
-          © {new Date().getFullYear()} Garnish Music Production School — Portland
+          © {new Date().getFullYear()} Garnish Music Production School — {cityName}
         </div>
       </div>
     </footer>

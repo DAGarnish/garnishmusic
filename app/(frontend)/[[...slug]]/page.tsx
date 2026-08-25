@@ -42,6 +42,7 @@ import ModernPrivateInstructionPage from "../../../components/modern/ModernPriva
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
 import ModernInstructorsPage from "../../../components/modern/ModernInstructorsPage";
 import { extractInstructorBio } from "../../../lib/modern-instructors-content";
+import { MODERN_SITE_SLUGS } from "../../../lib/modern-sites";
 
 // Blog post bodies get the "video" block (blocks/Video.ts, added to
 // Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
@@ -325,14 +326,15 @@ export default async function CatchAllPage({ params }: Args) {
     );
   }
 
-  // pdx is the pilot for the fresh, non-legacy design system (webpro50-style
-  // tokens, no jQuery/WPBakery-era markup) - see components/modern/. Scoped
-  // to this one site and a handful of rebuilt routes so the other 17 live
-  // sites' rendering path is completely untouched.
-  if (site.slug === "pdx" && slug.length === 0) {
+  // pdx was the pilot for the fresh, non-legacy design system (webpro50-
+  // style tokens, no jQuery/WPBakery-era markup) - see components/modern/
+  // and lib/modern-sites.ts (MODERN_SITE_SLUGS) for the sites it now covers.
+  // Scoped to this handful of rebuilt routes so the remaining live sites'
+  // rendering path is completely untouched.
+  if (MODERN_SITE_SLUGS.has(site.slug) && slug.length === 0) {
     return <ModernHomePage site={site} />;
   }
-  if (site.slug === "pdx" && slug.join("/") === "contact-map") {
+  if (MODERN_SITE_SLUGS.has(site.slug) && slug.join("/") === "contact-map") {
     const payload = await getPayloadClient();
     const contactPages = await payload.find({
       collection: "pages",
@@ -356,7 +358,7 @@ export default async function CatchAllPage({ params }: Args) {
     "ableton-producer",
     "logic-producer",
   ]);
-  if (site.slug === "pdx" && modernTemplatedSlugs.has(slug.join("/"))) {
+  if (MODERN_SITE_SLUGS.has(site.slug) && modernTemplatedSlugs.has(slug.join("/"))) {
     const payload = await getPayloadClient();
     const coursePages = await payload.find({
       collection: "pages",
@@ -399,7 +401,7 @@ export default async function CatchAllPage({ params }: Args) {
       );
     }
   }
-  if (site.slug === "pdx" && slug.join("/") === "private-instruction") {
+  if (MODERN_SITE_SLUGS.has(site.slug) && slug.join("/") === "private-instruction") {
     const payload = await getPayloadClient();
     const privatePages = await payload.find({
       collection: "pages",
@@ -419,7 +421,7 @@ export default async function CatchAllPage({ params }: Args) {
       );
     }
   }
-  if (site.slug === "pdx" && slug.join("/") === "instructors") {
+  if (MODERN_SITE_SLUGS.has(site.slug) && slug.join("/") === "instructors") {
     const payload = await getPayloadClient();
     // A curated four, not the full ~30-person network-wide roster (most of
     // which have no Portland connection at all) - real bios/photos, picked

@@ -2,6 +2,7 @@ import "../../app/modern-globals.css";
 import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
+import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 
 export type InstructorCard = {
@@ -17,18 +18,20 @@ export default function ModernInstructorsPage({
   site: any;
   instructors: InstructorCard[];
 }) {
+  const cityName = getCityName(site);
+
   return (
     <div className="gmpm-root min-h-screen">
-      <ModernHeader menu={site.mainMenu as MenuNode[] | null} />
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
 
       <section className="gmpm-grid-bg">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-24 pb-16 md:pt-32 md:pb-20">
           <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
-            Portland — The roster
+            {cityName} — The roster
           </div>
           <ModernTypewriterHeading
-            text="Instructors | Portland"
+            text={`Instructors | ${cityName}`}
             className="font-bold text-[15vw] leading-[0.95] md:text-[6vw] md:leading-[0.95] max-w-3xl"
           />
           <p className="mt-8 text-lg text-[var(--gmpm-text-dim)] max-w-xl">
@@ -64,7 +67,7 @@ export default function ModernInstructorsPage({
         ))}
       </section>
 
-      <ModernFooter siteName={site.name} />
+      <ModernFooter siteName={site.name} cityName={cityName} />
     </div>
   );
 }
