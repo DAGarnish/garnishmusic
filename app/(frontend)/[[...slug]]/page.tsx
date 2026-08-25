@@ -42,7 +42,7 @@ import ModernPrivateInstructionPage from "../../../components/modern/ModernPriva
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
 import ModernInstructorsPage from "../../../components/modern/ModernInstructorsPage";
 import { extractInstructorBio } from "../../../lib/modern-instructors-content";
-import { MODERN_SITE_SLUGS } from "../../../lib/modern-sites";
+import { MODERN_SITE_ROUTES } from "../../../lib/modern-site-routes";
 
 // Blog post bodies get the "video" block (blocks/Video.ts, added to
 // Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
@@ -328,37 +328,38 @@ export default async function CatchAllPage({ params }: Args) {
 
   // pdx was the pilot for the fresh, non-legacy design system (webpro50-
   // style tokens, no jQuery/WPBakery-era markup) - see components/modern/
-  // and lib/modern-sites.ts (MODERN_SITE_SLUGS) for the sites it now covers.
-  // Scoped to this handful of rebuilt routes so the remaining live sites'
-  // rendering path is completely untouched.
-  if (MODERN_SITE_SLUGS.has(site.slug) && slug.length === 0) {
+  // and lib/modern-site-routes.ts (MODERN_SITE_ROUTES) for the sites it now
+  // covers and each one's real route slugs. Scoped to this handful of
+  // rebuilt routes so the remaining live sites' rendering path is
+  // completely untouched.
+  const modernRoutes = MODERN_SITE_ROUTES[site.slug];
+  if (modernRoutes && slug.length === 0) {
     return <ModernHomePage site={site} />;
   }
-  if (MODERN_SITE_SLUGS.has(site.slug) && slug.join("/") === "contact-map") {
+  if (modernRoutes && slug.join("/") === modernRoutes.contactSlug) {
     const payload = await getPayloadClient();
     const contactPages = await payload.find({
       collection: "pages",
-      where: { and: [{ site: { equals: site.id } }, { slug: { equals: "contact-map" } }] },
+      where: { and: [{ site: { equals: site.id } }, { slug: { equals: modernRoutes.contactSlug } }] },
       limit: 1,
     });
     const contactDoc = contactPages.docs[0] as any;
     const contact = extractContactDetails(contactDoc?.wpRawContent || "");
     return <ModernContactPage site={site} contact={contact} />;
   }
-  // Also covers the "Comprehensive Programs" pages (academy, ableton-producer,
-  // logic-producer) - confirmed via inspection to use the identical
-  // [mkd_section_title]+[vc_column_text] shortcode shape as the course pages
-  // this template was built for, so no separate component/extractor needed.
-  // private-instruction was checked too and does NOT fit either shape this
-  // extractor handles (nested accordion + pricing list) - deliberately left
-  // off this list rather than risk a garbled render; still on the legacy path.
+  // Also covers each site's "Comprehensive/Production Programs" pages (see
+  // modernRoutes.programSlugs in modern-site-routes.ts) - confirmed via
+  // inspection to use the identical [mkd_section_title]+[vc_column_text]
+  // shortcode shape as the course pages this template was built for, so no
+  // separate component/extractor needed. private-instruction was checked
+  // too and does NOT fit either shape this extractor handles (nested
+  // accordion + pricing list) - deliberately left off this list rather than
+  // risk a garbled render; still on the legacy path.
   const modernTemplatedSlugs = new Set([
     ...collectNavCourseSlugs(site.mainMenu),
-    "academy",
-    "ableton-producer",
-    "logic-producer",
+    ...(modernRoutes?.programSlugs ?? []),
   ]);
-  if (MODERN_SITE_SLUGS.has(site.slug) && modernTemplatedSlugs.has(slug.join("/"))) {
+  if (modernRoutes && modernTemplatedSlugs.has(slug.join("/"))) {
     const payload = await getPayloadClient();
     const coursePages = await payload.find({
       collection: "pages",
@@ -401,11 +402,11 @@ export default async function CatchAllPage({ params }: Args) {
       );
     }
   }
-  if (MODERN_SITE_SLUGS.has(site.slug) && slug.join("/") === "private-instruction") {
+  if (modernRoutes && slug.join("/") === modernRoutes.privateInstructionSlug) {
     const payload = await getPayloadClient();
     const privatePages = await payload.find({
       collection: "pages",
-      where: { and: [{ site: { equals: site.id } }, { slug: { equals: "private-instruction" } }] },
+      where: { and: [{ site: { equals: site.id } }, { slug: { equals: modernRoutes.privateInstructionSlug } }] },
       limit: 1,
     });
     const privateDoc = privatePages.docs[0] as any;
@@ -421,15 +422,12 @@ export default async function CatchAllPage({ params }: Args) {
       );
     }
   }
-  if (MODERN_SITE_SLUGS.has(site.slug) && slug.join("/") === "instructors") {
+  if (modernRoutes && slug.join("/") === modernRoutes.instructorsSlug) {
     const payload = await getPayloadClient();
-    // A curated four, not the full ~30-person network-wide roster (most of
-    // which have no Portland connection at all) - real bios/photos, picked
-    // for strong, substantive content (Dave Garnish is the founder; Loren
-    // Moore, Appu Krishnan and Zack Johnson have the richest bios of the
-    // group, and Zack is the same instructor already named on the Ableton
-    // Producer Program page's Mellotron sample pack story).
-    const INSTRUCTOR_SLUGS = ["courses/dave-garnish", "courses/loren-moore", "courses/appu-krishnan", "courses/zack-johnson"];
+    // A curated four per site, not the full network-wide roster - see each
+    // site's instructorSlugs entry in modern-site-routes.ts for why those
+    // specific four.
+    const INSTRUCTOR_SLUGS = modernRoutes.instructorSlugs;
     const instructorPages = await payload.find({
       collection: "pages",
       where: { and: [{ site: { equals: site.id } }, { slug: { in: INSTRUCTOR_SLUGS } }] },

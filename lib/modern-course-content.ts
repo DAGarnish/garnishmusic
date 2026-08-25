@@ -199,7 +199,21 @@ function extractParagraphs(rawChunk: string): string {
 // consistently comes first, before any of these show up, across every page
 // checked - so stop extracting once one appears rather than show a
 // mismatched heading/body pair.
-const BOILERPLATE_HEADING = /testimonial|our instructor|from the blog|new york|live online/i;
+// "new york"/"live online" are checked as a whole-heading match, not a
+// substring, unlike the other three: a network-wide scan turned up over 200
+// real per-course subtitles like "Ableton Live Course | New York or Live
+// Online" or "Los Angeles & Live Online" (the second, genuine
+// [mkd_section_title] on la's course pages specifically) that legitimately
+// mention a city/online availability as part of their own real heading text
+// - only 2 pages network-wide have a heading that's bare "Live Online" with
+// nothing else, which is the actual boilerplate-wrapper case this exists to
+// catch. A substring match here was cutting extraction short (0 sections)
+// on essentially every la course page.
+const BOILERPLATE_HEADING_SUBSTRING = /testimonial|our instructor|from the blog/i;
+const BOILERPLATE_HEADING_EXACT = /^(new york|live online)$/i;
+function isBoilerplateHeading(heading: string): boolean {
+  return BOILERPLATE_HEADING_SUBSTRING.test(heading) || BOILERPLATE_HEADING_EXACT.test(heading.trim());
+}
 
 export function extractCourseSections(wpRawContent: string, limit = 6): CourseSection[] {
   const raw = wpRawContent || "";
@@ -220,7 +234,16 @@ export function extractCourseSections(wpRawContent: string, limit = 6): CourseSe
   for (let i = 0; i < matches.length && sections.length < limit; i++) {
     const heading = decodeEntities(matches[i][1] || "").trim();
     if (!heading) continue;
-    if (BOILERPLATE_HEADING.test(heading)) break;
+    // Only treat a boilerplate-looking heading as the real cutoff once at
+    // least one real section has already been captured - some la pages'
+    // course-title + city/online-availability subtitle pair (e.g.
+    // composing-and-media-scoring's own subtitle is the bare "Live Online",
+    // not "<City> & Live Online" like most others) would otherwise get
+    // mistaken for the wrapper this check exists to catch, before any real
+    // content has even been seen. Real boilerplate sections (Testimonials
+    // etc.) only ever show up after genuine course content, never as the
+    // first or second heading on the page.
+    if (sections.length > 0 && isBoilerplateHeading(heading)) break;
     const start = (matches[i].index ?? 0) + matches[i][0].length;
     const end = matches[i + 1]?.index ?? raw.length;
     const bodyHtml = extractParagraphs(raw.slice(start, end));
@@ -308,14 +331,22 @@ export type CoursePricing = { priceLine: string | null; enrollLink: string | nul
 // Pricing/enroll-CTA lives inside one of the boilerplate-labeled sections
 // above (see comment on BOILERPLATE_HEADING) mixed in with unrelated
 // copy, so it's pulled out separately rather than as part of a section -
-// first "$..." price line and first /connect enrollment link anywhere in
-// the page, both of which were consistent across every course page checked.
+// first "$..." price line and first enrollment link anywhere in the page.
+// Two site-specific shapes seen so far: pdx/hou wrap the price in a plain
+// <p> and link to a /connect URL; la's price sits inside an <h1>/<h3> (e.g.
+// "$2250 Tuition + $300 Registration Fee") and its CTA is a class="btn-grand"
+// anchor pointing at the site's own contact page instead of /connect - both
+// are tried, in that order.
 export function extractCoursePricing(wpRawContent: string): CoursePricing {
   const raw = wpRawContent || "";
-  const priceMatch = raw.match(/<p[^>]*>(\$[^<]*)<\/p>/i);
+  const priceMatch =
+    raw.match(/<p[^>]*>(\$[^<]*)<\/p>/i) || raw.match(/<h[1-6][^>]*>(?:<span[^>]*>)?(\$[^<]*)/i);
   const priceLine = priceMatch ? decodeEntities(priceMatch[1]).trim() : null;
 
-  const linkMatch = raw.match(/href="(https?:\/\/[^"]*\/connect[^"]*)"/i);
+  const linkMatch =
+    raw.match(/href="(https?:\/\/[^"]*\/connect[^"]*)"/i) ||
+    raw.match(/class="btn-grand"[^>]*href="([^"]*)"/i) ||
+    raw.match(/href="([^"]*)"[^>]*class="btn-grand"/i);
   const enrollLink = linkMatch?.[1] ?? null;
 
   return { priceLine, enrollLink };
