@@ -2,6 +2,7 @@ import "../../app/modern-globals.css";
 import Link from "next/link";
 import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
+import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import type { MenuNode } from "../menu-html";
 import type { ContactDetails } from "../../lib/modern-contact-content";
 
@@ -22,9 +23,11 @@ export default function ModernContactPage({
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
             Get in touch
           </div>
-          <h1 className="gmpm-display font-bold text-[13vw] leading-[0.95] md:text-[6vw] md:leading-[0.95] max-w-3xl">
-            Let&apos;s talk <span className="text-[var(--gmpm-accent)]">music.</span>
-          </h1>
+          <ModernTypewriterHeading
+            text="Let's talk music."
+            highlight="music."
+            className="font-bold text-[13vw] leading-[0.95] md:text-[6vw] md:leading-[0.95] max-w-3xl"
+          />
         </div>
       </section>
 

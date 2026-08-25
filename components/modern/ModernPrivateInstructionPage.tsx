@@ -3,6 +3,7 @@ import Link from "next/link";
 import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
+import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import type { MenuNode } from "../menu-html";
 import type { Faq } from "../../lib/modern-course-content";
 import type { PrivateInstructionContent } from "../../lib/modern-private-instruction-content";
@@ -28,9 +29,10 @@ export default function ModernPrivateInstructionPage({
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
             Portland — One to one
           </div>
-          <h1 className="gmpm-display font-bold text-[10vw] leading-[0.95] md:text-[4.5vw] md:leading-[0.95] max-w-3xl">
-            {title}
-          </h1>
+          <ModernTypewriterHeading
+            text={title}
+            className="font-bold text-[10vw] leading-[0.95] md:text-[4.5vw] md:leading-[0.95] max-w-3xl"
+          />
         </div>
       </section>
 

@@ -72,3 +72,17 @@
   border-left: none;
   border-top: none;
 }
+
+/* Blinking block cursor for ModernTypewriterHeading - flashes 4 times then
+   parks hidden. 3.5 iterations (not 4) of the on/off/on keyframe below ends
+   mid-cycle on the "off" half rather than completing back to "on"; forwards
+   keeps that final opacity: 0 instead of reverting to the base style. */
+.gmpm-typewriter-cursor {
+  color: var(--gmpm-accent);
+  animation: gmpm-blink 1s step-end 3.5;
+  animation-fill-mode: forwards;
+}
+@keyframes gmpm-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

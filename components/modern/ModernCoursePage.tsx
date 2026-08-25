@@ -3,6 +3,7 @@ import Link from "next/link";
 import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
+import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import type { MenuNode } from "../menu-html";
 import type { CourseSection, CurriculumModule, CoursePricing, Faq } from "../../lib/modern-course-content";
 
@@ -43,9 +44,11 @@ export default function ModernCoursePage({
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
             Course — Portland
           </div>
-          <h1 className="gmpm-display font-bold text-[11vw] leading-[0.95] md:text-[5vw] md:leading-[0.95] max-w-3xl">
-            {title}
-          </h1>
+          <ModernTypewriterHeading
+            key={title}
+            text={title}
+            className="font-bold text-[11vw] leading-[0.95] md:text-[5vw] md:leading-[0.95] max-w-3xl"
+          />
 
           {pricing.priceLine && (
             <div className="mt-8 flex flex-wrap items-center gap-4">

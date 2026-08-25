@@ -38,6 +38,8 @@ import {
 } from "../../../lib/modern-course-content";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
+import ModernInstructorsPage from "../../../components/modern/ModernInstructorsPage";
+import { extractInstructorBio } from "../../../lib/modern-instructors-content";
 
 // Blog post bodies get the "video" block (blocks/Video.ts, added to
 // Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
@@ -379,7 +381,7 @@ export default async function CatchAllPage({ params }: Args) {
       return (
         <ModernCoursePage
           site={site}
-          title={courseDoc.title.replace(/\s*\|\s*Portland\s*$/i, "")}
+          title={courseDoc.title}
           heroImageUrl={heroImage}
           sections={sections}
           curriculum={curriculum}
@@ -403,12 +405,39 @@ export default async function CatchAllPage({ params }: Args) {
       return (
         <ModernPrivateInstructionPage
           site={site}
-          title={privateDoc.title.replace(/\s*\|\s*Portland\s*$/i, "")}
+          title={privateDoc.title}
           content={extractPrivateInstructionContent(raw)}
           faqs={extractFaqs(raw)}
         />
       );
     }
+  }
+  if (site.slug === "pdx" && slug.join("/") === "instructors") {
+    const payload = await getPayloadClient();
+    // A curated four, not the full ~30-person network-wide roster (most of
+    // which have no Portland connection at all) - real bios/photos, picked
+    // for strong, substantive content (Dave Garnish is the founder; Loren
+    // Moore, Appu Krishnan and Zack Johnson have the richest bios of the
+    // group, and Zack is the same instructor already named on the Ableton
+    // Producer Program page's Mellotron sample pack story).
+    const INSTRUCTOR_SLUGS = ["courses/dave-garnish", "courses/loren-moore", "courses/appu-krishnan", "courses/zack-johnson"];
+    const instructorPages = await payload.find({
+      collection: "pages",
+      where: { and: [{ site: { equals: site.id } }, { slug: { in: INSTRUCTOR_SLUGS } }] },
+      limit: 10,
+      depth: 1,
+    });
+    const bySlug = new Map(instructorPages.docs.map((d: any) => [d.slug, d]));
+    const instructors = INSTRUCTOR_SLUGS.map((slug) => {
+      const doc: any = bySlug.get(slug);
+      if (!doc) return null;
+      return {
+        name: doc.title,
+        photoUrl: typeof doc.featuredImage === "object" ? doc.featuredImage?.url : undefined,
+        bioHtml: extractInstructorBio(doc.wpRawContent || ""),
+      };
+    }).filter((i): i is NonNullable<typeof i> => i !== null);
+    return <ModernInstructorsPage site={site} instructors={instructors} />;
   }
 
   const result = await findContentCached(site, slug);

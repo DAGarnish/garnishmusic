@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ModernTypewriterHeading from "./ModernTypewriterHeading";
 
 export default function ModernHero({ heroImageUrl, stats }: { heroImageUrl?: string; stats: string[] }) {
   return (
@@ -17,10 +18,11 @@ export default function ModernHero({ heroImageUrl, stats }: { heroImageUrl?: str
           Portland — Music Production &amp; DJ School
         </div>
 
-        <h1 className="gmpm-display font-bold text-[13vw] leading-[0.95] md:text-[6.5vw] md:leading-[0.95] max-w-4xl">
-          The world&apos;s <span className="text-[var(--gmpm-accent)]">boutique</span> music
-          production school
-        </h1>
+        <ModernTypewriterHeading
+          text="The world's boutique music production school"
+          highlight="boutique"
+          className="font-bold text-[13vw] leading-[0.95] md:text-[6.5vw] md:leading-[0.95] max-w-4xl"
+        />
 
         <p className="mt-8 text-lg text-[var(--gmpm-text-dim)] max-w-xl">
           Learn to produce the music you love, in a pro studio setting — small classes,
