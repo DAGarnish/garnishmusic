@@ -6,9 +6,9 @@ export default function ModernHero({ heroImageUrl, stats }: { heroImageUrl?: str
       <div className="absolute inset-0">
         {heroImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-30" />
+          <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-60" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--gmpm-bg)] via-[var(--gmpm-bg)]/70 to-[var(--gmpm-bg)]/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--gmpm-bg)] via-[var(--gmpm-bg)]/55 to-[var(--gmpm-bg)]/10" />
       </div>
 
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 pt-28 pb-20 md:pt-40 md:pb-28">
