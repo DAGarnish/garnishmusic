@@ -41,7 +41,8 @@ import {
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
 import ModernInstructorsPage from "../../../components/modern/ModernInstructorsPage";
-import { extractInstructorBio } from "../../../lib/modern-instructors-content";
+import ModernInstructorBioPage from "../../../components/modern/ModernInstructorBioPage";
+import { extractInstructorBio, extractInstructorDirectory } from "../../../lib/modern-instructors-content";
 import { MODERN_SITE_ROUTES } from "../../../lib/modern-site-routes";
 
 // Blog post bodies get the "video" block (blocks/Video.ts, added to
@@ -241,6 +242,26 @@ async function findContentUncached(site: any, slugSegments: string[]) {
 
 const findContentCached = cache(findContent);
 
+// Shared by the Instructors listing route and the individual instructor
+// bio-page route below - both need la/staging's real instructors-directory
+// content (see extractInstructorDirectory's own comment for why: it's a
+// real, hand-maintained roster, not the empty shell pdx/hou's instructors
+// pages are). Cached per-request via React's cache() so visiting a single
+// instructor's own page doesn't pay for this fetch+parse twice.
+const getInstructorDirectoryCached = cache(async function getInstructorDirectory(
+  site: any,
+  instructorsSlug: string
+) {
+  const payload = await getPayloadClient();
+  const instructorsPageRes = await payload.find({
+    collection: "pages",
+    where: { and: [{ site: { equals: site.id } }, { slug: { equals: instructorsSlug } }] },
+    limit: 1,
+  });
+  const instructorsPageDoc = instructorsPageRes.docs[0] as any;
+  return extractInstructorDirectory(instructorsPageDoc?.wpRawContent || "");
+});
+
 export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const { slug = [] } = await params;
   const site = await getSiteCached();
@@ -423,10 +444,19 @@ export default async function CatchAllPage({ params }: Args) {
     }
   }
   if (modernRoutes && slug.join("/") === modernRoutes.instructorsSlug) {
-    const payload = await getPayloadClient();
-    // A curated four per site, not the full network-wide roster - see each
+    // la's own instructors page is a real, hand-maintained directory (29
+    // real instructors, each linking to their own bio page) - parsed
+    // directly and shown in full when present. pdx/hou's own instructors
+    // pages have no real content of their own (confirmed empty), so they
+    // fall back to a curated few individual bio pages instead - see each
     // site's instructorSlugs entry in modern-site-routes.ts for why those
-    // specific four.
+    // specific ones.
+    const directory = await getInstructorDirectoryCached(site, modernRoutes.instructorsSlug);
+    if (directory.length > 0) {
+      return <ModernInstructorsPage site={site} instructors={[]} directory={directory} />;
+    }
+
+    const payload = await getPayloadClient();
     const INSTRUCTOR_SLUGS = modernRoutes.instructorSlugs;
     const instructorPages = await payload.find({
       collection: "pages",
@@ -445,6 +475,41 @@ export default async function CatchAllPage({ params }: Args) {
       };
     }).filter((i): i is NonNullable<typeof i> => i !== null);
     return <ModernInstructorsPage site={site} instructors={instructors} />;
+  }
+  // Individual instructor bio pages (courses/{slug}) - previously fell
+  // through to the legacy theme even on modern sites, since instructor bios
+  // aren't part of any site's nav (collectNavCourseSlugs never finds them).
+  // When the site has a real instructors directory, its per-instructor
+  // role/photo (100% coverage - about a third of la's own bio pages have no
+  // featuredImage of their own set) is preferred over this page's own
+  // fields, and the role line (e.g. "Multi-platinum Songwriter") only
+  // exists on the directory card in the first place.
+  if (modernRoutes && modernRoutes.instructorSlugs.includes(slug.join("/"))) {
+    const payload = await getPayloadClient();
+    const bioPageRes = await payload.find({
+      collection: "pages",
+      where: { and: [{ site: { equals: site.id } }, { slug: { equals: slug.join("/") } }] },
+      limit: 1,
+      depth: 1,
+    });
+    const bioDoc = bioPageRes.docs[0] as any;
+    if (bioDoc) {
+      const directory = await getInstructorDirectoryCached(site, modernRoutes.instructorsSlug);
+      const directoryEntry = directory.find((d) => d.href === `/${slug.join("/")}`);
+      return (
+        <ModernInstructorBioPage
+          site={site}
+          name={bioDoc.title}
+          role={directoryEntry?.title}
+          photoUrl={
+            directoryEntry?.photoUrl ||
+            (typeof bioDoc.featuredImage === "object" ? bioDoc.featuredImage?.url : undefined)
+          }
+          bioHtml={extractInstructorBio(bioDoc.wpRawContent || "")}
+          backHref={`/${modernRoutes.instructorsSlug}`}
+        />
+      );
+    }
   }
 
   const result = await findContentCached(site, slug);

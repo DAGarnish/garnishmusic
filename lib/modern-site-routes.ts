@@ -18,9 +18,11 @@ export type ModernSiteRoutes = {
   // "Comprehensive/Production Programs" pages - in addition to whatever
   // /courses/* links collectNavCourseSlugs already finds in the nav.
   programSlugs: string[];
-  // Curated instructor bio page slugs for the Instructors page - real
-  // bios/photos, picked for strong, substantive content (see each site's
-  // entry below for the specific reasoning).
+  // Instructor bio page slugs - both the curated set shown in full on the
+  // Instructors listing page when the site has no real directory of its
+  // own (pdx/hou), and the set of courses/{slug} pages that should route
+  // through ModernInstructorBioPage instead of falling through to the
+  // legacy theme (see each site's entry below for the specific reasoning).
   instructorSlugs: string[];
 };
 
@@ -65,18 +67,45 @@ export const MODERN_SITE_ROUTES: Record<string, ModernSiteRoutes> = {
       "dj-production-program",
       "music-production-private-instruction",
     ],
-    // la's own site doesn't carry Dave Garnish or Loren Moore's bio pages
-    // (its nav links those two out to the edu site instead) - picked from
-    // la's real instructor roster by richest bio content, requiring a real
-    // photo (this design's grayscale headshot is a core visual element).
-    // Appu Krishnan is the one overlap with pdx/hou's picks - also
-    // independently linked from la's own nav, confirming he's a real,
-    // active LA instructor and not just a network-wide placeholder.
+    // Every instructor actually listed on la's own real instructors
+    // directory (extractInstructorDirectory finds this page has real
+    // content, so the curated-set fallback these slugs would otherwise
+    // feed never runs - this list's job here is purely to gate which
+    // courses/{slug} pages get the modern bio template, matching the
+    // network's own current roster exactly. Deliberately not the broader
+    // ~60-page courses/* roster network-wide - e.g. courses/maggie-szabo
+    // exists but isn't linked from la's own directory anymore, so it's
+    // left off rather than resurfacing a no-longer-featured instructor.
     instructorSlugs: [
-      "courses/appu-krishnan",
-      "courses/cameron-neilson",
+      "courses/baddluck",
+      "courses/shuba",
+      "courses/laureli",
+      "courses/cole-nystrom",
+      "courses/th3ory",
+      "courses/lvma-black",
+      "courses/k-sotomayor",
+      "courses/marianna-matyja",
+      "courses/ethan-ziemba",
+      "courses/matthew-engst",
+      "courses/matt-bang",
       "courses/irving-victoria",
-      "courses/maggie-szabo",
+      "courses/will-kast",
+      "courses/cameron-neilson",
+      "courses/dj-jes-danz",
+      "courses/chinsaku",
+      "courses/marie-klausmeyer",
+      "courses/joseph-immanuel",
+      "courses/sandra-cucho",
+      "courses/cameron-colley",
+      "courses/cairo",
+      "courses/nic-ten-grotenhuis",
+      "courses/paola-gladys",
+      "courses/dj-flossy",
+      "courses/zhou",
+      "courses/taylor-dubray",
+      "courses/orion-navaille",
+      "courses/igor-krasnienko",
+      "courses/appu-krishnan",
     ],
   },
 };

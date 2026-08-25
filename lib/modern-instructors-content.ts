@@ -30,3 +30,53 @@ export function extractInstructorBio(wpRawContent: string): string {
     .join("")
     .replace(/<a\s+[^>]*href="([^"]*)"[^>]*>/gi, '<a href="$1" target="_blank" rel="noopener">');
 }
+
+// la's own /music-production-instructors-los-angeles page (unlike pdx/hou's,
+// which is an empty shell - see the curated-four fallback these two sites
+// use instead) is a real, hand-maintained directory: 29 real instructors,
+// each a `<div class="instructor-card-flex">` with a photo, name, role and
+// a link out to their own courses/{slug} bio page. Parsed directly instead
+// of curating a handful, since real, complete directory content already
+// exists here - no reason to hide the other 25.
+export type InstructorDirectoryCard = {
+  name: string;
+  title: string;
+  photoUrl?: string;
+  href: string;
+  // "Credits: ..." / "Specialities: ..." lines - real per-instructor info
+  // that sits between the role and the "See Bio" link on la's own page.
+  info: string[];
+};
+
+function stripTags(s: string): string {
+  return s.replace(/<[^>]+>/g, "").trim();
+}
+
+// Card links are absolute (https://la.garnishmusicproduction.com/courses/
+// {slug}/), baked in as real WordPress URLs rather than relative paths -
+// rewritten to a same-site relative path so the link stays on whichever
+// domain is actually serving this page (staging, or la itself once
+// promoted) instead of hard-linking out to production la.
+function toRelativeHref(href: string): string {
+  return href.replace(/^https?:\/\/[^/]+/i, "").replace(/\/$/, "") || "/";
+}
+
+export function extractInstructorDirectory(wpRawContent: string): InstructorDirectoryCard[] {
+  const raw = wpRawContent || "";
+  const cards: InstructorDirectoryCard[] = [];
+  const cardRe =
+    /<div class="instructor-card-flex">[\s\S]*?<a href="([^"]*)"[^>]*>\s*(?:<img[^>]*src="([^"]*)"[^>]*>)?[\s\S]*?<h1[^>]*>([\s\S]*?)<\/h1>[\s\S]*?<h4[^>]*>([\s\S]*?)<\/h4>([\s\S]*?)<\/div>\s*<\/div>/gi;
+  for (const m of raw.matchAll(cardRe)) {
+    const href = toRelativeHref(m[1] || "");
+    const name = decodeEntities(stripTags(m[3] || "")).trim();
+    const title = decodeEntities(stripTags(m[4] || "")).trim();
+    if (!href || !name) continue;
+    // Every <p> between the role and the closing tags, except the "See
+    // Bio" link paragraph (same href as the card itself, not real info).
+    const info = [...(m[5] || "").matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
+      .map((p) => decodeEntities(stripTags(p[1])).trim())
+      .filter((text) => text && !/^see bio$/i.test(text));
+    cards.push({ name, title, photoUrl: m[2] || undefined, href, info });
+  }
+  return cards;
+}
