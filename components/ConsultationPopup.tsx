@@ -155,17 +155,7 @@ export default function ConsultationPopup() {
             flex-direction: column;
           }
           .consultation-popup-image {
-            /* flex-basis alone isn't enough here: this item's automatic
-               min-height defaults to its content's min-content size, and
-               the <img>'s own intrinsic aspect ratio (rendered at 100% of
-               the popup's width) computes well past 140px tall, silently
-               overriding the intended basis. An explicit height plus
-               overflow:hidden gives the img a definite box to be cropped
-               into via object-fit:cover instead. */
-            flex: 0 0 90px;
-            height: 90px;
-            max-width: 100%;
-            overflow: hidden;
+            display: none;
           }
           .consultation-popup-content {
             padding: 24px 16px 16px;
