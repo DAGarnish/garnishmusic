@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { MenuNode } from "../menu-html";
 
@@ -59,15 +62,86 @@ function NavGroup({ item }: { item: MenuNode }) {
   );
 }
 
+// Mobile counterpart to NavGroup - a tap-to-expand accordion instead of
+// hover, since there's no hover state on touch. Nested one level deeper
+// than the desktop mega-menu's 2-column layout (which doesn't fit a phone
+// width), everything stacks instead.
+function MobileNavItem({ item, onNavigate }: { item: MenuNode; onNavigate: () => void }) {
+  const [open, setOpen] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+
+  if (!hasChildren) {
+    return (
+      <Link
+        href={item.url}
+        target={item.newTab ? "_blank" : undefined}
+        onClick={onNavigate}
+        className="block py-4 text-base border-b border-[var(--gmpm-line)]"
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="border-b border-[var(--gmpm-line)]">
+      <button
+        className="w-full flex items-center justify-between py-4 text-base text-left"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+      >
+        <span>{item.label}</span>
+        <span className="gmpm-mono text-[var(--gmpm-accent)] text-lg leading-none">{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <div className="pb-4 space-y-5">
+          {item.children!.map((sub, i) => (
+            <div key={i}>
+              <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">{sub.label}</div>
+              {sub.children && sub.children.length > 0 ? (
+                <ul className="space-y-2.5">
+                  {sub.children.map((leaf, j) => (
+                    <li key={j}>
+                      <Link
+                        href={leaf.url}
+                        target={leaf.newTab ? "_blank" : undefined}
+                        onClick={onNavigate}
+                        className="text-sm text-[var(--gmpm-text-dim)]"
+                      >
+                        {leaf.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Link
+                  href={sub.url}
+                  target={sub.newTab ? "_blank" : undefined}
+                  onClick={onNavigate}
+                  className="text-sm text-[var(--gmpm-text-dim)]"
+                >
+                  {sub.label}
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ModernHeader({
   menu,
 }: {
   menu?: MenuNode[] | null;
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 bg-[var(--gmpm-bg)]/95 backdrop-blur border-b border-[var(--gmpm-line)]">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between gap-8">
-        <Link href="/" className="gmpm-display text-lg font-bold shrink-0">
+        <Link href="/" className="gmpm-display text-lg font-bold shrink-0" onClick={() => setMobileOpen(false)}>
           GARNISH<span className="text-[var(--gmpm-accent)]">.</span>
           <span className="gmpm-mono text-[10px] align-top text-[var(--gmpm-text-dim)] ml-1">PDX</span>
         </Link>
@@ -78,13 +152,54 @@ export default function ModernHeader({
           ))}
         </nav>
 
-        <Link
-          href="/contact-map"
-          className="shrink-0 gmpm-mono text-xs uppercase px-4 py-2 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)] hover:bg-[var(--gmpm-accent)] hover:text-black transition-colors"
-        >
-          Talk to us
-        </Link>
+        <div className="flex items-center gap-4 shrink-0">
+          <Link
+            href="/contact-map"
+            className="hidden sm:inline-block gmpm-mono text-xs uppercase px-4 py-2 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)] hover:bg-[var(--gmpm-accent)] hover:text-black transition-colors"
+          >
+            Talk to us
+          </Link>
+
+          {/* Hamburger / close toggle, mobile & tablet only - the desktop
+              hover mega-menu (nav, above) is hidden below lg with no other
+              way to reach navigation, so this is the only entry point there. */}
+          <button
+            className="lg:hidden relative w-8 h-8 flex flex-col items-center justify-center gap-1.5"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+          >
+            <span
+              className={`block h-0.5 w-6 bg-[var(--gmpm-text)] transition-transform duration-200 ${mobileOpen ? "translate-y-2 rotate-45" : ""}`}
+            />
+            <span
+              className={`block h-0.5 w-6 bg-[var(--gmpm-text)] transition-opacity duration-200 ${mobileOpen ? "opacity-0" : ""}`}
+            />
+            <span
+              className={`block h-0.5 w-6 bg-[var(--gmpm-text)] transition-transform duration-200 ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`}
+            />
+          </button>
+        </div>
       </div>
+
+      {/* Sits directly under the sticky header (itself part of the sticky
+          element, so it stays reachable while scrolling) and scrolls
+          internally once it's taller than the remaining viewport height -
+          this mega-menu has dozens of nested course links. */}
+      {mobileOpen && (
+        <div className="lg:hidden absolute top-full left-0 right-0 max-h-[calc(100vh-5rem)] overflow-y-auto bg-[var(--gmpm-bg)] border-t border-[var(--gmpm-line)] px-6 shadow-2xl">
+          {(menu || []).map((item, i) => (
+            <MobileNavItem key={i} item={item} onNavigate={() => setMobileOpen(false)} />
+          ))}
+          <Link
+            href="/contact-map"
+            onClick={() => setMobileOpen(false)}
+            className="block sm:hidden my-6 text-center gmpm-mono text-xs uppercase px-4 py-3 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)]"
+          >
+            Talk to us
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

@@ -76,9 +76,14 @@
 /* Blinking block cursor for ModernTypewriterHeading - flashes 4 times then
    parks hidden. 3.5 iterations (not 4) of the on/off/on keyframe below ends
    mid-cycle on the "off" half rather than completing back to "on"; forwards
-   keeps that final opacity: 0 instead of reverting to the base style. */
+   keeps that final opacity: 0 instead of reverting to the base style.
+   Deliberately NOT display: inline-block - horizontal margin works fine on
+   a plain inline element, and inline-block turns the cursor into an atomic
+   inline box, which browsers may wrap onto its own line on any overflow
+   (even with zero whitespace before it, e.g. right after the last word of
+   the fully-typed headline) - that's what caused the cursor to strand
+   itself on a blank line below the title. */
 .gmpm-typewriter-cursor {
-  display: inline-block;
   margin-left: 10px;
   color: var(--gmpm-accent);
   animation: gmpm-blink 1s step-end 3.5;
