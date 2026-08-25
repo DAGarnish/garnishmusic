@@ -78,6 +78,8 @@
    mid-cycle on the "off" half rather than completing back to "on"; forwards
    keeps that final opacity: 0 instead of reverting to the base style. */
 .gmpm-typewriter-cursor {
+  display: inline-block;
+  margin-left: 10px;
   color: var(--gmpm-accent);
   animation: gmpm-blink 1s step-end 3.5;
   animation-fill-mode: forwards;

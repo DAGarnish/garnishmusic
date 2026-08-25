@@ -4,6 +4,8 @@ import { extractProgramCards } from "../../lib/modern-homepage-content";
 import ModernHeader from "./ModernHeader";
 import ModernHero from "./ModernHero";
 import ModernFooter from "./ModernFooter";
+import ModernPartners from "./ModernPartners";
+import { PARTNER_LOGOS_LIME } from "../../lib/modern-partner-logos";
 import type { MenuNode } from "../menu-html";
 
 export default async function ModernHomePage({ site }: { site: any }) {
@@ -64,6 +66,8 @@ export default async function ModernHomePage({ site }: { site: any }) {
           </div>
         </section>
       )}
+
+      <ModernPartners logos={PARTNER_LOGOS_LIME} />
 
       <ModernFooter siteName={site.name} />
     </div>

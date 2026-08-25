@@ -12,7 +12,14 @@ import { useEffect, useState } from "react";
 // "boutique") accent-colored through the animation instead of losing that
 // styling to get the typewriter effect.
 function renderRevealed(text: string, count: number, highlight?: string) {
-  const revealed = text.slice(0, count);
+  // A regular trailing space (typing mid-way between two words) is a valid
+  // line-break point, and the cursor span right after it has nothing else
+  // holding it to the line above - the browser can wrap that space, leaving
+  // the cursor alone at the start of the next line. Swapping it for a
+  // non-breaking space removes that break opportunity so the cursor always
+  // stays glued to the end of the last typed word.
+  let revealed = text.slice(0, count);
+  if (revealed.endsWith(" ")) revealed = revealed.slice(0, -1) + " ";
   const start = highlight ? text.indexOf(highlight) : -1;
   if (start === -1) return revealed;
   const end = start + (highlight as string).length;

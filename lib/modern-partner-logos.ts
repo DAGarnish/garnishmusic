@@ -1,0 +1,24 @@
+// Lime-green, transparent versions of the real partner logos - generated
+// once by scripts/process-partner-logos-lime.ts (which recolors each real
+// logo's actual alpha channel to the accent green and uploads the result as
+// a new Media doc, leaving the originals the other 17 sites' legacy
+// renderer uses untouched). Static rather than queried at request time
+// since these are fixed, deliberately-generated assets, not editable CMS
+// content - re-run that script and update this list if a partner is
+// added/changed.
+export type PartnerLogo = { name: string; link: string; url: string };
+
+export const PARTNER_LOGOS_LIME: PartnerLogo[] = [
+  { name: "Ableton", link: "https://www.ableton.com/", url: "/api/media/file/partner-lime-ableton.png" },
+  { name: "iZotope", link: "https://izotope.com/", url: "/api/media/file/partner-lime-izotope.png" },
+  { name: "Beatport", link: "https://www.beatport.com/", url: "/api/media/file/partner-lime-beatport.png" },
+  { name: "Arturia", link: "https://www.arturia.com/", url: "/api/media/file/partner-lime-arturia.png" },
+  { name: "Pioneer DJ", link: "https://www.pioneerdj.com/en-gb/", url: "/api/media/file/partner-lime-pioneer-dj.png" },
+  { name: "AlphaTheta", link: "https://alphatheta.com/", url: "/api/media/file/partner-lime-alphatheta.png" },
+  { name: "Soundtoys", link: "https://www.soundtoys.com/", url: "/api/media/file/partner-lime-soundtoys.png" },
+  { name: "Antares (Auto-Tune)", link: "https://www.antarestech.com/", url: "/api/media/file/partner-lime-antares-auto-tune-.png" },
+  { name: "Image-Line (FL Studio)", link: "https://www.image-line.com/", url: "/api/media/file/partner-lime-image-line-fl-studio-.png" },
+  { name: "Pitch Innovations", link: "https://www.pitchinnovations.com/", url: "/api/media/file/partner-lime-pitch-innovations.png" },
+  { name: "Native Instruments", link: "https://www.native-instruments.com/en/", url: "/api/media/file/partner-lime-native-instruments.png" },
+  { name: "Apple Music", link: "https://music.apple.com/us/new", url: "/api/media/file/partner-lime-apple-music.png" },
+];

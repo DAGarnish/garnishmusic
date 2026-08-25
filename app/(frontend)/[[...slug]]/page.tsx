@@ -14,6 +14,8 @@ import { Accordion } from "../../../components/ui/Accordion";
 import NextCohortBanner from "../../../components/NextCohortBanner";
 import { getCurrentSite } from "../../../lib/current-site";
 import { getPayloadClient } from "../../../lib/get-payload";
+import { getAllSitesCached } from "../../../lib/sites-cache";
+import { getRelatedPosts } from "../../../lib/modern-related-posts";
 import { buildImageResolver } from "../../../lib/wp-image-resolver";
 import { buildPortfolioListResolver } from "../../../lib/wp-portfolio-resolver";
 import { buildTestimonialsResolver } from "../../../lib/wp-testimonials-resolver";
@@ -378,6 +380,9 @@ export default async function CatchAllPage({ params }: Args) {
       const sections = extractCourseSections(raw);
       const curriculum = sections.length > 0 ? [] : extractCurriculumModules(raw);
       const intro = sections.length > 0 ? [] : extractCourseIntro(raw);
+      const allSites = await getAllSitesCached();
+      const eduSite = allSites.find((s: any) => s.slug === "edu");
+      const relatedPosts = eduSite ? await getRelatedPosts(payload, eduSite.id, slug.join("/")) : [];
       return (
         <ModernCoursePage
           site={site}
@@ -388,6 +393,8 @@ export default async function CatchAllPage({ params }: Args) {
           intro={intro}
           pricing={extractCoursePricing(raw)}
           faqs={extractFaqs(raw)}
+          relatedPosts={relatedPosts}
+          eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
         />
       );
     }

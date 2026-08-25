@@ -4,8 +4,10 @@ import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
+import ModernRelatedPosts from "./ModernRelatedPosts";
 import type { MenuNode } from "../menu-html";
 import type { CourseSection, CurriculumModule, CoursePricing, Faq } from "../../lib/modern-course-content";
+import type { RelatedPost } from "../../lib/modern-related-posts";
 
 export default function ModernCoursePage({
   site,
@@ -16,6 +18,8 @@ export default function ModernCoursePage({
   intro,
   pricing,
   faqs,
+  relatedPosts,
+  eduDomain,
 }: {
   site: any;
   title: string;
@@ -25,6 +29,8 @@ export default function ModernCoursePage({
   intro: string[];
   pricing: CoursePricing;
   faqs: Faq[];
+  relatedPosts: RelatedPost[];
+  eduDomain: string;
 }) {
   return (
     <div className="gmpm-root min-h-screen">
@@ -134,6 +140,8 @@ export default function ModernCoursePage({
           </div>
         </section>
       )}
+
+      <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} />
 
       <ModernFooter siteName={site.name} />
     </div>
