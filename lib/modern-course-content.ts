@@ -903,6 +903,23 @@ export function extractAccordionModules(wpRawContent: string): AccordionModule[]
   return modules;
 }
 
+// The modules accordion's own trailing "X Course Blog" tab (excluded above
+// as "just another [shortcode] widget with no real <p>/<ul> of its own") -
+// a real [mkd_blog_list category="..."] widget, not FAQ or curriculum, but
+// still real content: rebuilt as a real accordion tab (see
+// buildBlogListResolver, which already resolves this exact shortcode for
+// the legacy pipeline) rather than left out entirely.
+export function extractAccordionBlogTab(wpRawContent: string): { title: string; categoryCsv: string } | null {
+  const raw = wpRawContent || "";
+  const m = raw.match(
+    /\[mkd_accordion_tab title="([^"]*)"[^\]]*\]\s*\[mkd_blog_list[^\]]*\bcategory="([^"]*)"[^\]]*\]\s*\[\/mkd_accordion_tab\]/i
+  );
+  if (!m) return null;
+  const title = decodeEntities(m[1] || "").trim();
+  const categoryCsv = m[2] || "";
+  return title && categoryCsv ? { title, categoryCsv } : null;
+}
+
 // Whether wpRawContent's accordion (if any) is a curriculum/program-modules
 // breakdown rather than a real FAQ - mislabeling one as the other (real
 // curriculum content under a "Frequently asked questions" heading, or real

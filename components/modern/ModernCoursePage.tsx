@@ -7,6 +7,7 @@ import ModernAccordionSection from "./ModernAccordionSection";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import ModernRelatedPosts from "./ModernRelatedPosts";
 import ModernInstructorGrid, { type InstructorGridItem } from "./ModernInstructorGrid";
+import ModernTestimonialCarousel from "./ModernTestimonialCarousel";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import type {
@@ -18,6 +19,7 @@ import type {
   VideoEmbed,
 } from "../../lib/modern-course-content";
 import type { RelatedPost } from "../../lib/modern-related-posts";
+import type { TestimonialItem } from "../../scripts/wp-shortcode-render";
 
 export default function ModernCoursePage({
   site,
@@ -31,6 +33,7 @@ export default function ModernCoursePage({
   curriculumAccordion = [],
   videoEmbeds = [],
   instructorGridItems = [],
+  testimonials = [],
   relatedPosts,
   eduDomain,
 }: {
@@ -45,6 +48,7 @@ export default function ModernCoursePage({
   curriculumAccordion?: AccordionModule[];
   videoEmbeds?: VideoEmbed[];
   instructorGridItems?: InstructorGridItem[];
+  testimonials?: TestimonialItem[];
   relatedPosts: RelatedPost[];
   eduDomain: string;
 }) {
@@ -113,6 +117,10 @@ export default function ModernCoursePage({
               shortcode itself was previously silently stripped, leaving just
               this heading + intro paragraph with no photos. */}
           {/instructors/i.test(s.heading) && <ModernInstructorGrid items={instructorGridItems} />}
+          {/* The real [mkd_testimonials] widget behind this section - see
+              page.tsx's own testimonials fetch (explicitly excludes Paris
+              Hilton, kept off these pages until specifically asked for). */}
+          {/students say/i.test(s.heading) && <ModernTestimonialCarousel items={testimonials} />}
         </section>
       ))}
 

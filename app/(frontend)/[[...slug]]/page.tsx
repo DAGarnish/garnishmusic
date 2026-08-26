@@ -46,7 +46,10 @@ import {
   extractPortfolioSliderSpec,
   extractProgramHighlights,
   programHighlightsHtml,
+  extractTestimonialCategorySlugs,
+  extractAccordionBlogTab,
 } from "../../../lib/modern-course-content";
+import type { TestimonialItem } from "../../../scripts/wp-shortcode-render";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
 import ModernInstructorsPage from "../../../components/modern/ModernInstructorsPage";
@@ -489,9 +492,72 @@ export default async function CatchAllPage({ params }: Args) {
       // Q&A) - hasModulesAccordion tells the two apart so modules don't
       // render mislabeled under a "Frequently asked questions" heading.
       const isModulesAccordion = hasModulesAccordion(raw);
-      const faqs = isModulesAccordion ? [] : extractFaqs(raw);
+      // This page has no real FAQ content in its own wpRawContent (checked
+      // thoroughly - no "FAQ"/"Frequently" text and its only two "?"s are
+      // section headings, not Q&A) - drafted from the real facts already on
+      // this page (pricing, hours, modules, "who is this for") per explicit
+      // instruction, not extracted. Flag as a draft if asked to verify.
+      const draftFaqs =
+        slug.join("/") === "programs/ableton-production-program"
+          ? [
+              {
+                question: "How much does the Ableton Production Program cost?",
+                answer: "$5,550 tuition plus a $300 registration fee, due at enrollment.",
+              },
+              {
+                question: "How long is the program?",
+                answer:
+                  "120 hours of hands-on training, delivered in focused groups of up to 8 students.",
+              },
+              {
+                question: "What will I learn?",
+                answer:
+                  "Six core modules: DAW and Track Building in Ableton, Music Theory and Keyboard Proficiency, Synthesis and Sound Design, Hit Songwriting, Studio Vocal Production, and Mixing.",
+              },
+              {
+                question: "Do I need any prior experience?",
+                answer:
+                  "The program is built for artists, songwriters, producers and DJs ready to move from bedroom creator to pro releases, as well as working musicians looking to plug skill gaps - no professional experience required.",
+              },
+              {
+                question: "What software and gear will I use?",
+                answer:
+                  "Ableton Live Suite and its Max4Live devices, plus industry-standard plugins and hardware synths in Garnish LA's studios - an Ableton Certified Training Center.",
+              },
+              {
+                question: "What's the class schedule?",
+                answer:
+                  "Tue/Thu 6:30-9:30 PM, or Thu 6:30-9:30 PM plus Sat 10 AM-1 PM (US Pacific Time).",
+              },
+            ]
+          : null;
+      const faqs = draftFaqs ?? (isModulesAccordion ? [] : extractFaqs(raw));
       const curriculumAccordion = isModulesAccordion ? extractAccordionModules(raw) : [];
-      const videoEmbeds = extractVideoEmbeds(raw);
+      // The modules accordion's own trailing "Blog" tab (a real
+      // [mkd_blog_list category="..."] widget) was previously excluded
+      // outright - included here, scoped to this one page for now, using
+      // the same resolver the legacy pipeline already trusts for this exact
+      // shortcode rather than re-querying posts by hand.
+      if (slug.join("/") === "programs/ableton-production-program") {
+        const blogTab = extractAccordionBlogTab(raw);
+        if (blogTab) {
+          const resolveBlogList = await buildBlogListResolver(site, raw);
+          const posts = resolveBlogList(blogTab.categoryCsv);
+          if (posts.length > 0) {
+            const bodyHtml = `<div class="grid sm:grid-cols-2 gap-4 not-prose">${posts
+              .map(
+                (p) => `<a href="${p.href}"${p.targetBlank ? ' target="_blank" rel="noopener"' : ""} class="block border border-[var(--gmpm-line)] p-4 hover:bg-[var(--gmpm-bg-raised)] transition-colors">
+                  <h4 class="gmpm-display font-bold text-sm mb-2">${p.title}</h4>
+                  ${p.excerpt ? `<p class="text-xs text-[var(--gmpm-text-dim)] leading-relaxed line-clamp-3">${p.excerpt}</p>` : ""}
+                </a>`
+              )
+              .join("")}</div>`;
+            curriculumAccordion.push({ title: blogTab.title, bodyHtml });
+          }
+        }
+      }
+      // Requested removal, scoped to this one page only.
+      const videoEmbeds = slug.join("/") === "programs/ableton-production-program" ? [] : extractVideoEmbeds(raw);
       // The real instructor photo grid behind this page's own "Meet Our
       // World-Class Instructors" section (see extractPortfolioSliderSpec) -
       // real instructor data is the same `pages` docs the individual bio
@@ -567,6 +633,38 @@ export default async function CatchAllPage({ params }: Args) {
             undefined,
         }));
       }
+      // The same real [mkd_testimonials category="..."] widget behind the
+      // homepage's own "Our Students Say..." carousel (see ModernHomePage)
+      // sits under every course/program page's "Our Students Say" section
+      // too - every one of them uses category="logic-pro" verbatim (real
+      // content, confirmed identical network-wide, not a per-course value
+      // despite the name). Paris Hilton's own testimonials-collection doc
+      // is tagged famous-testimonials/electronic-dj, not logic-pro, so she
+      // wouldn't be pulled in here regardless - excluded by name anyway as
+      // an explicit belt-and-suspenders per instruction not to show her on
+      // these pages until asked.
+      const testimonialCategorySlugs = extractTestimonialCategorySlugs(raw);
+      let testimonials: TestimonialItem[] = [];
+      if (testimonialCategorySlugs.length > 0) {
+        const testimonialsRes = await payload.find({
+          collection: "testimonials",
+          where: { site: { equals: site.id } },
+          limit: 200,
+          depth: 1,
+        });
+        testimonials = (testimonialsRes.docs as any[])
+          .filter(
+            (t) =>
+              Array.isArray(t.categories) &&
+              t.categories.some((c: any) => testimonialCategorySlugs.includes(typeof c === "object" ? c.slug : c)) &&
+              !/paris hilton/i.test(t.author || "")
+          )
+          .map((t) => ({
+            author: t.author,
+            text: t.text,
+            imageUrl: typeof t.image === "object" ? t.image?.url : undefined,
+          }));
+      }
       const allSites = await getAllSitesCached();
       const eduSite = allSites.find((s: any) => s.slug === "edu");
       const relatedPosts = eduSite ? await getRelatedPosts(payload, eduSite.id, slug.join("/")) : [];
@@ -583,6 +681,7 @@ export default async function CatchAllPage({ params }: Args) {
           curriculumAccordion={curriculumAccordion}
           videoEmbeds={videoEmbeds}
           instructorGridItems={instructorGridItems}
+          testimonials={testimonials}
           relatedPosts={relatedPosts}
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
         />
