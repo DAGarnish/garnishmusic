@@ -11,10 +11,25 @@ import ModernAccordionToggleIcon from "./ModernAccordionToggleIcon";
 // single site with its own real homepage, so "Home" should mean this site's
 // own "/" instead - fixed here, once, rather than mutating the shared CMS
 // menu data other (legacy-themed) sites still render correctly as-is.
+//
+// Some other nav items (e.g. "Art of Remix", under Programs > Express
+// Courses) are absolute "https://la.garnishmusicproduction.com/..." links
+// baked in at clone time, rather than the relative paths most items use -
+// correct for the legacy theme (real content genuinely lives on that
+// specific subdomain there), but wrong for this modern rebuild: staging
+// (and any other modern site) has its own real copy of that same page, so
+// the link should stay on the current site instead of bouncing to
+// production. Any absolute URL on one of our own *.garnishmusicproduction.com
+// domains is relativized to its own pathname for exactly this reason.
+const OWN_DOMAIN = /^https?:\/\/([^/]*\.)?garnishmusicproduction\.com(?::\d+)?(\/[^?#]*)/i;
+function relativizeOwnDomain(url: string): string {
+  const m = url.match(OWN_DOMAIN);
+  return m ? m[2] || "/" : url;
+}
 function fixHomeLink(nodes: MenuNode[]): MenuNode[] {
   return nodes.map((n) => ({
     ...n,
-    url: n.label.trim().toLowerCase() === "home" ? "/" : n.url,
+    url: n.label.trim().toLowerCase() === "home" ? "/" : relativizeOwnDomain(n.url),
     children: n.children.length > 0 ? fixHomeLink(n.children) : n.children,
   }));
 }

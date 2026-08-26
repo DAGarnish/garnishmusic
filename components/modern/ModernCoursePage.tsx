@@ -31,6 +31,11 @@ export default function ModernCoursePage({
   pricing,
   faqs,
   curriculumAccordion = [],
+  curriculumEyebrow = "Curriculum",
+  curriculumHeading = "Program modules.",
+  secondaryAccordion = [],
+  secondaryAccordionEyebrow = "",
+  secondaryAccordionHeading = "",
   videoEmbeds = [],
   instructorGridItems = [],
   testimonials = [],
@@ -46,6 +51,20 @@ export default function ModernCoursePage({
   pricing: CoursePricing;
   faqs: Faq[];
   curriculumAccordion?: AccordionModule[];
+  // Some pages' one accordion is really instructor bios (+ a trailing
+  // syllabus tab), not curriculum modules - see extractAccordionModules'
+  // own comment on courses/k-pop-hitmaker. Real content either way, but
+  // "CURRICULUM / Program modules." mislabels it, so callers with that
+  // shape can override both.
+  curriculumEyebrow?: string;
+  curriculumHeading?: string;
+  // garnish-la-artist-services has two genuinely separate real accordions
+  // (Offerings, then a Gear List) that extractAccordionModules can't tell
+  // apart on its own (it scans the whole page for [mkd_accordion_tab]s) -
+  // callers with two split this second group out and label it here.
+  secondaryAccordion?: AccordionModule[];
+  secondaryAccordionEyebrow?: string;
+  secondaryAccordionHeading?: string;
   videoEmbeds?: VideoEmbed[];
   instructorGridItems?: InstructorGridItem[];
   testimonials?: TestimonialItem[];
@@ -115,8 +134,11 @@ export default function ModernCoursePage({
           {/* The real instructor photo grid behind this page's own "Meet
               Our World-Class Instructors" section - the [mkd_portfolio_slider]
               shortcode itself was previously silently stripped, leaving just
-              this heading + intro paragraph with no photos. */}
-          {/instructors/i.test(s.heading) && <ModernInstructorGrid items={instructorGridItems} />}
+              this heading + intro paragraph with no photos. Some pages'
+              heading calls the same real roster "Collaborators" instead
+              (garnish-la-artist-services) - matched too, rather than only
+              the literal word "instructors". */}
+          {/instructors|collaborators/i.test(s.heading) && <ModernInstructorGrid items={instructorGridItems} />}
           {/* The real [mkd_testimonials] widget behind this section - see
               page.tsx's own testimonials fetch (explicitly excludes Paris
               Hilton, kept off these pages until specifically asked for). */}
@@ -177,7 +199,9 @@ export default function ModernCoursePage({
         </section>
       )}
 
-      <ModernAccordionSection eyebrow="Curriculum" heading="Program modules." items={curriculumAccordion} />
+      <ModernAccordionSection eyebrow={curriculumEyebrow} heading={curriculumHeading} items={curriculumAccordion} />
+
+      <ModernAccordionSection eyebrow={secondaryAccordionEyebrow} heading={secondaryAccordionHeading} items={secondaryAccordion} />
 
       <ModernFaqAccordion faqs={faqs} />
 

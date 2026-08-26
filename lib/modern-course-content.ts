@@ -616,17 +616,28 @@ export function extractProgramHighlights(
   wpRawContent: string
 ): { left: ProgramHighlightsColumn; right: ProgramHighlightsColumn } | null {
   const raw = wpRawContent || "";
+  // Title is sometimes a bare <strong> (certificate page), sometimes
+  // <p><strong>...</strong></p> (this page's own right column) - both
+  // optional-matched here. Bullets are sometimes a real
+  // <span style="color:#cc0000...">•</span> marker (certificate page),
+  // sometimes a bare "•" character (this page) - both handled in
+  // parseColumn below, along with a stray <p>/</p> wrapper straddling a
+  // multi-line bullet list (this page's own right column again).
   const m = raw.match(
-    /\[vc_column_text css=""\]<strong>([^<]+)<\/strong>\r?\n([\s\S]*?)\[\/vc_column_text\]\[\/vc_column_inner\]\[vc_column_inner width="1\/2"\]\[vc_column_text css=""\]<strong>([^<]+)<\/strong>\r?\n([\s\S]*?)\[\/vc_column_text\]/i
+    /\[vc_column_text css=""\]\s*(?:<p[^>]*>)?<strong>([^<]+)<\/strong>(?:<\/p>)?\r?\n([\s\S]*?)\[\/vc_column_text\]\[\/vc_column_inner\]\[vc_column_inner width="1\/2"\]\[vc_column_text css=""\]\s*(?:<p[^>]*>)?<strong>([^<]+)<\/strong>(?:<\/p>)?\r?\n([\s\S]*?)\[\/vc_column_text\]/i
   );
   if (!m) return null;
   const parseColumn = (title: string, body: string): ProgramHighlightsColumn => {
     const bullets: string[] = [];
     const paragraphs: string[] = [];
     for (const rawLine of body.split("\n")) {
-      const line = rawLine.trim();
+      const line = rawLine
+        .trim()
+        .replace(/^<p[^>]*>/i, "")
+        .replace(/<\/p>$/i, "")
+        .trim();
       if (!line) continue;
-      const bulletMatch = line.match(/^<span[^>]*>•<\/span>\s*(.+)$/i);
+      const bulletMatch = line.match(/^(?:<span[^>]*>•<\/span>|•)\s*(.+)$/);
       if (bulletMatch) bullets.push(decodeEntities(bulletMatch[1]));
       else paragraphs.push(decodeEntities(line));
     }
@@ -849,10 +860,21 @@ export function extractCourseIntro(wpRawContent: string): string[] {
 // portfolioCategories (both of which overlap between the two page kinds).
 export function collectNavCourseSlugs(menu: unknown): Set<string> {
   const slugs = new Set<string>();
+  // Most nav items are relative ("/courses/x/"), but some are baked in as
+  // absolute "https://<site>.garnishmusicproduction.com/courses/x/" links
+  // instead (e.g. "Art of Remix", under Programs > Express Courses) -
+  // correct for the legacy theme (see ModernHeader's own relativizeOwnDomain,
+  // fixing the same links for display), but this collector silently missed
+  // every one of them since none actually start with "/courses/" as a bare
+  // string - matched here too so a course isn't invisible to the modern
+  // routing table just because of how its own nav link happens to be
+  // stored.
+  const coursePathMatch = /^(?:https?:\/\/[^/]*\.?garnishmusicproduction\.com)?\/(courses\/[^/?#]+)/i;
   function walk(nodes: any[]) {
     for (const node of nodes || []) {
-      if (typeof node?.url === "string" && node.url.startsWith("/courses/")) {
-        slugs.add(node.url.replace(/^\//, "").replace(/\/$/, ""));
+      if (typeof node?.url === "string") {
+        const m = node.url.match(coursePathMatch);
+        if (m) slugs.add(m[1]);
       }
       if (Array.isArray(node?.children)) walk(node.children);
     }

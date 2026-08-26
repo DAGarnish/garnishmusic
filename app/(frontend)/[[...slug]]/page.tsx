@@ -533,6 +533,33 @@ export default async function CatchAllPage({ params }: Args) {
           : null;
       const faqs = draftFaqs ?? (isModulesAccordion ? [] : extractFaqs(raw));
       const curriculumAccordion = isModulesAccordion ? extractAccordionModules(raw) : [];
+      // This page's one accordion is instructor bios (Shuba, LVMA BLACK,
+      // Jake McPherson) plus a trailing syllabus tab, not curriculum
+      // modules - "CURRICULUM / Program modules." mislabels it. Using
+      // la's own real heading for this section instead.
+      const isBioAccordionPage = slug.join("/") === "social-media-and-branding-for-artists";
+      let curriculumEyebrow = isBioAccordionPage ? "Instructors" : "Curriculum";
+      let curriculumHeading = isBioAccordionPage ? "Meet your curators." : "Program modules.";
+      // This page's one [mkd_accordion_tab] scan (extractAccordionModules,
+      // above) actually spans two real, separate accordions - 6 service
+      // offerings, then a single-tab gear list - split apart here (the gear
+      // list tab is always last, its own trailing "Gearlist" tab) so each
+      // renders under its own real heading instead of one combined,
+      // generically-labeled list.
+      let secondaryAccordion: typeof curriculumAccordion = [];
+      let secondaryAccordionEyebrow = "";
+      let secondaryAccordionHeading = "";
+      if (slug.join("/") === "garnish-la-artist-services" && curriculumAccordion.length > 0) {
+        const splitIdx = curriculumAccordion.findIndex((m) => /gearlist/i.test(m.title));
+        if (splitIdx !== -1) {
+          secondaryAccordion = curriculumAccordion.slice(splitIdx);
+          curriculumAccordion.length = splitIdx;
+        }
+        curriculumEyebrow = "Services";
+        curriculumHeading = "Garnish LA Artist Services offerings.";
+        secondaryAccordionEyebrow = "Studio";
+        secondaryAccordionHeading = "Studio A gear list.";
+      }
       // The modules accordion's own trailing "Blog" tab (a real
       // [mkd_blog_list category="..."] widget) was previously excluded
       // outright - included here, scoped to this one page for now, using
@@ -679,6 +706,11 @@ export default async function CatchAllPage({ params }: Args) {
           pricing={extractCoursePricing(raw)}
           faqs={faqs}
           curriculumAccordion={curriculumAccordion}
+          curriculumEyebrow={curriculumEyebrow}
+          curriculumHeading={curriculumHeading}
+          secondaryAccordion={secondaryAccordion}
+          secondaryAccordionEyebrow={secondaryAccordionEyebrow}
+          secondaryAccordionHeading={secondaryAccordionHeading}
           videoEmbeds={videoEmbeds}
           instructorGridItems={instructorGridItems}
           testimonials={testimonials}
