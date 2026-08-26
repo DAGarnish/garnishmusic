@@ -44,6 +44,8 @@ import {
   extractSingleImageIds,
   resolveSingleImages,
   extractPortfolioSliderSpec,
+  extractProgramHighlights,
+  programHighlightsHtml,
 } from "../../../lib/modern-course-content";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
@@ -456,6 +458,30 @@ export default async function CatchAllPage({ params }: Args) {
       const sections = isDjCoursePage
         ? rawSections
         : rawSections.map((s) => ({ ...s, bodyHtml: stripParisHiltonQuote(s.bodyHtml) }));
+      // certificate-music-production-songwriting's own headless "Program
+      // Highlights"/"Prerequisites" two-column row (see
+      // extractProgramHighlights) has no heading of its own to become a
+      // section - appended to the intro section's body instead, matching
+      // where it sits on the real page (right after the intro, before
+      // pricing).
+      const programHighlights = extractProgramHighlights(raw);
+      if (programHighlights && sections.length > 0) {
+        // Append to the real intro section specifically, not sections[0] -
+        // this page has two short promo banners ("Enroll Now: Fall
+        // Semester...", "Scholarship Program Available") ahead of its real
+        // intro, so sections[0] isn't it. ">Apply Now<" is the intro
+        // section's own CTA link text and a stable marker for it.
+        const introIdx = sections.findIndex((s) => />Apply Now</i.test(s.bodyHtml));
+        const targetIdx = introIdx === -1 ? 0 : introIdx;
+        sections[targetIdx] = {
+          ...sections[targetIdx],
+          bodyHtml: sections[targetIdx].bodyHtml + programHighlightsHtml(programHighlights),
+        };
+      }
+      // Requested wording tweak, applied network-wide.
+      for (let i = 0; i < sections.length; i++) {
+        sections[i] = { ...sections[i], bodyHtml: sections[i].bodyHtml.replace(/Next Batch/g, "Next Cohort") };
+      }
       const curriculum = sections.length > 0 ? [] : extractCurriculumModules(raw);
       const intro = sections.length > 0 ? [] : extractCourseIntro(raw);
       // A page's one [mkd_accordion] can be a real FAQ or a curriculum-

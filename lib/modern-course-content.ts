@@ -195,6 +195,71 @@ function comparisonTableHtml(rows: string[]): string {
   </div>`;
 }
 
+// certificate-music-production-songwriting's own two promo graphics ("Why
+// Choose Us?" id 19285, "F1 Visa Steps for International Creators" id
+// 19290) are text baked into a screenshot-style image over a photo
+// background, same problem as COMPARISON_VARIANTS above (never blends into
+// this design's near-black background) - transcribed directly off each
+// image and rebuilt as real text below rather than left as a screenshot.
+type TextGraphicVariant =
+  | { kind: "bullets"; items: { label: string; text: string }[] }
+  | { kind: "steps"; items: string[]; note?: string };
+const TEXT_GRAPHIC_VARIANTS: Record<string, TextGraphicVariant> = {
+  "19285": {
+    kind: "bullets",
+    items: [
+      {
+        label: "Epic Production",
+        text: "Craft chart-worthy tracks in Garnish LA's state-of-the-art studios with Grammy-nominated hit-makers.",
+      },
+      {
+        label: "Music Mastery",
+        text: "Elite theory, ear training & live ensembles at CCM Pasadena – become a complete artist.",
+      },
+      {
+        label: "Insanely Affordable",
+        text: "Full 2-year Associate Degree + OPT under $36K – same Hollywood access, better price, real degree (others $100K+).",
+      },
+      {
+        label: "F-1 Visa Ready",
+        text: "U.S. F-1 student visa eligible + 12-month OPT work authorization after graduation.",
+      },
+      {
+        label: "Hollywood Edge",
+        text: "Live in the music capital, network daily, join our global alumni dropping hits worldwide",
+      },
+    ],
+  },
+  "19290": {
+    kind: "steps",
+    items: [
+      "Submit necessary documents and obtain Form I-20 from CCM",
+      "Review the U.S. Department of State's Visa Page",
+      "Pay the SEVIS I-901 Fee",
+      "Complete Form DS-160",
+      "Schedule a Visa Interview and attend",
+      "Receive your F-1 Visa",
+      "Fly to the U.S. and attend your Student Orientation",
+    ],
+    note: "Admissions staff at Garnish and CCM will explain these steps and required documents during our call",
+  },
+};
+
+function textGraphicHtml(v: TextGraphicVariant): string {
+  if (v.kind === "bullets") {
+    return `<div class="not-prose my-6 space-y-4">${v.items
+      .map(
+        (i) =>
+          `<p><strong class="text-[var(--gmpm-text)]">${i.label}:</strong> <span class="text-[var(--gmpm-text-dim)]">${i.text}</span></p>`
+      )
+      .join("")}</div>`;
+  }
+  return `<div class="not-prose my-6">
+    <ol class="space-y-2 list-decimal list-inside">${v.items.map((s) => `<li>${s}</li>`).join("")}</ol>
+    ${v.note ? `<p class="mt-4 text-sm text-[var(--gmpm-text-dim)]">${v.note}</p>` : ""}
+  </div>`;
+}
+
 // A bare <img> sitting directly in the flow with no <p>/<div> wrapper at
 // all - e.g. la's academy page has two certification-logo images
 // (Ableton/Apple) sitting as plain siblings between two paragraphs. Images
@@ -207,6 +272,13 @@ function bareImageToHtml(imgTag: string): string {
   // bare-<img> block matching, then swapped for the real themed table here.
   const variantMatch = imgTag.match(/gmpm-comparison-table[^>]*\bdata-variant="(\d+)"/);
   if (variantMatch) return comparisonTableHtml(COMPARISON_VARIANTS[variantMatch[1]] ?? []);
+  // See resolveSingleImages and textGraphicHtml above - same marker-tag
+  // technique, for the two TEXT_GRAPHIC_VARIANTS ids.
+  const textGraphicMatch = imgTag.match(/gmpm-text-graphic[^>]*\bdata-variant="(\d+)"/);
+  if (textGraphicMatch) {
+    const variant = TEXT_GRAPHIC_VARIANTS[textGraphicMatch[1]];
+    return variant ? textGraphicHtml(variant) : "";
+  }
   // resolveSingleImages already produced a fully-styled <img> (see its own
   // gmpm-resolved-image marker) for a [vc_single_image] shortcode - e.g. a
   // full photo or graphic, sized and styled on its own terms. Passed
@@ -497,7 +569,7 @@ function extractRowHeading(
 // summer-camp-school's trailing semicolons on its style attributes).
 export function stripParisHiltonQuote(bodyHtml: string): string {
   return bodyHtml.replace(
-    /<p>[^<]*Everything went really well in Ibiza[^<]*<\/p>\s*<p><strong>Paris Hilton<\/strong>[^<]*<\/p>/i,
+    /(?:<img[^>]*gmpm-resolved-image[^>]*>\s*)?<p>[^<]*Everything went really well in Ibiza[^<]*<\/p>\s*<p><strong>Paris Hilton<\/strong>[^<]*<\/p>/i,
     ""
   );
 }
@@ -519,11 +591,63 @@ export function extractCourseSections(wpRawContent: string, limit = 6): CourseSe
     // etc.) only ever show up after genuine course content, never as the
     // first or second row on the page.
     if (sections.length > 0 && isBoilerplateHeading(parsed.heading)) break;
-    const bodyHtml = extractParagraphs(row.slice(parsed.contentStart));
+    // parsed.taglines (e.g. certificate-music-production-songwriting's own
+    // "Los Angeles & Live Online" / "International Students Study..." pair)
+    // were previously discarded here - every other extractRowHeading caller
+    // in this file already surfaces them via taglinesToHtml, this one just
+    // hadn't been wired up yet.
+    const bodyHtml = taglinesToHtml(parsed.taglines) + extractParagraphs(row.slice(parsed.contentStart));
     if (!bodyHtml) continue;
     sections.push({ heading: parsed.heading, bodyHtml });
   }
   return sections;
+}
+
+// certificate-music-production-songwriting's own two-column "Program
+// Highlights" / "Prerequisites" block ([vc_row_inner][vc_column_inner
+// width="1/2"]...) - a headless row with no [mkd_section_title]/<h1-3> of
+// its own, so extractRowHeading (and extractCourseSections' loop, which
+// skips any row it can't find a heading for) silently drops it entirely.
+// Each column is raw WPBakery text, not real <li> markup - bullet lines are
+// prefixed with a literal <span style="color: #cc0000 ...">•</span> marker,
+// non-bullet lines (the two closing CTAs) aren't.
+export type ProgramHighlightsColumn = { title: string; bullets: string[]; paragraphs: string[] };
+export function extractProgramHighlights(
+  wpRawContent: string
+): { left: ProgramHighlightsColumn; right: ProgramHighlightsColumn } | null {
+  const raw = wpRawContent || "";
+  const m = raw.match(
+    /\[vc_column_text css=""\]<strong>([^<]+)<\/strong>\r?\n([\s\S]*?)\[\/vc_column_text\]\[\/vc_column_inner\]\[vc_column_inner width="1\/2"\]\[vc_column_text css=""\]<strong>([^<]+)<\/strong>\r?\n([\s\S]*?)\[\/vc_column_text\]/i
+  );
+  if (!m) return null;
+  const parseColumn = (title: string, body: string): ProgramHighlightsColumn => {
+    const bullets: string[] = [];
+    const paragraphs: string[] = [];
+    for (const rawLine of body.split("\n")) {
+      const line = rawLine.trim();
+      if (!line) continue;
+      const bulletMatch = line.match(/^<span[^>]*>•<\/span>\s*(.+)$/i);
+      if (bulletMatch) bullets.push(decodeEntities(bulletMatch[1]));
+      else paragraphs.push(decodeEntities(line));
+    }
+    return { title: decodeEntities(title).trim(), bullets, paragraphs };
+  };
+  return { left: parseColumn(m[1], m[2]), right: parseColumn(m[3], m[4]) };
+}
+
+export function programHighlightsHtml(block: { left: ProgramHighlightsColumn; right: ProgramHighlightsColumn }): string {
+  const column = (c: ProgramHighlightsColumn) => `<div class="gmpm-corner border border-[var(--gmpm-line)] p-6">
+    <h3 class="gmpm-display font-bold text-lg mb-4">${c.title}</h3>
+    ${
+      c.bullets.length
+        ? `<ul class="space-y-2">${c.bullets
+            .map((b) => `<li class="flex gap-2"><span class="text-[var(--gmpm-accent)]">→</span><span>${b}</span></li>`)
+            .join("")}</ul>`
+        : ""
+    }
+    ${c.paragraphs.map((p) => `<p class="mt-4 text-sm">${p}</p>`).join("")}
+  </div>`;
+  return `<div class="grid md:grid-cols-2 gap-6 not-prose">${column(block.left)}${column(block.right)}</div>`;
 }
 
 // la's homepage presents each real offering (Degree Programs, the 360
@@ -914,6 +1038,7 @@ export function resolveSingleImages(wpRawContent: string, urlsById: Map<string, 
     // output - a literal <div> spliced in at this point would match none
     // of extractParagraphs's own block patterns and get silently dropped.
     if (id in COMPARISON_VARIANTS) return `<img class="gmpm-comparison-table" data-variant="${id}" alt="" />`;
+    if (id in TEXT_GRAPHIC_VARIANTS) return `<img class="gmpm-text-graphic" data-variant="${id}" alt="" />`;
     const url = urlsById.get(id);
     // gmpm-resolved-image is a marker, not a real style - see
     // bareImageToHtml's own check for why: this tag will still pass back
