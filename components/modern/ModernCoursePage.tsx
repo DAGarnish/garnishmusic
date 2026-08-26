@@ -6,6 +6,7 @@ import ModernFaqAccordion from "./ModernFaqAccordion";
 import ModernAccordionSection from "./ModernAccordionSection";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import ModernRelatedPosts from "./ModernRelatedPosts";
+import ModernInstructorGrid, { type InstructorGridItem } from "./ModernInstructorGrid";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import type {
@@ -29,6 +30,7 @@ export default function ModernCoursePage({
   faqs,
   curriculumAccordion = [],
   videoEmbeds = [],
+  instructorGridItems = [],
   relatedPosts,
   eduDomain,
 }: {
@@ -42,6 +44,7 @@ export default function ModernCoursePage({
   faqs: Faq[];
   curriculumAccordion?: AccordionModule[];
   videoEmbeds?: VideoEmbed[];
+  instructorGridItems?: InstructorGridItem[];
   relatedPosts: RelatedPost[];
   eduDomain: string;
 }) {
@@ -105,6 +108,11 @@ export default function ModernCoursePage({
             className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
             dangerouslySetInnerHTML={{ __html: s.bodyHtml }}
           />
+          {/* The real instructor photo grid behind this page's own "Meet
+              Our World-Class Instructors" section - the [mkd_portfolio_slider]
+              shortcode itself was previously silently stripped, leaving just
+              this heading + intro paragraph with no photos. */}
+          {/instructors/i.test(s.heading) && <ModernInstructorGrid items={instructorGridItems} />}
         </section>
       ))}
 

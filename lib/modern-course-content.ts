@@ -488,6 +488,20 @@ function extractRowHeading(
   return heading ? { heading, contentStart: (hMatch.index ?? 0) + hMatch[0].length, taglines: [] } : null;
 }
 
+// Every course/program page's "Our Students Say" section carries the exact
+// same hardcoded Paris Hilton quote (confirmed via a full sweep of all 20
+// staging course/program pages - only the DJ-related pages actually fit the
+// quote's own "Garnish DJ Program" attribution). Matched against the
+// processed <p> output (post extractParagraphs), not the raw wp content, so
+// it's immune to the raw markup's own minor inconsistencies (e.g.
+// summer-camp-school's trailing semicolons on its style attributes).
+export function stripParisHiltonQuote(bodyHtml: string): string {
+  return bodyHtml.replace(
+    /<p>[^<]*Everything went really well in Ibiza[^<]*<\/p>\s*<p><strong>Paris Hilton<\/strong>[^<]*<\/p>/i,
+    ""
+  );
+}
+
 export function extractCourseSections(wpRawContent: string, limit = 6): CourseSection[] {
   const raw = wpRawContent || "";
   const sections: CourseSection[] = [];
@@ -835,6 +849,41 @@ export function extractRawHtmlVideoSrc(wpRawContent: string): string | null {
     }
   }
   return null;
+}
+
+// [mkd_portfolio_slider type="gallery" image_size="square" portfolios_shown="4"
+//  category="ableton, sound design"] - the real instructor photo grid behind
+// every course page's own "Meet Our World-Class Instructors" section
+// (previously invisible: the shortcode was silently stripped like any other
+// unhandled one, leaving just the heading + intro paragraph with no
+// photos). category can be a comma-separated list; portfolios_shown caps
+// how many to show (defaults to 8 here when the attribute is missing, matching
+// a reasonable grid size). Real instructor data isn't a separate
+// "portfolio" collection - it's the same `pages` docs the individual
+// instructor bio pages already use (see lib/wp-portfolio-resolver.ts, the
+// equivalent legacy-pipeline resolver this mirrors), each tagged with a
+// portfolioCategories relationship. Slugs are matched with all non-
+// alphanumeric characters stripped on both sides (see the caller) rather
+// than an exact string compare - confirmed necessary against real data: the
+// shortcode's own "sound design" (a space) needs to match the real stored
+// category slug "sounddesign" (no space, no hyphen either), which a normal
+// kebab-case slugify wouldn't produce.
+export function extractPortfolioSliderSpec(
+  wpRawContent: string
+): { categorySlugs: string[]; count: number } | null {
+  const raw = wpRawContent || "";
+  const m = raw.match(/\[mkd_portfolio_(?:list|slider)\b([^\]]*)\]/i);
+  if (!m) return null;
+  const categoryMatch = m[1].match(/\bcategory="([^"]*)"/i);
+  if (!categoryMatch) return null;
+  const categorySlugs = categoryMatch[1]
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!categorySlugs.length) return null;
+  const countMatch = m[1].match(/\bportfolios_shown="(\d+)"/i);
+  const count = countMatch ? Number(countMatch[1]) : 8;
+  return { categorySlugs, count };
 }
 
 // [vc_single_image image="18427" ...] references a Payload media doc by id

@@ -33,6 +33,7 @@ import ModernCoursePage from "../../../components/modern/ModernCoursePage";
 import {
   collectNavCourseSlugs,
   extractCourseSections,
+  stripParisHiltonQuote,
   extractCurriculumModules,
   extractCourseIntro,
   extractCoursePricing,
@@ -42,6 +43,7 @@ import {
   extractVideoEmbeds,
   extractSingleImageIds,
   resolveSingleImages,
+  extractPortfolioSliderSpec,
 } from "../../../lib/modern-course-content";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
@@ -49,6 +51,7 @@ import ModernInstructorsPage from "../../../components/modern/ModernInstructorsP
 import ModernInstructorBioPage from "../../../components/modern/ModernInstructorBioPage";
 import { extractInstructorBio, extractInstructorDirectory } from "../../../lib/modern-instructors-content";
 import { MODERN_SITE_ROUTES } from "../../../lib/modern-site-routes";
+import type { InstructorGridItem } from "../../../components/modern/ModernInstructorGrid";
 
 // Blog post bodies get the "video" block (blocks/Video.ts, added to
 // Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
@@ -432,7 +435,16 @@ export default async function CatchAllPage({ params }: Args) {
       // back to the older extractors when the newer one found nothing, so a
       // page using one shape doesn't also get garbled output from the
       // extractor built for the other.
-      const sections = extractCourseSections(raw);
+      // Every course/program page's "Our Students Say" section carries the
+      // exact same hardcoded Paris Hilton / "Garnish DJ Program" quote,
+      // including pages with nothing to do with the DJ program - confirmed
+      // via a full sweep of all 20 staging course/program pages. Left in
+      // place only on the two DJ-related pages it's actually relevant to.
+      const isDjCoursePage = slug.join("/") === "courses/dj-course" || slug.join("/") === "dj-production-program";
+      const rawSections = extractCourseSections(raw);
+      const sections = isDjCoursePage
+        ? rawSections
+        : rawSections.map((s) => ({ ...s, bodyHtml: stripParisHiltonQuote(s.bodyHtml) }));
       const curriculum = sections.length > 0 ? [] : extractCurriculumModules(raw);
       const intro = sections.length > 0 ? [] : extractCourseIntro(raw);
       // A page's one [mkd_accordion] can be a real FAQ or a curriculum-
@@ -443,6 +455,81 @@ export default async function CatchAllPage({ params }: Args) {
       const faqs = isModulesAccordion ? [] : extractFaqs(raw);
       const curriculumAccordion = isModulesAccordion ? extractAccordionModules(raw) : [];
       const videoEmbeds = extractVideoEmbeds(raw);
+      // The real instructor photo grid behind this page's own "Meet Our
+      // World-Class Instructors" section (see extractPortfolioSliderSpec) -
+      // real instructor data is the same `pages` docs the individual bio
+      // pages already use, so this queries only the site's own curated
+      // instructorSlugs list (the same one the Instructors listing page
+      // above already trusts as "actually featured", rather than every
+      // portfolioCategories-tagged page network-wide - confirmed necessary
+      // on staging: several older/deprecated pages, and even a *course*
+      // page, share the same categories as real instructors, and would
+      // otherwise show up in this grid too) rather than a broader,
+      // unscoped query.
+      const portfolioSpec = extractPortfolioSliderSpec(raw);
+      let instructorGridItems: InstructorGridItem[] = [];
+      if (portfolioSpec && modernRoutes.instructorSlugs.length > 0) {
+        const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const wantedCategorySlugs = portfolioSpec.categorySlugs.map(normalize);
+        const instructorPagesRes = await payload.find({
+          collection: "pages",
+          where: {
+            and: [
+              { site: { equals: site.id } },
+              { slug: { in: modernRoutes.instructorSlugs } },
+              { portfolioCategories: { exists: true } },
+            ],
+          },
+          limit: modernRoutes.instructorSlugs.length,
+          depth: 1,
+        });
+        // Always exactly 4 featured instructors per page, picked round-robin
+        // across the course's own wanted categories (in the shortcode's own
+        // category order) rather than portfolioSpec.count / arbitrary DB
+        // order or a raw overlap-count ranking. A pure overlap-count ranking
+        // was tried and found wrong: a multi-category program page like
+        // dj-production-program (categories dj/ableton/sound-design/mixing/
+        // songwriting) would rank its two genuine DJ specialists (who only
+        // carry the single "dj" tag) below generalist instructors who happen
+        // to carry 3+ of the other, unrelated tags - crowding DJ instructors
+        // entirely off a page named "DJ Production Program". Round-robin
+        // guarantees every named category gets a pick before any category
+        // gets a second one, so a narrowly-tagged specialist can't be
+        // squeezed out by broader generalists.
+        const instructorsByCategory = new Map<string, any[]>(
+          wantedCategorySlugs.map((cat) => [
+            cat,
+            (instructorPagesRes.docs as any[]).filter((d) =>
+              (d.portfolioCategories || []).some(
+                (c: any) => normalize((typeof c === "object" ? c.slug : c) || "") === cat
+              )
+            ),
+          ])
+        );
+        const pickedDocs: any[] = [];
+        const pickedIds = new Set<string>();
+        for (let round = 0; pickedDocs.length < 4; round++) {
+          let addedThisRound = false;
+          for (const cat of wantedCategorySlugs) {
+            if (pickedDocs.length >= 4) break;
+            const candidate = (instructorsByCategory.get(cat) || [])[round];
+            if (candidate && !pickedIds.has(candidate.id)) {
+              pickedDocs.push(candidate);
+              pickedIds.add(candidate.id);
+              addedThisRound = true;
+            }
+          }
+          if (!addedThisRound) break;
+        }
+        instructorGridItems = pickedDocs.map((d) => ({
+          name: d.title,
+          href: `/${d.slug}/`,
+          imageUrl:
+            (typeof d.featuredImage === "object" && d.featuredImage?.url) ||
+            (typeof d.titleBackgroundImage === "object" && d.titleBackgroundImage?.url) ||
+            undefined,
+        }));
+      }
       const allSites = await getAllSitesCached();
       const eduSite = allSites.find((s: any) => s.slug === "edu");
       const relatedPosts = eduSite ? await getRelatedPosts(payload, eduSite.id, slug.join("/")) : [];
@@ -458,6 +545,7 @@ export default async function CatchAllPage({ params }: Args) {
           faqs={faqs}
           curriculumAccordion={curriculumAccordion}
           videoEmbeds={videoEmbeds}
+          instructorGridItems={instructorGridItems}
           relatedPosts={relatedPosts}
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
         />
