@@ -137,12 +137,76 @@ function plainListToHtml(li: string): string {
     .join("")}</ul>`;
 }
 
+// A WP-theme comparison graphic (a white card, Garnish LA vs. Others/Online
+// Tutorials, five rows of green checks/red X's), reused as-is across every
+// course/program page whose "Why choose X course at Garnish?" section has
+// one - confirmed via a network-wide scan of every page referencing any of
+// these three image ids. Three near-identical variants exist (same
+// filename prefix "Asset-N-..."), differing only in the training-center and
+// events rows: "Asset 1 Generic" (id 18427, most pages), "Asset 2 Logic"
+// (18428, Logic/Pro Tools/FL Studio pages - reusing the Logic-branded one
+// rather than having their own), and "Asset 3 Ableton" (18429, Ableton
+// pages). Transcribed directly off each image (not invented) and rebuilt
+// as a real themed block below (see bareImageToHtml's own
+// gmpm-comparison-table check) rather than left as a plain screenshot,
+// which never blended into this design's near-black background no matter
+// how it was styled - and because every page shares one of these three
+// image ids, fixing it here fixes it everywhere at once rather than
+// needing a per-page override.
+const COMPARISON_VARIANTS: Record<string, string[]> = {
+  "18427": [
+    "Real-time Feedback & Collaboration",
+    "Fully Equipped Pro Studios",
+    "Ableton & Apple Certified Training Center",
+    "Award Winning Instructors",
+    "Exclusive LA Events & Master Classes",
+  ],
+  "18428": [
+    "Real-time Feedback & Collaboration",
+    "Fully Equipped Pro Studios",
+    "Apple Certified Training Center",
+    "Award Winning Instructors",
+    "Preferred access to Garnish LA events.",
+  ],
+  "18429": [
+    "Real-time Feedback & Collaboration",
+    "Fully Equipped Pro Studios",
+    "Ableton Certified Training Center",
+    "Award Winning Instructors",
+    "Preferred access to Garnish LA events.",
+  ],
+};
+
+function comparisonTableHtml(rows: string[]): string {
+  const rowsHtml = rows.map(
+    (label) => `<div class="grid grid-cols-[1fr_88px_88px] items-center gap-4 px-5 py-3 border-t border-[var(--gmpm-line)]">
+      <span>${label}</span>
+      <span class="justify-self-center text-[var(--gmpm-accent)] text-lg leading-none">&#10003;</span>
+      <span class="justify-self-center text-[var(--gmpm-text-dim)] text-lg leading-none opacity-60">&#10005;</span>
+    </div>`
+  ).join("");
+  return `<div class="not-prose my-6 gmpm-corner border border-[var(--gmpm-line)]">
+    <div class="grid grid-cols-[1fr_88px_88px] items-center gap-4 px-5 py-4">
+      <span class="gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">Side-by-Side Overview</span>
+      <span class="justify-self-center gmpm-mono text-xs uppercase text-[var(--gmpm-accent)]">Garnish LA</span>
+      <span class="justify-self-center gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">Others</span>
+    </div>
+    ${rowsHtml}
+  </div>`;
+}
+
 // A bare <img> sitting directly in the flow with no <p>/<div> wrapper at
 // all - e.g. la's academy page has two certification-logo images
 // (Ableton/Apple) sitting as plain siblings between two paragraphs. Images
 // already inside a <p> survive automatically (iconParagraphToHtml doesn't
 // strip inner HTML tags), so this only needs to handle the bare case.
 function bareImageToHtml(imgTag: string): string {
+  // See resolveSingleImages and comparisonTableHtml - one of the three
+  // COMPARISON_VARIANTS ids is spliced in as this marker (carrying its own
+  // id in data-variant) specifically so it survives extractParagraphs's own
+  // bare-<img> block matching, then swapped for the real themed table here.
+  const variantMatch = imgTag.match(/gmpm-comparison-table[^>]*\bdata-variant="(\d+)"/);
+  if (variantMatch) return comparisonTableHtml(COMPARISON_VARIANTS[variantMatch[1]] ?? []);
   // resolveSingleImages already produced a fully-styled <img> (see its own
   // gmpm-resolved-image marker) for a [vc_single_image] shortcode - e.g. a
   // full photo or graphic, sized and styled on its own terms. Passed
@@ -790,6 +854,17 @@ export function extractSingleImageIds(wpRawContent: string): string[] {
 
 export function resolveSingleImages(wpRawContent: string, urlsById: Map<string, string>): string {
   return (wpRawContent || "").replace(/\[vc_single_image\s+image="(\d+)"[^\]]*\]/gi, (whole, id) => {
+    // Any of the three COMPARISON_VARIANTS ids (the "Asset 1/2/3" comparison
+    // graphic - Garnish LA vs. Others/Online Tutorials, reused as-is across
+    // every course/program page whose "Why choose X course at Garnish?"
+    // section has one) is rebuilt as a real themed block rather than an
+    // <img> tag (see bareImageToHtml's own check for this same marker), so
+    // it's kept as a self-closing <img>-shaped tag here (carrying its own
+    // id in data-variant) purely so extractParagraphs's existing bare-<img>
+    // block matching still picks it up and carries it through to the final
+    // output - a literal <div> spliced in at this point would match none
+    // of extractParagraphs's own block patterns and get silently dropped.
+    if (id in COMPARISON_VARIANTS) return `<img class="gmpm-comparison-table" data-variant="${id}" alt="" />`;
     const url = urlsById.get(id);
     // gmpm-resolved-image is a marker, not a real style - see
     // bareImageToHtml's own check for why: this tag will still pass back
