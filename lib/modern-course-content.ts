@@ -210,8 +210,23 @@ function extractBareParagraphs(rawChunk: string): string {
 // Capture groups, by index: 1 heading (<h1>-<h4>), 2 <ol>, 3 <ul>, 4 <p>,
 // 5 bare <img>, 6 bare styled <div> (numbered rather than named - this
 // repo's ts target predates ES2018 named capture groups).
+// The <p> alternative's own capture is bounded the same defensive way the
+// <div> one already is (stopping early on a nested <p rather than
+// swallowing forward into it) - confirmed necessary on
+// songcraft-production-program's real content: a <p style="text-align:
+// left"> wrapping [mkd_accordion]...[/mkd_accordion] is missing its own
+// closing </p> in the source (a genuine authoring mistake), which let the
+// old non-greedy [\s\S]*? match run straight past it into the *next* real
+// paragraph's own <p> tag, embedding it as literal unescaped text inside
+// this one - invalid nested-<p> HTML that produced a real hydration
+// mismatch (the browser's own HTML parser silently closes a <p> the moment
+// it hits a nested one, which doesn't match what the literal string, and so
+// React's SSR/hydration comparison, expected). Now the malformed <p> simply
+// matches nothing (its own stray content, always just leftover whitespace
+// once the accordion is stripped, is correctly dropped) instead of
+// corrupting the paragraph after it.
 const BLOCK_RE =
-  /<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>|<ol[^>]*>([\s\S]*?)<\/ol>|<ul[^>]*>([\s\S]*?)<\/ul>|<p[^>]*>([\s\S]*?)<\/p>|(<img\b[^>]*>)|<div\b[^>]*\bstyle="text-align:\s*(?:left|center)"[^>]*>((?:(?!<div|<ul|<ol|<p\b)[\s\S])*?)<\/div>/gi;
+  /<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>|<ol[^>]*>([\s\S]*?)<\/ol>|<ul[^>]*>([\s\S]*?)<\/ul>|<p[^>]*>((?:(?!<p[^>]*>|<\/p>)[\s\S])*?)<\/p>|(<img\b[^>]*>)|<div\b[^>]*\bstyle="text-align:\s*(?:left|center)"[^>]*>((?:(?!<div|<ul|<ol|<p\b)[\s\S])*?)<\/div>/gi;
 
 function extractParagraphs(rawChunk: string): string {
   const blocks: string[] = [];
@@ -285,27 +300,41 @@ function extractParagraphs(rawChunk: string): string {
 }
 
 // These pages reuse a handful of boilerplate section labels
-// (Testimonials/Our Instructors/From The Blog) as generic wrappers around
-// whatever unrelated content (pricing, other cities' schedules, a stray
-// cross-site quote) happened to follow them during migration - the label
-// and body don't actually correspond. Real per-course description content
-// consistently comes first, before any of these show up, across every page
-// checked - so stop extracting once one appears rather than show a
-// mismatched heading/body pair.
-// "new york"/"live online" are checked as a whole-heading match, not a
-// substring, unlike the other three: a network-wide scan turned up over 200
-// real per-course subtitles like "Ableton Live Course | New York or Live
-// Online" or "Los Angeles & Live Online" (the second, genuine
-// [mkd_section_title] on la's course pages specifically) that legitimately
+// (Testimonials/Our Instructors/From The Blog/Our Partners) as generic
+// wrappers around whatever unrelated content (pricing, other cities'
+// schedules, a stray cross-site quote, raw partner-logo [vc_single_image]s)
+// happened to follow them during migration - the label and body don't
+// actually correspond. la's homepage own "Our partners" row is exactly this
+// case: a real <h2>Our partners</h2> followed by [vc_single_image] logo
+// shortcodes this extractor doesn't resolve, which - since those ids
+// happen to get resolved to real <img> tags elsewhere first, for the
+// *course-page* single-image pipeline - would otherwise surface as a
+// second, unstyled duplicate of the logo grid ModernPartners already
+// renders properly. Real per-course description content consistently comes
+// first, before any of these show up, across every page checked - so stop
+// extracting once one appears rather than show a mismatched heading/body
+// pair (or, here, a redundant one).
+// Checked as a whole-heading match, not a substring: a network-wide scan
+// turned up over 200 real per-course subtitles like "Ableton Live Course |
+// New York or Live Online" or "Los Angeles & Live Online" that legitimately
 // mention a city/online availability as part of their own real heading text
-// - only 2 pages network-wide have a heading that's bare "Live Online" with
-// nothing else, which is the actual boilerplate-wrapper case this exists to
-// catch. A substring match here was cutting extraction short (0 sections)
-// on essentially every la course page.
-const BOILERPLATE_HEADING_SUBSTRING = /testimonial|our instructor|from the blog/i;
-const BOILERPLATE_HEADING_EXACT = /^(new york|live online)$/i;
+// (a "new york"/"live online" *substring* match cut extraction short on
+// essentially every la course page), and - confirmed separately - two more
+// concrete collisions on the other patterns here: "testimonial" as a
+// substring matched real, specific section titles like "RUMA- Student
+// Testimonial" and "SongCraft Production Program Student Testimonial: James
+// Salazar" (not the generic wrapper this exists to catch), and "our
+// instructor" matched inside "Meet **your** instructor Kindred" purely
+// because "your" ends in "our". Both cut dj-production-program and
+// music-production-private-instruction's real extraction down to a single
+// section. Exact-whole-heading matching avoids every one of these - the
+// genuine generic wrapper labels (bare "Testimonials"/"More
+// Testimonials"/"Our Instructors"/"From The Blog"/"Our Partners") never
+// have any other text sharing their heading.
+const BOILERPLATE_HEADING_EXACT =
+  /^(new york|live online|(more\s+)?testimonials?|our instructors?|from the blog|our partners)$/i;
 function isBoilerplateHeading(heading: string): boolean {
-  return BOILERPLATE_HEADING_SUBSTRING.test(heading) || BOILERPLATE_HEADING_EXACT.test(heading.trim());
+  return BOILERPLATE_HEADING_EXACT.test(heading.trim());
 }
 
 // Every course/program page (and the homepage) lays its content out as a
@@ -325,6 +354,15 @@ function splitTopLevelRows(raw: string): string[] {
     const openEnd = match.index + match[0].length;
     const closeIdx = raw.indexOf("[/vc_row]", openEnd);
     if (closeIdx === -1) break;
+    // NOT filtered by disable_element="yes" despite the name suggesting a
+    // "don't render this row" flag - confirmed most rows carrying it (la
+    // homepage's own Degree Programs, Upcoming Free Event, Express Courses,
+    // Private Instruction, 1-on-1 rows among them) are real, live content
+    // every other extractor here already surfaces correctly; whatever this
+    // attribute actually toggles in the legacy WPBakery editor, it isn't
+    // frontend visibility for this content. Only one row on this page is
+    // genuinely a leftover to skip (see extractTestimonialCategorySlugs),
+    // and that's handled there specifically rather than by this attribute.
     rows.push(raw.slice(openEnd, closeIdx));
     openRe.lastIndex = closeIdx + "[/vc_row]".length;
   }
@@ -335,30 +373,55 @@ function splitTopLevelRows(raw: string): string[] {
 // real title - not content, so it shouldn't act as this row's heading.
 const BARE_DIVIDER = /^[-–—.]*$/;
 
+// The generic "<City> & Live Online" (or bare "Live Online") subtitle almost
+// every row's title chain ends with - real content never follows it (see
+// isBoilerplateHeading's own "new york"/"live online" exact-match case), so
+// it's safe to drop outright rather than surface as a tagline.
+const CITY_AVAILABILITY_SUBTITLE = /^(?:[\w\s]+\s*&\s*)?live\s*online$/i;
+
+// An internal editorial breadcrumb note left in place of a real subtitle
+// (confirmed on Express Courses: "Go to Main Menu> Programs> Express
+// Courses") - a note to whoever edits this content next, not real page copy
+// meant for a visitor to read.
+const EDITORIAL_NOTE_SUBTITLE = /^go to\b/i;
+
 // A row's own heading is either a [mkd_section_title] shortcode (sometimes
-// two back to back - a "Title" then a "Subtitle" with nothing of its own
-// between them, e.g. "360 Los Angeles Academy" -> "Los Angeles & Live
-// Online" - the first, more descriptive one is kept as the label, and real
-// body content is read starting after the last one), or, when a row has
-// none of those at all, its first literal <h1>/<h2>/<h3> tag (<h4> is never
-// this row's own topic heading - see extractParagraphs, which demotes every
-// *other* heading found within a row's body to <h4> sub-headings of
+// several back to back - a "Title" then one or more "Subtitle"s with
+// nothing of their own between them, e.g. "360 Los Angeles Academy" ->
+// "Los Angeles & Live Online", or "Certificate in Music Production and
+// Songwriting" -> "1 Year in Los Angeles" -> "International F1 Eligible
+// through CCM" - the first, most descriptive one is kept as the label, and
+// real body content is read starting after the last one), or, when a row
+// has none of those at all, its first literal <h1>/<h2>/<h3> tag (<h4> is
+// never this row's own topic heading - see extractParagraphs, which demotes
+// every *other* heading found within a row's body to <h4> sub-headings of
 // whichever of these two came first, e.g. a pricing row's own "$2250
 // Tuition..." <h1> and "Enrollment Steps" <h3> both nest under the row's
-// first <h1> this way).
-function extractRowHeading(row: string): { heading: string; contentStart: number } | null {
+// first <h1> this way). Any subtitle beyond the first two - and the first
+// subtitle itself when it isn't the generic city/availability one - is real,
+// specific info (a program's own eligibility/duration tagline, an event's
+// own subtitle, ...), returned separately as `taglines` for callers that
+// want to actually show it, rather than silently discarding it the way this
+// function's own two return fields (heading/contentStart) always have.
+function extractRowHeading(
+  row: string
+): { heading: string; contentStart: number; taglines: string[] } | null {
   const titleMatches = [...row.matchAll(/\[mkd_section_title[^\]]*\btitle_text="([^"]*)"[^\]]*\]/gi)].filter(
     (m) => !BARE_DIVIDER.test(decodeEntities(m[1] || "").trim())
   );
   if (titleMatches.length > 0) {
     const heading = decodeEntities(titleMatches[0][1] || "").trim();
     const last = titleMatches[titleMatches.length - 1];
-    return heading ? { heading, contentStart: (last.index ?? 0) + last[0].length } : null;
+    const taglines = titleMatches
+      .slice(1)
+      .map((m) => decodeEntities(m[1] || "").trim())
+      .filter((t) => t && !CITY_AVAILABILITY_SUBTITLE.test(t) && !EDITORIAL_NOTE_SUBTITLE.test(t));
+    return heading ? { heading, contentStart: (last.index ?? 0) + last[0].length, taglines } : null;
   }
   const hMatch = row.match(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/i);
   if (!hMatch) return null;
   const heading = decodeEntities(hMatch[1].replace(/<[^>]+>/g, "")).trim();
-  return heading ? { heading, contentStart: (hMatch.index ?? 0) + hMatch[0].length } : null;
+  return heading ? { heading, contentStart: (hMatch.index ?? 0) + hMatch[0].length, taglines: [] } : null;
 }
 
 export function extractCourseSections(wpRawContent: string, limit = 6): CourseSection[] {
@@ -444,13 +507,21 @@ function bulletizeIfProseOnly(bodyHtml: string): string {
 // misc inline heading out of it there would just discard that real title in
 // favor of a less specific one, the same mislabeling extractCourseSections's
 // own row-splitting was built to avoid.
-function extractOfferingCardsFromRow(row: string, rowHeading: string): OfferingCard[] {
+// A tagline (see extractRowHeading) rendered the same bold-intro-line way a
+// card's own inline sub-headings already are, right at the top of the body
+// - e.g. Certificate's real "1 Year in Los Angeles" / "International F1
+// Eligible through CCM" lines, previously discarded entirely.
+function taglinesToHtml(taglines: string[]): string {
+  return taglines.map((t) => `<p class="font-semibold text-[var(--gmpm-text)]">${t}</p>`).join("");
+}
+
+function extractOfferingCardsFromRow(row: string, rowHeading: string, rowTaglines: string[]): OfferingCard[] {
   const matches = [...row.matchAll(/\[mkd_elements_holder_item\s+background_image="(\d+)"/gi)];
   if (matches.length === 0) return [];
   if (matches.length === 1) {
     const imageId = matches[0][1];
     const bodyHtml = bulletizeIfProseOnly(
-      extractParagraphs(row.slice((matches[0].index ?? 0) + matches[0][0].length))
+      taglinesToHtml(rowTaglines) + extractParagraphs(row.slice((matches[0].index ?? 0) + matches[0][0].length))
     );
     return bodyHtml ? [{ heading: rowHeading, bodyHtml, imageId }] : [];
   }
@@ -462,7 +533,9 @@ function extractOfferingCardsFromRow(row: string, rowHeading: string): OfferingC
     const chunk = row.slice(chunkStart, chunkEnd);
     const inner = extractRowHeading(chunk);
     const heading = inner?.heading || `${rowHeading} ${i + 1}`;
-    const bodyHtml = bulletizeIfProseOnly(extractParagraphs(inner ? chunk.slice(inner.contentStart) : chunk));
+    const bodyHtml = bulletizeIfProseOnly(
+      taglinesToHtml(inner?.taglines ?? []) + extractParagraphs(inner ? chunk.slice(inner.contentStart) : chunk)
+    );
     if (bodyHtml) cards.push({ heading, bodyHtml, imageId });
   }
   return cards;
@@ -479,7 +552,7 @@ export function extractHomepageOfferings(wpRawContent: string): OfferingGroup[] 
     const parsed = extractRowHeading(row);
     if (!parsed) continue;
     if (groups.length > 0 && isBoilerplateHeading(parsed.heading)) break;
-    const cards = extractOfferingCardsFromRow(row, parsed.heading);
+    const cards = extractOfferingCardsFromRow(row, parsed.heading, parsed.taglines);
     if (cards.length > 0) {
       groups.push({ groupHeading: parsed.heading, cards });
       continue;
@@ -487,10 +560,49 @@ export function extractHomepageOfferings(wpRawContent: string): OfferingGroup[] 
     // No real photo in this row (e.g. Express Courses) - still a real
     // offering, just text-only, matching extractCourseSections's own
     // fallback for the same case.
-    const bodyHtml = bulletizeIfProseOnly(extractParagraphs(row.slice(parsed.contentStart)));
+    const bodyHtml = bulletizeIfProseOnly(
+      taglinesToHtml(parsed.taglines) + extractParagraphs(row.slice(parsed.contentStart))
+    );
     if (bodyHtml) groups.push({ groupHeading: parsed.heading, cards: [{ heading: parsed.heading, bodyHtml, imageId: null }] });
   }
   return groups;
+}
+
+// [mkd_testimonials category="logic-pro"] - a widget pulling real reviews
+// from the `testimonials` collection (author/text/image), sitting right
+// after the "Our Students Say..." row's own single hand-picked quote (Paris
+// Hilton on la's homepage). A page can have more than one instance, and
+// each one's own category attribute can itself be a comma-separated list
+// (matches lib/wp-testimonials-resolver.ts's own legacy-pipeline parsing of
+// the same shortcode) - flattened here into one deduped slug list; the
+// caller resolves them to real testimonial docs (see ModernHomePage, which
+// - unlike that legacy resolver - doesn't filter by the *category* doc's
+// own site, since staging's cloned testimonials keep pointing at la's
+// original category docs rather than freshly cloned ones).
+// Scoped to the row whose own heading is "Our Students Say..." (rather than
+// a flat whole-content scan) - la's homepage has a second, unrelated
+// [mkd_testimonials category="famous-testimonials"] instance sitting in an
+// earlier row of its own (right after the "Enroll Now" banner, nothing to
+// do with student reviews), which a flat scan would incorrectly fold into
+// this one, mixing an unrelated testimonial set into the carousel under
+// Paris Hilton's own quote.
+function isStudentsSayHeading(heading: string): boolean {
+  return /students say/i.test(heading);
+}
+
+export function extractTestimonialCategorySlugs(wpRawContent: string): string[] {
+  const slugs = new Set<string>();
+  for (const row of splitTopLevelRows(wpRawContent || "")) {
+    const parsed = extractRowHeading(row);
+    if (!parsed || !isStudentsSayHeading(parsed.heading)) continue;
+    for (const m of row.matchAll(/\[mkd_testimonials[^\]]*\bcategory="([^"]*)"/gi)) {
+      for (const slug of (m[1] || "").split(",")) {
+        const trimmed = slug.trim();
+        if (trimmed) slugs.add(trimmed);
+      }
+    }
+  }
+  return [...slugs];
 }
 
 // A second, older content shape some course pages use instead of
@@ -590,20 +702,31 @@ export function extractAccordionModules(wpRawContent: string): AccordionModule[]
 }
 
 // Whether wpRawContent's accordion (if any) is a curriculum/program-modules
-// breakdown rather than a real FAQ - checked by looking for a heading
-// containing "modules"/"syllabus"/"curriculum" shortly before the first
-// [mkd_accordion_tab], since mislabeling one as the other (an accordion of
-// real curriculum content under a "Frequently asked questions" heading) is
-// exactly the bug this exists to avoid. la's academy/program pages title
-// this heading "... Modules"; individual course pages (e.g. "Hip Hop
-// Production Syllabus") use "... Syllabus" instead for the identical
-// curriculum-breakdown accordion - "modules" alone was missing every one of
-// those, which fell through to the generic FAQ accordion instead.
+// breakdown rather than a real FAQ - mislabeling one as the other (real
+// curriculum content under a "Frequently asked questions" heading, or real
+// questions under "Program modules") is exactly the bug this exists to
+// avoid. Originally a keyword search (a heading containing "modules"/
+// "syllabus"/"curriculum" shortly before the first [mkd_accordion_tab]),
+// which missed courses/mixing-and-mastering-course entirely (its own
+// modules accordion starts with no such heading at all, just straight into
+// the tabs) and had no way to handle courses/k-pop-hitmaker (instructor
+// bios *and* real modules share one accordion, with "Meet Your Instructors"
+// - not a modules keyword - the only heading nearby). Judged instead by each
+// tab's own title: a real FAQ's questions overwhelmingly end in "?"
+// ("What age group is this camp for?"), while modules/syllabus/instructor-
+// bio tabs (curriculum topics, people's names) essentially never do -
+// confirmed against every accordion-bearing page checked, never a close
+// call either way. The trailing "X Course Blog" tab (a [mkd_blog_list]
+// widget, present on nearly every page) is excluded either way since it's
+// neither real FAQ nor real curriculum.
 export function hasModulesAccordion(wpRawContent: string): boolean {
   const raw = wpRawContent || "";
-  const accordionIdx = raw.search(/\[mkd_accordion_tab/i);
-  if (accordionIdx === -1) return false;
-  return /modules|syllabus|curriculum/i.test(raw.slice(Math.max(0, accordionIdx - 800), accordionIdx));
+  const titles = [...raw.matchAll(/\[mkd_accordion_tab\s+title="([^"]*)"/gi)]
+    .map((m) => decodeEntities(m[1] || "").trim())
+    .filter((t) => t && !/\bblog$/i.test(t));
+  if (titles.length === 0) return false;
+  const questionLike = titles.filter((t) => t.endsWith("?")).length;
+  return questionLike / titles.length < 0.5;
 }
 
 // [vc_video link="https://youtu.be/ID" title="..."] - la's academy page
