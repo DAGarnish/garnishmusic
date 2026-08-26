@@ -441,7 +441,18 @@ export default async function CatchAllPage({ params }: Args) {
       // via a full sweep of all 20 staging course/program pages. Left in
       // place only on the two DJ-related pages it's actually relevant to.
       const isDjCoursePage = slug.join("/") === "courses/dj-course" || slug.join("/") === "dj-production-program";
-      const rawSections = extractCourseSections(raw);
+      // extractCourseSections' own default limit (6) is too tight here: once
+      // resolveSingleImages (above) turns a [vc_single_image] comparison-
+      // table shortcode into a real <img>, a "Why choose X at Garnish?"
+      // section becomes extractable that wasn't visible as a distinct row
+      // before substitution, pushing every later section down by one - on
+      // several pages (both DJ pages included) this silently dropped the
+      // trailing "Our Students Say" section (with its Paris Hilton quote)
+      // past the cutoff. Confirmed via a full sweep that no course/program
+      // page has more than 8 genuine sections, and isBoilerplateHeading
+      // already stops the loop at real boilerplate (Testimonials, From The
+      // Blog, ...), so raising this is safe.
+      const rawSections = extractCourseSections(raw, 10);
       const sections = isDjCoursePage
         ? rawSections
         : rawSections.map((s) => ({ ...s, bodyHtml: stripParisHiltonQuote(s.bodyHtml) }));

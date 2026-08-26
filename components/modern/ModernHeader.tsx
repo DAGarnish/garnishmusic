@@ -4,6 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import type { MenuNode } from "../menu-html";
 
+// site.mainMenu is cloned verbatim from the legacy WP data, where a "Home"
+// item points at "/locations" (the network-wide city picker, correct for
+// the legacy multi-city theme's own header). This modern rebuild is a
+// single site with its own real homepage, so "Home" should mean this site's
+// own "/" instead - fixed here, once, rather than mutating the shared CMS
+// menu data other (legacy-themed) sites still render correctly as-is.
+function fixHomeLink(nodes: MenuNode[]): MenuNode[] {
+  return nodes.map((n) => ({
+    ...n,
+    url: n.label.trim().toLowerCase() === "home" ? "/" : n.url,
+    children: n.children.length > 0 ? fixHomeLink(n.children) : n.children,
+  }));
+}
+
 function NavGroup({ item }: { item: MenuNode }) {
   const hasChildren = item.children && item.children.length > 0;
 
@@ -139,6 +153,7 @@ export default function ModernHeader({
   cityAbbr?: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const fixedMenu = menu ? fixHomeLink(menu) : menu;
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--gmpm-bg)]/95 backdrop-blur border-b border-[var(--gmpm-line)]">
@@ -151,7 +166,7 @@ export default function ModernHeader({
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
-          {(menu || []).map((item, i) => (
+          {(fixedMenu || []).map((item, i) => (
             <NavGroup key={i} item={item} />
           ))}
         </nav>
@@ -192,7 +207,7 @@ export default function ModernHeader({
           this mega-menu has dozens of nested course links. */}
       {mobileOpen && (
         <div className="lg:hidden absolute top-full left-0 right-0 max-h-[calc(100vh-5rem)] overflow-y-auto bg-[var(--gmpm-bg)] border-t border-[var(--gmpm-line)] px-6 shadow-2xl">
-          {(menu || []).map((item, i) => (
+          {(fixedMenu || []).map((item, i) => (
             <MobileNavItem key={i} item={item} onNavigate={() => setMobileOpen(false)} />
           ))}
           <Link
