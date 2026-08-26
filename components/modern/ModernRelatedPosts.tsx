@@ -22,7 +22,7 @@ export default function ModernRelatedPosts({ posts, eduDomain }: { posts: Relate
             {post.excerpt && (
               <p className="text-sm text-[var(--gmpm-text-dim)] leading-relaxed line-clamp-3 mb-4">{post.excerpt}</p>
             )}
-            <span className="gmpm-mono text-[11px] uppercase text-[var(--gmpm-accent)] mt-auto">Read on edu →</span>
+            <span className="gmpm-mono text-[11px] uppercase text-[var(--gmpm-accent)] mt-auto">Read →</span>
           </a>
         ))}
       </div>

@@ -66,6 +66,7 @@ export const MODERN_SITE_ROUTES: Record<string, ModernSiteRoutes> = {
       "songcraft-production-program",
       "dj-production-program",
       "music-production-private-instruction",
+      "certificate-music-production-songwriting",
     ],
     // Every instructor actually listed on la's own real instructors
     // directory (extractInstructorDirectory finds this page has real
