@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AccordionModule } from "../../lib/modern-course-content";
+import ModernAccordionToggleIcon from "./ModernAccordionToggleIcon";
 
 // Unlike ModernFaqAccordion (plain-text answers, fixed "FAQ" framing), this
 // renders real HTML per item (lists, links) under a caller-supplied
@@ -18,7 +19,7 @@ function AccordionItem({ item }: { item: AccordionModule }) {
         aria-expanded={open}
       >
         <span className="gmpm-display font-bold">{item.title}</span>
-        <span className="gmpm-mono text-[var(--gmpm-accent)] shrink-0">{open ? "−" : "+"}</span>
+        <ModernAccordionToggleIcon open={open} />
       </button>
       {open && (
         <div

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Faq } from "../../lib/modern-course-content";
+import ModernAccordionToggleIcon from "./ModernAccordionToggleIcon";
 
 function FaqItem({ faq }: { faq: Faq }) {
   const [open, setOpen] = useState(false);
@@ -12,7 +13,7 @@ function FaqItem({ faq }: { faq: Faq }) {
         onClick={() => setOpen(!open)}
       >
         <span className="gmpm-display font-bold">{faq.question}</span>
-        <span className="gmpm-mono text-[var(--gmpm-accent)] shrink-0">{open ? "−" : "+"}</span>
+        <ModernAccordionToggleIcon open={open} />
       </button>
       {open && <p className="pb-5 text-sm text-[var(--gmpm-text-dim)] leading-relaxed">{faq.answer}</p>}
     </div>

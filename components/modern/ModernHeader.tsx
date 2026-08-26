@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { MenuNode } from "../menu-html";
+import ModernAccordionToggleIcon from "./ModernAccordionToggleIcon";
 
 // site.mainMenu is cloned verbatim from the legacy WP data, where a "Home"
 // item points at "/locations" (the network-wide city picker, correct for
@@ -105,7 +106,7 @@ function MobileNavItem({ item, onNavigate }: { item: MenuNode; onNavigate: () =>
         aria-expanded={open}
       >
         <span>{item.label}</span>
-        <span className="gmpm-mono text-[var(--gmpm-accent)] text-lg leading-none">{open ? "−" : "+"}</span>
+        <ModernAccordionToggleIcon open={open} />
       </button>
       {open && (
         <div className="pb-4 space-y-5">
