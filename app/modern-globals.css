@@ -34,6 +34,12 @@
      face while nav/price-tag/eyebrow labels stay on the real mono font. */
   --gmpm-font-heading: var(--gmpm-font-mono);
   --gmpm-heading-tracking: 0;
+  /* .gmpm-display's own tracking (H2/H3 headings, curriculum/FAQ/section
+     titles, ...) - negative here because Space Grotesk (this theme's
+     display font) reads better slightly tightened. .gmpm-theme-cream
+     overrides this to a positive value instead, since Anton needs the
+     opposite treatment (see --gmpm-heading-tracking below). */
+  --gmpm-display-tracking: -0.02em;
 }
 
 /* Warm cream + terracotta theme, originally built for the
@@ -53,13 +59,18 @@
 
   --gmpm-font-display: 'Anton', 'Space Grotesk', 'Inter', sans-serif;
   --gmpm-font-heading: var(--gmpm-font-display);
-  /* Anton's glyphs sit tight together by design - at the hero H1's huge
-     11vw/5vw size (see ModernTypewriterHeading), pairs like "rt", "tw", or
-     a lowercase "l" against the accent square end up visually touching
-     with zero tracking. A little breathing room fixes it without shrinking
-     the headline. Not needed for the dark theme's mono heading font
-     (monospace glyphs already have fixed, non-touching advance widths). */
-  --gmpm-heading-tracking: 0.02em;
+  /* Anton's glyphs sit tight together by design, tight enough that plenty of
+     letter pairs (apostrophe+s, "ti", "ho", "rt"...) visually touch at
+     zero tracking - worse the bigger the text gets, so the hero H1 (13vw on
+     the homepage, 11vw on course pages) needs real breathing room, not just
+     a token nudge. Checked against the homepage hero specifically (the
+     widest text on the site) since that's where the smallest value here
+     first showed touching letters. Positive on both counts, unlike the dark
+     theme's negative --gmpm-display-tracking above, because Anton (unlike
+     Space Grotesk) is too tight to begin with for negative tracking to ever
+     be safe. */
+  --gmpm-heading-tracking: 0.045em;
+  --gmpm-display-tracking: 0.03em;
 }
 
 /* Reverts /courses/sound-design-synthesis-ableton and
@@ -80,6 +91,7 @@
   --gmpm-font-display: 'Space Grotesk', 'Inter', sans-serif;
   --gmpm-font-heading: var(--gmpm-font-mono);
   --gmpm-heading-tracking: 0;
+  --gmpm-display-tracking: -0.02em;
 }
 
 .gmpm-root {
@@ -94,7 +106,7 @@
 
 .gmpm-display {
   font-family: var(--gmpm-font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--gmpm-display-tracking);
 }
 
 .gmpm-mono {
