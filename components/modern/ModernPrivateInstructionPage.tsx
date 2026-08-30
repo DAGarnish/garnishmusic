@@ -59,7 +59,7 @@ export default function ModernPrivateInstructionPage({
             </ul>
             <Link
               href="/contact-map"
-              className="inline-block gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-black font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+              className="inline-block gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
             >
               Send us a message
             </Link>

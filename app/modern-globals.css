@@ -7,38 +7,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Anton&display=swap');
 
 :root {
-  --gmpm-bg: #0a0a0b;
-  --gmpm-bg-raised: #131316;
-  --gmpm-line: #26262b;
-  --gmpm-text: #f2f2ef;
-  --gmpm-text-dim: #9a9aa2;
-  --gmpm-accent: #d7ff3f;
-  --gmpm-accent-dim: #a8cc2f;
-  /* Text color used on top of an --gmpm-accent-filled surface (buttons, the
-     accordion toggle's open state). Kept as its own token, rather than a
-     literal text-black in every consumer, so a page-scoped theme override
-     (see .gmpm-theme-songwriting below) can swap it for a light color when
-     it swaps --gmpm-accent for something too dark for black text to sit on. */
-  --gmpm-accent-contrast: #000000;
-
-  --gmpm-font-display: 'Space Grotesk', 'Inter', sans-serif;
-  --gmpm-font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --gmpm-font-body: 'Inter', -apple-system, sans-serif;
-  /* ModernTypewriterHeading's own font, kept independent of --gmpm-font-mono
-     even though it equals it everywhere today - lets a page-scoped theme
-     override the big animated H1 without also reflowing every other mono
-     label (nav, price tag, eyebrows) that still wants the real mono font. */
-  --gmpm-font-heading: var(--gmpm-font-mono);
-}
-
-/* One-off restyle for /courses/songwriting-course only (see
-   ModernCoursePage's themeClassName prop, applied by page.tsx keyed off
-   that exact slug) - a warm cream + terracotta look, kept as a token
-   override rather than new markup so every section of the shared course
-   template (header, hero, curriculum, FAQ, footer, ...) reskins together
-   automatically. No other page ever gets this class, so no other page's
-   look changes. */
-.gmpm-theme-songwriting {
+  /* Warm cream + terracotta theme, rolled out site-wide from the
+     /courses/songwriting-course restyle (originally scoped to just that
+     page via a .gmpm-theme-songwriting override, now promoted to the
+     shared default since every modern page uses it). */
   --gmpm-bg: #ede9dc;
   --gmpm-bg-raised: #e2dcc8;
   --gmpm-line: #d6cfb8;
@@ -46,27 +18,19 @@
   --gmpm-text-dim: #6e5f4e;
   --gmpm-accent: #b23a22;
   --gmpm-accent-dim: #8f2e1a;
+  /* Text color used on top of an --gmpm-accent-filled surface (buttons, the
+     accordion toggle's open state) - its own token, rather than a literal
+     text-black/text-white in every consumer, since the right contrast color
+     depends on how light or dark --gmpm-accent itself is. */
   --gmpm-accent-contrast: #f7f2e4;
 
-  --gmpm-font-display: 'Anton', 'Space Grotesk', sans-serif;
+  --gmpm-font-display: 'Anton', 'Space Grotesk', 'Inter', sans-serif;
+  --gmpm-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --gmpm-font-body: 'Inter', -apple-system, sans-serif;
+  /* ModernTypewriterHeading's own font, kept independent of --gmpm-font-mono
+     so the big animated H1 can use the bold poster face while nav/price-tag/
+     eyebrow labels stay on the real mono font. */
   --gmpm-font-heading: var(--gmpm-font-display);
-}
-
-/* The technical grid texture reads as a dark/industrial cue that fights the
-   flat, minimal cream look - dropped for this theme only. */
-.gmpm-theme-songwriting .gmpm-grid-bg {
-  background-image: none;
-}
-
-/* The reference image this theme is built from is a flat cream field with
-   no photography at all - the hero's moody studio photo (plus its dark-to-
-   transparent gradient scrim, tuned for a dark bg) fights that, so the
-   whole image+gradient layer (ModernCoursePage's first absolute inset-0
-   child of the hero section) is dropped for this theme only. The section
-   keeps its own background color (inherited from --gmpm-bg) once that
-   layer is gone. */
-.gmpm-theme-songwriting .gmpm-grid-bg > div:first-child {
-  display: none;
 }
 
 .gmpm-root {
@@ -144,8 +108,8 @@
   animation-fill-mode: forwards;
 }
 
-/* The "." in the GARNISH. wordmark (header + footer) - same lime block
-   glyph as the typewriter cursor above (just static, no blink), so the
+/* The "." in the GARNISH. wordmark (header + footer) - same accent-colored
+   block glyph as the typewriter cursor above (just static, no blink), so the
    logo's full stop reads as the same oblong mark rather than a round dot.
    font-size: 0.25em keeps it a small accent mark rather than a tile the
    height of the text. */

@@ -42,7 +42,7 @@ export default function ModernHero({
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             href={contactHref}
-            className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-black font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+            className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
           >
             Book a free consultation
           </Link>

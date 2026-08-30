@@ -190,7 +190,7 @@ export default function ModernHeader({
         <div className="flex items-center gap-4 shrink-0">
           <Link
             href="/contact-map"
-            className="hidden sm:inline-block gmpm-mono text-xs uppercase px-4 py-2 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)] hover:bg-[var(--gmpm-accent)] hover:text-black transition-colors"
+            className="hidden sm:inline-block gmpm-mono text-xs uppercase px-4 py-2 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)] hover:bg-[var(--gmpm-accent)] hover:text-[var(--gmpm-accent-contrast)] transition-colors"
           >
             Talk to us
           </Link>

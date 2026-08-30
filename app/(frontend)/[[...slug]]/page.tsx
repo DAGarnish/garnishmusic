@@ -716,7 +716,6 @@ export default async function CatchAllPage({ params }: Args) {
           testimonials={testimonials}
           relatedPosts={relatedPosts}
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
-          themeClassName={slug.join("/") === "courses/songwriting-course" ? "gmpm-theme-songwriting" : undefined}
         />
       );
     }
