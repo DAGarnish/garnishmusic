@@ -1,8 +1,9 @@
 import type { PartnerLogo } from "../../lib/modern-partner-logos";
 
-// Logos are pre-processed to real lime-green transparent PNGs (see
-// lib/modern-partner-logos.ts) so they sit directly on the section's own
-// dark background - no card, no box, no blend-mode trick needed.
+// Logos are pre-processed to real transparent PNGs, flat-colored to match
+// whichever accent the caller passes in (lime network-wide, red on pdx -
+// see lib/modern-partner-logos.ts), so they sit directly on the section's
+// own background - no card, no box, no blend-mode trick needed.
 export default function ModernPartners({ logos }: { logos: PartnerLogo[] }) {
   if (!logos.length) return null;
   return (
@@ -28,7 +29,7 @@ export default function ModernPartners({ logos }: { logos: PartnerLogo[] }) {
               <img
                 src={logo.url}
                 alt={logo.name}
-                className="max-w-full max-h-full object-contain transition-transform duration-200 hover:scale-110 hover:drop-shadow-[0_0_14px_rgba(215,255,63,0.65)]"
+                className="max-w-full max-h-full object-contain transition-transform duration-200 hover:scale-110 hover:drop-shadow-[0_0_14px_var(--gmpm-accent)]"
               />
             </a>
           ))}

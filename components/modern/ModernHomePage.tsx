@@ -16,7 +16,7 @@ import ModernPartners from "./ModernPartners";
 import ModernAccordionSection from "./ModernAccordionSection";
 import ModernTestimonialCarousel from "./ModernTestimonialCarousel";
 import type { TestimonialItem } from "../../scripts/wp-shortcode-render";
-import { PARTNER_LOGOS_LIME } from "../../lib/modern-partner-logos";
+import { PARTNER_LOGOS_LIME, PARTNER_LOGOS_RED } from "../../lib/modern-partner-logos";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import { MODERN_SITE_ROUTES } from "../../lib/modern-site-routes";
 import type { MenuNode } from "../menu-html";
@@ -264,7 +264,7 @@ export default async function ModernHomePage({ site }: { site: any }) {
         </section>
       )}
 
-      <ModernPartners logos={PARTNER_LOGOS_LIME} />
+      <ModernPartners logos={site.slug === "pdx" ? PARTNER_LOGOS_RED : PARTNER_LOGOS_LIME} />
 
       <ModernFooter siteName={site.name} cityName={cityName} />
     </div>

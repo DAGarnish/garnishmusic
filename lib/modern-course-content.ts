@@ -468,7 +468,7 @@ function extractParagraphs(rawChunk: string): string {
 // Testimonials"/"Our Instructors"/"From The Blog"/"Our Partners") never
 // have any other text sharing their heading.
 const BOILERPLATE_HEADING_EXACT =
-  /^(new york|live online|(more\s+)?testimonials?|our instructors?|from the blog|our partners)$/i;
+  /^(new york|live online|(more\s+)?testimonials?|our instructors?|from the blog|(some of )?our partners)$/i;
 function isBoilerplateHeading(heading: string): boolean {
   return BOILERPLATE_HEADING_EXACT.test(heading.trim());
 }
