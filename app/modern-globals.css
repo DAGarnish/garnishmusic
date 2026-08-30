@@ -40,6 +40,12 @@
      overrides this to a positive value instead, since Anton needs the
      opposite treatment (see --gmpm-heading-tracking below). */
   --gmpm-display-tracking: -0.02em;
+  /* ModernTypewriterHeading's line-height (its own inline style, so it wins
+     over every caller's "leading-[0.95]" utility class - see that
+     component). 0.95 matches what all 6 callers already hardcode for the
+     mono font, so this is a no-op default; .gmpm-theme-cream overrides it
+     taller, since Anton needs more room (see that override's own comment). */
+  --gmpm-heading-line-height: 0.95;
 }
 
 /* Warm cream + terracotta theme, originally built for the
@@ -69,8 +75,14 @@
      theme's negative --gmpm-display-tracking above, because Anton (unlike
      Space Grotesk) is too tight to begin with for negative tracking to ever
      be safe. */
-  --gmpm-heading-tracking: 0.045em;
-  --gmpm-display-tracking: 0.03em;
+  --gmpm-heading-tracking: 0.07em;
+  --gmpm-display-tracking: 0.045em;
+  /* 0.95 (every caller's own hardcoded line-height, tuned for the old mono
+     font) is too tight for Anton: a tall glyph like "|" (used in every H1
+     as "<Title> | <City>") pokes up into the line above it on any heading
+     that wraps to 2+ lines, since Anton's "|" is closer to full cap-height
+     +descender than a typical letter. Taller line-height gives it room. */
+  --gmpm-heading-line-height: 1.08;
 }
 
 /* Reverts /courses/sound-design-synthesis-ableton and
@@ -92,6 +104,7 @@
   --gmpm-font-heading: var(--gmpm-font-mono);
   --gmpm-heading-tracking: 0;
   --gmpm-display-tracking: -0.02em;
+  --gmpm-heading-line-height: 0.95;
 }
 
 .gmpm-root {
