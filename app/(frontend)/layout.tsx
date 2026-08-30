@@ -112,9 +112,15 @@ export default async function RootLayout({
   // remaining sites - which still depend on all of the below for their
   // header/footer/accordion behavior - are completely unaffected.
   if (site && MODERN_SITE_SLUGS.has(site.slug)) {
+    // The cream/terracotta theme (see .gmpm-theme-cream in modern-globals.css)
+    // is a pdx-specific restyle - applied here, on <body>, so every pdx page
+    // picks it up through plain CSS-variable inheritance without each modern
+    // page component needing its own site-aware prop. hou and staging/la
+    // fall through to modern-globals.css's :root defaults (the original
+    // dark/lime look) unchanged.
     return (
       <html lang="en">
-        <body>{children}</body>
+        <body className={site.slug === "pdx" ? "gmpm-theme-cream" : undefined}>{children}</body>
       </html>
     );
   }

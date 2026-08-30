@@ -7,10 +7,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Anton&display=swap');
 
 :root {
-  /* Warm cream + terracotta theme, rolled out site-wide from the
-     /courses/songwriting-course restyle (originally scoped to just that
-     page via a .gmpm-theme-songwriting override, now promoted to the
-     shared default since every modern page uses it). */
+  /* Original dark + lime theme - the shared default for every modern site
+     (pdx, hou, staging/la). pdx opts into the cream/terracotta look below
+     instead (see .gmpm-theme-cream, applied on <body> in layout.tsx keyed
+     off site.slug === "pdx" only) - this used to be promoted straight into
+     :root, which incorrectly reskinned hou and staging/la too, since these
+     tokens are shared by every modern site, not just pdx. */
+  --gmpm-bg: #0a0a0b;
+  --gmpm-bg-raised: #131316;
+  --gmpm-line: #26262b;
+  --gmpm-text: #f2f2ef;
+  --gmpm-text-dim: #9a9aa2;
+  --gmpm-accent: #d7ff3f;
+  --gmpm-accent-dim: #a8cc2f;
+  /* Text color used on top of an --gmpm-accent-filled surface (buttons, the
+     accordion toggle's open state) - its own token, rather than a literal
+     text-black/text-white in every consumer, since the right contrast color
+     depends on how light or dark --gmpm-accent itself is. */
+  --gmpm-accent-contrast: #000000;
+
+  --gmpm-font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --gmpm-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --gmpm-font-body: 'Inter', -apple-system, sans-serif;
+  /* ModernTypewriterHeading's own font, kept independent of --gmpm-font-mono
+     so .gmpm-theme-cream below can put the big animated H1 in a bold poster
+     face while nav/price-tag/eyebrow labels stay on the real mono font. */
+  --gmpm-font-heading: var(--gmpm-font-mono);
+  --gmpm-heading-tracking: 0;
+}
+
+/* Warm cream + terracotta theme, originally built for the
+   /courses/songwriting-course restyle and then rolled out to pdx as a
+   whole - applied on <body> for site.slug === "pdx" (see layout.tsx), NOT
+   promoted into :root, so hou and staging/la keep the original dark/lime
+   theme above. */
+.gmpm-theme-cream {
   --gmpm-bg: #ede9dc;
   --gmpm-bg-raised: #e2dcc8;
   --gmpm-line: #d6cfb8;
@@ -18,34 +49,24 @@
   --gmpm-text-dim: #6e5f4e;
   --gmpm-accent: #b23a22;
   --gmpm-accent-dim: #8f2e1a;
-  /* Text color used on top of an --gmpm-accent-filled surface (buttons, the
-     accordion toggle's open state) - its own token, rather than a literal
-     text-black/text-white in every consumer, since the right contrast color
-     depends on how light or dark --gmpm-accent itself is. */
   --gmpm-accent-contrast: #f7f2e4;
 
   --gmpm-font-display: 'Anton', 'Space Grotesk', 'Inter', sans-serif;
-  --gmpm-font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --gmpm-font-body: 'Inter', -apple-system, sans-serif;
-  /* ModernTypewriterHeading's own font, kept independent of --gmpm-font-mono
-     so the big animated H1 can use the bold poster face while nav/price-tag/
-     eyebrow labels stay on the real mono font. */
   --gmpm-font-heading: var(--gmpm-font-display);
   /* Anton's glyphs sit tight together by design - at the hero H1's huge
      11vw/5vw size (see ModernTypewriterHeading), pairs like "rt", "tw", or
      a lowercase "l" against the accent square end up visually touching
      with zero tracking. A little breathing room fixes it without shrinking
-     the headline. Not needed for the classic-dark theme's mono heading
-     font below (monospace glyphs already have fixed, non-touching advance
-     widths), so that override resets it back to 0. */
+     the headline. Not needed for the dark theme's mono heading font
+     (monospace glyphs already have fixed, non-touching advance widths). */
   --gmpm-heading-tracking: 0.02em;
 }
 
 /* Reverts /courses/sound-design-synthesis-ableton and
-   /courses/electronic-sound-art back to the original dark/lime look (see
-   ModernCoursePage's themeClassName prop, applied by page.tsx keyed off
-   those two exact slugs) - every other modern page keeps the cream/
-   terracotta default above. */
+   /courses/electronic-sound-art back to the dark/lime look even though
+   they're on pdx (see ModernCoursePage's themeClassName prop, applied by
+   page.tsx keyed off those two exact slugs) - nested inside .gmpm-theme-cream
+   on <body>, so its --gmpm-* overrides win for just that page's subtree. */
 .gmpm-theme-classic-dark {
   --gmpm-bg: #0a0a0b;
   --gmpm-bg-raised: #131316;
