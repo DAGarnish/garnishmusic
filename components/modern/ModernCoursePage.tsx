@@ -41,6 +41,7 @@ export default function ModernCoursePage({
   testimonials = [],
   relatedPosts,
   eduDomain,
+  themeClassName,
 }: {
   site: any;
   title: string;
@@ -70,9 +71,14 @@ export default function ModernCoursePage({
   testimonials?: TestimonialItem[];
   relatedPosts: RelatedPost[];
   eduDomain: string;
+  // Opt-in class (e.g. "gmpm-theme-classic-dark" in modern-globals.css) that
+  // overrides this template's --gmpm-* tokens for specific course pages,
+  // set by page.tsx keyed off slug. Undefined for every other course page,
+  // which keeps the site-wide default look.
+  themeClassName?: string;
 }) {
   return (
-    <div className="gmpm-root min-h-screen">
+    <div className={`gmpm-root min-h-screen ${themeClassName || ""}`}>
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
 
       <section className="relative overflow-hidden gmpm-grid-bg">

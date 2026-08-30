@@ -716,6 +716,11 @@ export default async function CatchAllPage({ params }: Args) {
           testimonials={testimonials}
           relatedPosts={relatedPosts}
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
+          themeClassName={
+            ["courses/sound-design-synthesis-ableton", "courses/electronic-sound-art"].includes(slug.join("/"))
+              ? "gmpm-theme-classic-dark"
+              : undefined
+          }
         />
       );
     }

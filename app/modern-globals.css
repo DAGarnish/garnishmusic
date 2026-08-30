@@ -33,6 +33,25 @@
   --gmpm-font-heading: var(--gmpm-font-display);
 }
 
+/* Reverts /courses/sound-design-synthesis-ableton and
+   /courses/electronic-sound-art back to the original dark/lime look (see
+   ModernCoursePage's themeClassName prop, applied by page.tsx keyed off
+   those two exact slugs) - every other modern page keeps the cream/
+   terracotta default above. */
+.gmpm-theme-classic-dark {
+  --gmpm-bg: #0a0a0b;
+  --gmpm-bg-raised: #131316;
+  --gmpm-line: #26262b;
+  --gmpm-text: #f2f2ef;
+  --gmpm-text-dim: #9a9aa2;
+  --gmpm-accent: #d7ff3f;
+  --gmpm-accent-dim: #a8cc2f;
+  --gmpm-accent-contrast: #000000;
+
+  --gmpm-font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --gmpm-font-heading: var(--gmpm-font-mono);
+}
+
 .gmpm-root {
   background: var(--gmpm-bg);
   color: var(--gmpm-text);
