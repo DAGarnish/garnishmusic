@@ -31,6 +31,14 @@
      so the big animated H1 can use the bold poster face while nav/price-tag/
      eyebrow labels stay on the real mono font. */
   --gmpm-font-heading: var(--gmpm-font-display);
+  /* Anton's glyphs sit tight together by design - at the hero H1's huge
+     11vw/5vw size (see ModernTypewriterHeading), pairs like "rt", "tw", or
+     a lowercase "l" against the accent square end up visually touching
+     with zero tracking. A little breathing room fixes it without shrinking
+     the headline. Not needed for the classic-dark theme's mono heading
+     font below (monospace glyphs already have fixed, non-touching advance
+     widths), so that override resets it back to 0. */
+  --gmpm-heading-tracking: 0.02em;
 }
 
 /* Reverts /courses/sound-design-synthesis-ableton and
@@ -50,6 +58,7 @@
 
   --gmpm-font-display: 'Space Grotesk', 'Inter', sans-serif;
   --gmpm-font-heading: var(--gmpm-font-mono);
+  --gmpm-heading-tracking: 0;
 }
 
 .gmpm-root {
