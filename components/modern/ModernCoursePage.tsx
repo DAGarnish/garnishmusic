@@ -41,6 +41,7 @@ export default function ModernCoursePage({
   testimonials = [],
   relatedPosts,
   eduDomain,
+  themeClassName,
 }: {
   site: any;
   title: string;
@@ -70,9 +71,14 @@ export default function ModernCoursePage({
   testimonials?: TestimonialItem[];
   relatedPosts: RelatedPost[];
   eduDomain: string;
+  // Opt-in class (e.g. "gmpm-theme-songwriting" in modern-globals.css) that
+  // overrides this template's --gmpm-* tokens for one specific course page,
+  // set by page.tsx keyed off slug. Undefined for every other course page,
+  // which keeps today's look unchanged.
+  themeClassName?: string;
 }) {
   return (
-    <div className="gmpm-root min-h-screen">
+    <div className={`gmpm-root min-h-screen ${themeClassName || ""}`}>
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
 
       <section className="relative overflow-hidden gmpm-grid-bg">
@@ -104,7 +110,7 @@ export default function ModernCoursePage({
                 <Link
                   href={pricing.enrollLink}
                   target="_blank"
-                  className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-black font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+                  className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
                 >
                   Enroll now
                 </Link>
@@ -214,7 +220,7 @@ export default function ModernCoursePage({
             <Link
               href={pricing.enrollLink}
               target="_blank"
-              className="shrink-0 gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-black font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+              className="shrink-0 gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
             >
               Enroll now
             </Link>

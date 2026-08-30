@@ -74,7 +74,7 @@ export default function ModernTypewriterHeading({
   }, [displayText]);
 
   return (
-    <Tag className={`relative ${className ?? ""}`} style={{ fontFamily: "var(--gmpm-font-mono)" }}>
+    <Tag className={`relative ${className ?? ""}`} style={{ fontFamily: "var(--gmpm-font-heading)" }}>
       {/* Reserves the fully-typed text's line count/wrap up front (in-flow,
           same font/size/width), so the animated overlay filling in on top of
           it doesn't reflow the box - and doesn't shift anything below it on
