@@ -21,7 +21,15 @@ import ModernAccordionToggleIcon from "./ModernAccordionToggleIcon";
 // the link should stay on the current site instead of bouncing to
 // production. Any absolute URL on one of our own *.garnishmusicproduction.com
 // domains is relativized to its own pathname for exactly this reason.
-const OWN_DOMAIN = /^https?:\/\/([^/]*\.)?garnishmusicproduction\.com(?::\d+)?(\/[^?#]*)/i;
+//
+// "Live Online" is the one exception: it points at
+// edu.garnishmusicproduction.com/online-music-production/, a genuinely
+// distinct network-wide hub site with its own real content (not a per-city
+// clone pdx/hou/staging each have their own copy of) - relativizing it
+// turned a working cross-site link into a 404 on every modern site's own
+// domain, since none of them actually have that page. edu.* is excluded
+// from the match so it's left absolute and still bounces to production.
+const OWN_DOMAIN = /^https?:\/\/(?!edu\.)([^/]*\.)?garnishmusicproduction\.com(?::\d+)?(\/[^?#]*)/i;
 function relativizeOwnDomain(url: string): string {
   const m = url.match(OWN_DOMAIN);
   return m ? m[2] || "/" : url;
