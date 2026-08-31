@@ -6,7 +6,7 @@ import ConsultationPopup from "../../components/ConsultationPopup";
 import { CartProvider } from "../../components/CartContext";
 import LegacyAccordionUpgrade from "../../components/LegacyAccordionUpgrade";
 import ResponsiveRowMargins from "../../components/ResponsiveRowMargins";
-import { MODERN_SITE_SLUGS } from "../../lib/modern-sites";
+import { MODERN_SITE_SLUGS, isCreamThemeSite } from "../../lib/modern-sites";
 
 // Loaded as plain blocking <script> tags (not next/script's beforeInteractive
 // strategy) because that strategy's SSR-injection mechanism collides with the
@@ -118,10 +118,9 @@ export default async function RootLayout({
     // without each modern page component needing its own site-aware prop.
     // hou falls through to modern-globals.css's :root defaults (the
     // original dark/lime look) unchanged.
-    const isCreamThemeSite = site.slug === "pdx" || site.slug === "staging";
     return (
       <html lang="en">
-        <body className={isCreamThemeSite ? "gmpm-theme-cream" : undefined}>{children}</body>
+        <body className={isCreamThemeSite(site.slug) ? "gmpm-theme-cream" : undefined}>{children}</body>
       </html>
     );
   }

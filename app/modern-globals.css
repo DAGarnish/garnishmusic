@@ -113,6 +113,25 @@
   font-family: var(--gmpm-font-body);
 }
 
+/* bareImageToHtml's own certification-badge <img> (lib/modern-course-content.ts)
+   - a dark logo mark drawn for the legacy theme's light page background,
+   inverted to full white so it reads against the default dark theme's
+   near-black --gmpm-bg. .gmpm-theme-cream's light --gmpm-bg needs the
+   opposite: brightness(0) alone (no invert), so the mark stays dark instead
+   of vanishing into the cream. .gmpm-theme-classic-dark re-reverts back to
+   the invert, same as it re-reverts every other --gmpm-* token above, for
+   the two course pages that opt back into the dark look while nested inside
+   .gmpm-theme-cream on <body>. */
+.gmpm-cert-badge {
+  filter: brightness(0) invert(1);
+}
+.gmpm-theme-cream .gmpm-cert-badge {
+  filter: brightness(0);
+}
+.gmpm-theme-cream .gmpm-theme-classic-dark .gmpm-cert-badge {
+  filter: brightness(0) invert(1);
+}
+
 .gmpm-root * {
   box-sizing: border-box;
 }

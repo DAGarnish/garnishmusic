@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { AccordionModule } from "../../lib/modern-course-content";
+import { stripHardcodedWhiteText, type AccordionModule } from "../../lib/modern-course-content";
 import ModernAccordionToggleIcon from "./ModernAccordionToggleIcon";
 
 // Unlike ModernFaqAccordion (plain-text answers, fixed "FAQ" framing), this
@@ -24,7 +24,7 @@ function AccordionItem({ item }: { item: AccordionModule }) {
       {open && (
         <div
           className="pb-5 prose-modern text-sm text-[var(--gmpm-text-dim)] leading-relaxed [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
-          dangerouslySetInnerHTML={{ __html: item.bodyHtml }}
+          dangerouslySetInnerHTML={{ __html: stripHardcodedWhiteText(item.bodyHtml) }}
         />
       )}
     </div>

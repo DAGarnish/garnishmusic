@@ -296,11 +296,17 @@ function bareImageToHtml(imgTag: string): string {
   // background, drawn for the legacy theme's light page background and
   // otherwise unreadable against this design's near-black one. Inverted to
   // full-white (no opacity dimming) so the mark reads exactly as bright as
-  // the real white heading text next to it, instead of a dimmer gray.
+  // the real white heading text next to it, instead of a dimmer gray. The
+  // actual invert is done by the theme-aware .gmpm-cert-badge rule in
+  // modern-globals.css rather than a literal filter class here, since a
+  // hardcoded invert-to-white is itself invisible on .gmpm-theme-cream's
+  // light background (see stripHardcodedWhiteText above for the same class
+  // of bug on text) - that CSS rule flips back to plain brightness(0) (no
+  // invert = the mark's own dark color) under .gmpm-theme-cream.
   // mb-6 (rather than a symmetric my-2) - the next block down is usually
   // the "Apply"/"Enroll now" CTA link, which reads as cramped sitting right
   // under the badge with only a small symmetric margin.
-  return `<img src="${src}" alt="${decodeEntities(alt)}" class="max-h-12 w-auto inline-block mt-2 mb-6 mr-6 [filter:brightness(0)_invert(1)]" />`;
+  return `<img src="${src}" alt="${decodeEntities(alt)}" class="max-h-12 w-auto inline-block mt-2 mb-6 mr-6 gmpm-cert-badge" />`;
 }
 
 // The FAQ accordion's own answer text (a <p> inside each [mkd_accordion_tab])
@@ -558,6 +564,35 @@ function extractRowHeading(
   if (!hMatch) return null;
   const heading = decodeEntities(hMatch[1].replace(/<[^>]+>/g, "")).trim();
   return heading ? { heading, contentStart: (hMatch.index ?? 0) + hMatch[0].length, taglines: [] } : null;
+}
+
+// wpRawContent routinely hard-codes literal white text (e.g.
+// `<span style="color: #ffffff !important">`) - correct on this design's
+// original near-black theme (--gmpm-text is already ~white there, so the
+// override is a no-op), but invisible once a site opts into
+// .gmpm-theme-cream's light background (--gmpm-bg #ede9dc), where the same
+// override forces white-on-cream. Rather than hunting down every extraction
+// path that might carry one of these spans through untouched (unlike
+// extractParagraphs's own stripCruftAttributes above, this has to catch
+// <span> too, which isn't in that allowlist), every dangerouslySetInnerHTML
+// call site runs its final HTML through this once, so the override is
+// dropped and the text falls back to the theme's own --gmpm-text token -
+// a no-op on the dark theme, a fix on the cream one.
+export function stripHardcodedWhiteText(html: string): string {
+  const isWhite = (value: string) =>
+    /^(#fff(fff)?|white|rgba?\(\s*255\s*,\s*255\s*,\s*255\b)/i.test(value.trim());
+  return html.replace(/\sstyle="([^"]*)"/gi, (full, styleValue: string) => {
+    const kept = styleValue
+      .split(";")
+      .map((decl) => decl.trim())
+      .filter((decl) => {
+        if (!decl) return false;
+        const m = decl.match(/^color\s*:\s*(.+?)(\s*!important)?$/i);
+        return !(m && isWhite(m[1]));
+      });
+    const cleaned = kept.join("; ").trim();
+    return cleaned ? ` style="${cleaned}"` : "";
+  });
 }
 
 // Every course/program page's "Our Students Say" section carries the exact

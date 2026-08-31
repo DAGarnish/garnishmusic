@@ -63,35 +63,48 @@ function NavGroup({ item }: { item: MenuNode }) {
         {item.label}
       </button>
       <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity absolute left-0 top-full pt-3 z-50">
-        <div className="w-[min(90vw,640px)] max-h-[70vh] overflow-y-auto bg-[var(--gmpm-bg-raised)] border border-[var(--gmpm-line)] p-6 grid grid-cols-2 gap-x-8 gap-y-5 shadow-2xl">
-          {item.children!.map((sub, i) => (
-            <div key={i}>
-              <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">
-                {sub.label}
-              </div>
-              {sub.children && sub.children.length > 0 ? (
-                <ul className="space-y-1.5">
-                  {sub.children.map((leaf, j) => (
-                    <li key={j}>
+        <div className="w-[min(90vw,640px)] max-h-[70vh] overflow-y-auto bg-[var(--gmpm-bg-raised)] border border-[var(--gmpm-line)] p-6 flex gap-x-8 shadow-2xl">
+          {/* Two independent flex columns (left gets even indices, right
+              gets odd), not a 2-col CSS grid - a grid's row-major placement
+              shares row height across both columns, so a short group (e.g.
+              "USA F1 Visa Eligible", one item) sharing a row with a tall one
+              (e.g. "Intermediate Classes", nine items) left a large dead gap
+              under the short group's own content before the next row
+              started. Flex columns size independently, closing that gap. */}
+          {[0, 1].map((col) => (
+            <div key={col} className="flex-1 space-y-5">
+              {item.children!
+                .filter((_, i) => i % 2 === col)
+                .map((sub, i) => (
+                  <div key={i}>
+                    <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">
+                      {sub.label}
+                    </div>
+                    {sub.children && sub.children.length > 0 ? (
+                      <ul className="space-y-1.5">
+                        {sub.children.map((leaf, j) => (
+                          <li key={j}>
+                            <Link
+                              href={leaf.url}
+                              target={leaf.newTab ? "_blank" : undefined}
+                              className="text-sm text-[var(--gmpm-text)] hover:text-[var(--gmpm-accent)] transition-colors"
+                            >
+                              {leaf.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
                       <Link
-                        href={leaf.url}
-                        target={leaf.newTab ? "_blank" : undefined}
+                        href={sub.url}
+                        target={sub.newTab ? "_blank" : undefined}
                         className="text-sm text-[var(--gmpm-text)] hover:text-[var(--gmpm-accent)] transition-colors"
                       >
-                        {leaf.label}
+                        View
                       </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <Link
-                  href={sub.url}
-                  target={sub.newTab ? "_blank" : undefined}
-                  className="text-sm text-[var(--gmpm-text)] hover:text-[var(--gmpm-accent)] transition-colors"
-                >
-                  View
-                </Link>
-              )}
+                    )}
+                  </div>
+                ))}
             </div>
           ))}
         </div>

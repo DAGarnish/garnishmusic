@@ -10,6 +10,7 @@ import ModernInstructorGrid, { type InstructorGridItem } from "./ModernInstructo
 import ModernTestimonialCarousel from "./ModernTestimonialCarousel";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
+import { stripHardcodedWhiteText } from "../../lib/modern-course-content";
 import type {
   CourseSection,
   CurriculumModule,
@@ -135,7 +136,7 @@ export default function ModernCoursePage({
           <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-6">{s.heading}</h2>
           <div
             className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
-            dangerouslySetInnerHTML={{ __html: s.bodyHtml }}
+            dangerouslySetInnerHTML={{ __html: stripHardcodedWhiteText(s.bodyHtml) }}
           />
           {/* The real instructor photo grid behind this page's own "Meet
               Our World-Class Instructors" section - the [mkd_portfolio_slider]

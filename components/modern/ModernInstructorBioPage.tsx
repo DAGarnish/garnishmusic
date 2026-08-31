@@ -4,6 +4,7 @@ import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
+import { stripHardcodedWhiteText } from "../../lib/modern-course-content";
 import type { MenuNode } from "../menu-html";
 
 // Individual instructor bio page (courses/{slug}) - previously fell through
@@ -66,7 +67,7 @@ export default function ModernInstructorBioPage({
         )}
         <div
           className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed max-w-2xl [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
-          dangerouslySetInnerHTML={{ __html: bioHtml }}
+          dangerouslySetInnerHTML={{ __html: stripHardcodedWhiteText(bioHtml) }}
         />
       </section>
 

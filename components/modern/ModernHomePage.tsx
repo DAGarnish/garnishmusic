@@ -8,6 +8,7 @@ import {
   extractRawHtmlVideoSrc,
   extractHomepageOfferings,
   extractTestimonialCategorySlugs,
+  stripHardcodedWhiteText,
 } from "../../lib/modern-course-content";
 import ModernHeader from "./ModernHeader";
 import ModernHero from "./ModernHero";
@@ -19,6 +20,7 @@ import type { TestimonialItem } from "../../scripts/wp-shortcode-render";
 import { PARTNER_LOGOS_LIME, PARTNER_LOGOS_RED } from "../../lib/modern-partner-logos";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import { MODERN_SITE_ROUTES } from "../../lib/modern-site-routes";
+import { isCreamThemeSite } from "../../lib/modern-sites";
 import type { MenuNode } from "../menu-html";
 
 export default async function ModernHomePage({ site }: { site: any }) {
@@ -230,7 +232,9 @@ export default async function ModernHomePage({ site }: { site: any }) {
                     <div
                       className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
                       dangerouslySetInnerHTML={{
-                        __html: /^our students say/i.test(card.heading) ? studentsSayBodyHtml(card.bodyHtml) : card.bodyHtml,
+                        __html: stripHardcodedWhiteText(
+                          /^our students say/i.test(card.heading) ? studentsSayBodyHtml(card.bodyHtml) : card.bodyHtml
+                        ),
                       }}
                     />
                     {/* The real [mkd_testimonials] widget behind this specific
@@ -264,7 +268,7 @@ export default async function ModernHomePage({ site }: { site: any }) {
         </section>
       )}
 
-      <ModernPartners logos={site.slug === "pdx" ? PARTNER_LOGOS_RED : PARTNER_LOGOS_LIME} />
+      <ModernPartners logos={isCreamThemeSite(site.slug) ? PARTNER_LOGOS_RED : PARTNER_LOGOS_LIME} />
 
       <ModernFooter siteName={site.name} cityName={cityName} />
     </div>
