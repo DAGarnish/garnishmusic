@@ -717,7 +717,14 @@ export default async function CatchAllPage({ params }: Args) {
           relatedPosts={relatedPosts}
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
           themeClassName={
-            ["courses/sound-design-synthesis-ableton", "courses/electronic-sound-art"].includes(slug.join("/"))
+            [
+              // pdx
+              "courses/sound-design-synthesis-ableton",
+              "courses/electronic-sound-art",
+              // staging/la
+              "courses/synthesis-and-sound-design",
+              "courses/advanced-mastering",
+            ].includes(slug.join("/"))
               ? "gmpm-theme-classic-dark"
               : undefined
           }
