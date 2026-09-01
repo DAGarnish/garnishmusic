@@ -847,6 +847,7 @@ export default async function CatchAllPage({ params }: Args) {
               // staging/la
               "courses/synthesis-and-sound-design",
               "courses/advanced-mastering",
+              "courses/electronic-music-emp",
             ].includes(slug.join("/"))
               ? "gmpm-theme-classic-dark"
               : undefined
