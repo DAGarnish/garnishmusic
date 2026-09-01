@@ -84,23 +84,25 @@ function NavGroup({ item }: { item: MenuNode }) {
               <div key={col} className="flex-1 space-y-5">
                 {colChildren.map((sub, i) => (
                   <div key={i}>
-                    <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">
-                      {sub.label}
-                    </div>
                     {sub.children && sub.children.length > 0 ? (
-                      <ul className="space-y-1.5">
-                        {sub.children.map((leaf, j) => (
-                          <li key={j}>
-                            <Link
-                              href={leaf.url}
-                              target={leaf.newTab ? "_blank" : undefined}
-                              className="text-sm text-[var(--gmpm-text)] hover:text-[var(--gmpm-accent)] transition-colors"
-                            >
-                              {leaf.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                      <>
+                        <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">
+                          {sub.label}
+                        </div>
+                        <ul className="space-y-1.5">
+                          {sub.children.map((leaf, j) => (
+                            <li key={j}>
+                              <Link
+                                href={leaf.url}
+                                target={leaf.newTab ? "_blank" : undefined}
+                                className="text-sm text-[var(--gmpm-text)] hover:text-[var(--gmpm-accent)] transition-colors"
+                              >
+                                {leaf.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
                     ) : (
                       <Link
                         href={sub.url}
@@ -156,22 +158,24 @@ function MobileNavItem({ item, onNavigate }: { item: MenuNode; onNavigate: () =>
         <div className="pb-4 space-y-5">
           {item.children!.map((sub, i) => (
             <div key={i}>
-              <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">{sub.label}</div>
               {sub.children && sub.children.length > 0 ? (
-                <ul className="space-y-2.5">
-                  {sub.children.map((leaf, j) => (
-                    <li key={j}>
-                      <Link
-                        href={leaf.url}
-                        target={leaf.newTab ? "_blank" : undefined}
-                        onClick={onNavigate}
-                        className="text-sm text-[var(--gmpm-text-dim)]"
-                      >
-                        {leaf.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">{sub.label}</div>
+                  <ul className="space-y-2.5">
+                    {sub.children.map((leaf, j) => (
+                      <li key={j}>
+                        <Link
+                          href={leaf.url}
+                          target={leaf.newTab ? "_blank" : undefined}
+                          onClick={onNavigate}
+                          className="text-sm text-[var(--gmpm-text-dim)]"
+                        >
+                          {leaf.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               ) : (
                 <Link
                   href={sub.url}
