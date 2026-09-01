@@ -10,6 +10,7 @@ import ModernInstructorGrid, { type InstructorGridItem } from "./ModernInstructo
 import ModernTestimonialCarousel from "./ModernTestimonialCarousel";
 import ModernCourseScheduleAccordion from "./ModernCourseScheduleAccordion";
 import ModernCurriculumAccordion from "./ModernCurriculumAccordion";
+import ModernComparisonTable from "./ModernComparisonTable";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import { stripHardcodedWhiteText } from "../../lib/modern-course-content";
@@ -51,6 +52,7 @@ export default function ModernCoursePage({
   whatYouWillLearn,
   isSpanish = false,
   hideStudentStories = false,
+  hideVideo = false,
 }: {
   site: any;
   title: string;
@@ -109,6 +111,13 @@ export default function ModernCoursePage({
   // explicit request). Doesn't touch the real written-testimonials section
   // or the instructor grid, only this specific video fallback.
   hideStudentStories?: boolean;
+  // Opt-out for the quick-sample video entirely (both the beside-intro
+  // placement and the "Student stories" fallback below) - keyed off slug
+  // by the caller for pages where the clip isn't wanted at all (e.g.
+  // courses/ableton-live-course, per explicit request), as opposed to
+  // hideStudentStories above, which only suppresses one of the two spots a
+  // video can render in.
+  hideVideo?: boolean;
 }) {
   // See the "Student stories" section below for what this gates.
   const showsInstructorsInSections = sections.some((s) => /instructors|collaborators/i.test(s.heading));
@@ -125,6 +134,17 @@ export default function ModernCoursePage({
   // render - reused by the "Student stories" video fallback further down so
   // it doesn't also show once real written testimonials are already up.
   const showsStandaloneTestimonials = !showsTestimonialsInSections && testimonials.length > 0;
+  // Gates the universal comparison table further down - a page whose own
+  // content already embedded one of the three real COMPARISON_VARIANTS
+  // images (see bareImageToHtml/comparisonTableHtml) already has it inline
+  // in one of its sections (courses/release-party's own "Why choose
+  // Advanced Mastering course at Garnish?" section, copied over from la),
+  // so the always-on version below would otherwise show it twice. Checked
+  // via comparisonTableHtml's own "Side-by-Side Overview" label rather
+  // than the gmpm-comparison-table marker class - that class only ever
+  // exists on the transient <img> bareImageToHtml swaps out for the real
+  // table, never in the final bodyHtml this component actually receives.
+  const hasEmbeddedComparisonTable = sections.some((s) => s.bodyHtml.includes("Side-by-Side Overview"));
   // mia's own single "quick sample" clip sits beside its intro section at
   // the very top of the page (a real two-column row in the source, text
   // left/video right - e.g. electronic-dj-course's own "Garnish DJ
@@ -134,7 +154,7 @@ export default function ModernCoursePage({
   // (la's academy page), which a single clip paired with the intro isn't.
   // Only pairs with sections[0] when there's exactly one video and a real
   // first section to sit beside.
-  const showsVideoBesideIntro = sections.length > 0 && videoEmbeds.length === 1;
+  const showsVideoBesideIntro = !hideVideo && sections.length > 0 && videoEmbeds.length === 1;
 
   return (
     <div className={`gmpm-root min-h-screen ${themeClassName || ""}`}>
@@ -257,6 +277,18 @@ export default function ModernCoursePage({
         />
       )}
 
+      {/* Directly under "What You Will Learn", ahead of testimonials below
+          - a visitor reading the curriculum breakdown naturally wants
+          schedule/pricing next, not a detour through student quotes first. */}
+      {courseSchedule && (
+        <ModernCourseScheduleAccordion
+          title={isSpanish ? "Ver Horario y Detalles del Curso" : undefined}
+          bodyHtml={courseSchedule.bodyHtml}
+          scheduleBlocks={courseSchedule.scheduleBlocks}
+          paypalButtons={courseSchedule.paypalButtons}
+        />
+      )}
+
       {/* mia's own standalone "Testimonials" row - see
           showsTestimonialsInSections' own comment above for why this is
           separate from the sections.map carousel used by la/pdx's
@@ -267,15 +299,6 @@ export default function ModernCoursePage({
           <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>
           <ModernTestimonialCarousel items={testimonials} />
         </section>
-      )}
-
-      {courseSchedule && (
-        <ModernCourseScheduleAccordion
-          title={isSpanish ? "Ver Horario y Detalles del Curso" : undefined}
-          bodyHtml={courseSchedule.bodyHtml}
-          scheduleBlocks={courseSchedule.scheduleBlocks}
-          paypalButtons={courseSchedule.paypalButtons}
-        />
       )}
 
       {curriculum.length > 0 && (
@@ -329,7 +352,11 @@ export default function ModernCoursePage({
           <ModernInstructorGrid items={instructorGridItems} />
         </section>
       ) : (
-        !showsStandaloneTestimonials && !showsVideoBesideIntro && !hideStudentStories && videoEmbeds.length > 0 && (
+        !showsStandaloneTestimonials &&
+        !showsVideoBesideIntro &&
+        !hideStudentStories &&
+        !hideVideo &&
+        videoEmbeds.length > 0 && (
           <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
             <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Student stories</div>
             <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>
@@ -405,6 +432,10 @@ export default function ModernCoursePage({
           </div>
         </section>
       )}
+
+      {/* Always immediately before the blog section, on every course page -
+          explicit placement request, not just "somewhere on the page". */}
+      {!hasEmbeddedComparisonTable && <ModernComparisonTable cityAbbr={getCityAbbr(site)} />}
 
       <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} isSpanish={isSpanish} />
 

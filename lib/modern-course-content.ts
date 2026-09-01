@@ -173,7 +173,7 @@ function plainListToHtml(li: string): string {
 // how it was styled - and because every page shares one of these three
 // image ids, fixing it here fixes it everywhere at once rather than
 // needing a per-page override.
-const COMPARISON_VARIANTS: Record<string, string[]> = {
+export const COMPARISON_VARIANTS: Record<string, string[]> = {
   "18427": [
     "Real-time Feedback & Collaboration",
     "Fully Equipped Pro Studios",
@@ -694,9 +694,25 @@ const EDITORIAL_NOTE_SUBTITLE = /^go to\b/i;
 function extractRowHeading(
   row: string
 ): { heading: string; contentStart: number; taglines: string[] } | null {
-  const titleMatches = [...row.matchAll(/\[mkd_section_title[^\]]*\btitle_text="([^"]*)"[^\]]*\]/gi)].filter(
+  const allTitleMatches = [...row.matchAll(/\[mkd_section_title[^\]]*\btitle_text="([^"]*)"[^\]]*\]/gi)].filter(
     (m) => !BARE_DIVIDER.test(decodeEntities(m[1] || "").trim())
   );
+  // Only matches genuinely back-to-back with the first one - nothing of
+  // their own (a real [vc_column_text] block) sitting between them - count
+  // as this row's own title+subtitle chain. A later [mkd_section_title]
+  // elsewhere in the same giant row heads its own separate sub-section
+  // (confirmed on courses/hip-hop-course: the whole page is one [vc_row],
+  // and its own much-later "Our Testimonials" mini-heading was getting
+  // treated as one more subtitle of the main heading - contentStart then
+  // landed *after* it, silently swallowing the entire real intro and
+  // curriculum content in between as if it were part of the title chain).
+  const titleMatches = allTitleMatches.slice(0, 1);
+  for (let i = 1; i < allTitleMatches.length; i++) {
+    const prevEnd = (allTitleMatches[i - 1].index ?? 0) + allTitleMatches[i - 1][0].length;
+    const gap = row.slice(prevEnd, allTitleMatches[i].index ?? 0);
+    if (/\[vc_column_text/i.test(gap)) break;
+    titleMatches.push(allTitleMatches[i]);
+  }
   if (titleMatches.length > 0) {
     const heading = decodeEntities(titleMatches[0][1] || "").trim();
     const last = titleMatches[titleMatches.length - 1];
@@ -827,9 +843,13 @@ export function extractProgramHighlights(
   // <span style="color:#cc0000...">•</span> marker (certificate page),
   // sometimes a bare "•" character (this page) - both handled in
   // parseColumn below, along with a stray <p>/</p> wrapper straddling a
-  // multi-line bullet list (this page's own right column again).
+  // multi-line bullet list (this page's own right column again). The
+  // [vc_column_text] itself sometimes carries a real css="..." value (la's
+  // own courses/advanced-mastering "Course Highlights"/"Prerequisites"
+  // pair, copied onto staging's courses/release-party) rather than the
+  // certificate page's bare css="" - [^\]]* accepts either.
   const m = raw.match(
-    /\[vc_column_text css=""\]\s*(?:<p[^>]*>)?<strong>([^<]+)<\/strong>(?:<\/p>)?\r?\n([\s\S]*?)\[\/vc_column_text\]\[\/vc_column_inner\]\[vc_column_inner width="1\/2"\]\[vc_column_text css=""\]\s*(?:<p[^>]*>)?<strong>([^<]+)<\/strong>(?:<\/p>)?\r?\n([\s\S]*?)\[\/vc_column_text\]/i
+    /\[vc_column_text[^\]]*\]\s*(?:<p[^>]*>)?<strong>([^<]+)<\/strong>(?:<\/p>)?\r?\n([\s\S]*?)\[\/vc_column_text\]\[\/vc_column_inner\]\[vc_column_inner width="1\/2"\]\[vc_column_text[^\]]*\]\s*(?:<p[^>]*>)?<strong>([^<]+)<\/strong>(?:<\/p>)?\r?\n([\s\S]*?)\[\/vc_column_text\]/i
   );
   if (!m) return null;
   const parseColumn = (title: string, body: string): ProgramHighlightsColumn => {
@@ -863,7 +883,16 @@ export function programHighlightsHtml(block: { left: ProgramHighlightsColumn; ri
     }
     ${c.paragraphs.map((p) => `<p class="mt-4 text-sm">${p}</p>`).join("")}
   </div>`;
-  return `<div class="grid md:grid-cols-2 gap-6 not-prose">${column(block.left)}${column(block.right)}</div>`;
+  // A column with no bullets and no paragraphs (its own body content was
+  // deliberately removed, e.g. staging's own Advanced Mastering page had
+  // its "Prerequisites" column emptied out per explicit request) is
+  // dropped entirely rather than left as a bare heading-only box next to a
+  // real one - single-column layout in that case instead of an empty
+  // second slot.
+  const hasContent = (c: ProgramHighlightsColumn) => c.bullets.length > 0 || c.paragraphs.length > 0;
+  const columns = [block.left, block.right].filter(hasContent);
+  const gridClass = columns.length > 1 ? "md:grid-cols-2" : "md:grid-cols-1";
+  return `<div class="grid ${gridClass} gap-6 not-prose">${columns.map(column).join("")}</div>`;
 }
 
 // la's homepage presents each real offering (Degree Programs, the 360
@@ -1053,14 +1082,29 @@ export function extractHomepageOfferings(wpRawContent: string): OfferingGroup[] 
 // mixing an unrelated testimonial set into the carousel under Paris
 // Hilton's own quote - an empty heading matches neither pattern here.
 function isStudentsSayHeading(heading: string): boolean {
-  return /students say|^testimonials$/i.test(heading.trim());
+  // Broadened from an exact "Testimonials" match to any heading containing
+  // that word - mia's own hip-hop-course page titles its row "Our
+  // Testimonials", not the bare word alone, and was silently never
+  // resolving real testimonial data as a result. An empty heading still
+  // matches neither pattern here, which is what the exact-match version
+  // was actually guarding against (la's own disabled famous-testimonials
+  // row has no heading at all).
+  return /students say|testimonials/i.test(heading.trim());
 }
 
 export function extractTestimonialCategorySlugs(wpRawContent: string): string[] {
   const slugs = new Set<string>();
   for (const row of splitTopLevelRows(wpRawContent || "")) {
-    const parsed = extractRowHeading(row);
-    if (!parsed || !isStudentsSayHeading(parsed.heading)) continue;
+    // Checked against every [mkd_section_title] in the row, not just its
+    // own primary heading (extractRowHeading's own single heading+taglines
+    // chain) - a testimonials sub-section can sit well past that chain on
+    // a page whose entire content is one giant [vc_row] (confirmed on
+    // courses/hip-hop-course, whose own "Our Testimonials" heading is
+    // nowhere near the row's start, and was never seen here at all before
+    // this checked only extractRowHeading's own heading).
+    const headings = [...row.matchAll(/\[mkd_section_title[^\]]*\btitle_text="([^"]*)"[^\]]*\]/gi)];
+    const hasStudentsSayHeading = headings.some((h) => isStudentsSayHeading(decodeEntities(h[1] || "")));
+    if (!hasStudentsSayHeading) continue;
     for (const m of row.matchAll(/\[mkd_testimonials[^\]]*\bcategory="([^"]*)"/gi)) {
       for (const slug of (m[1] || "").split(",")) {
         const trimmed = slug.trim();
@@ -1086,6 +1130,60 @@ export function extractCurriculumModules(wpRawContent: string): CurriculumModule
       .map((li) => decodeEntities(li[1].replace(/<[^>]+>/g, "")).trim())
       .filter(Boolean);
     if (heading && items.length) modules.push({ heading, items });
+  }
+  return modules;
+}
+
+// mia's own <h4><strong>Title</strong></h4> + intro <p> + real <ul><li>
+// bullets shape (confirmed on courses/composition) - a genuine curriculum
+// breakdown, just a single module rather than several, and using a real
+// <ul> rather than [mkd_icon]-prefixed bullets
+// (extractIconBulletCardGroups' own shape) or "N. "-numbered plain text
+// (extractNumberedModuleCourse's own shape). Kept separate from
+// extractCurriculumModules just above (its own literal <h2>+<ul> shape,
+// feeding the differently-labeled 3-col "Curriculum" grid) rather than
+// widening that one to also accept <h4> - this page's <h4> heading is
+// really just its own course title repeated, not a distinct curriculum
+// section the way la's own <h2>-headed pages use it, so folding it into
+// that other grid would mislabel it. (?:<[^>]*>)* after the optional
+// </strong> absorbs a stray empty <b></b> WPBakery left in the source
+// right before </h4> on this exact page.
+export function extractHeadingBulletModule(wpRawContent: string): CurriculumModule[] {
+  const raw = wpRawContent || "";
+  const m = raw.match(
+    /<h4>\s*(?:<strong>)?([^<]*?)(?:<\/strong>)?(?:<[^>]*>)*\s*<\/h4>(?:(?!<ul>)[\s\S])*?<ul>([\s\S]*?)<\/ul>/i
+  );
+  if (!m) return [];
+  const heading = decodeEntities(m[1] || "").trim();
+  const items = [...m[2].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+    .map((li) => decodeEntities(li[1].replace(/<[^>]+>/g, "")).trim())
+    .filter(Boolean);
+  return heading && items.length ? [{ heading, items }] : [];
+}
+
+// mia's own [mkd_icon_with_text title="Module Name" text="• bullet one\n•
+// bullet two\n..."] shape (confirmed on courses/hip-hop-course - 5 real
+// curriculum modules, ~30 bullets total, none reached by any extractor
+// above since none of them look inside this particular shortcode's own
+// attributes at all). The bullets live inside the text="..." attribute
+// value itself as literal newline-separated, "• "-prefixed lines - not
+// real HTML, so no <li>/<p> tag-stripping is needed, just a plain
+// per-line split. Attribute order isn't assumed (every instance checked
+// has title before text, but reads both independently rather than relying
+// on that).
+export function extractIconWithTextModules(wpRawContent: string): CurriculumModule[] {
+  const raw = wpRawContent || "";
+  const modules: CurriculumModule[] = [];
+  for (const m of raw.matchAll(/\[mkd_icon_with_text\b([^\]]*)\]/gi)) {
+    const attrs = m[1];
+    const heading = attrs.match(/\btitle="([^"]*)"/i)?.[1];
+    const text = attrs.match(/\btext="([^"]*)"/i)?.[1];
+    if (!heading || !text) continue;
+    const items = text
+      .split(/\n/)
+      .map((line) => decodeEntities(line.replace(/^[•\s]+/, "").trim()))
+      .filter(Boolean);
+    if (items.length) modules.push({ heading: decodeEntities(heading).trim(), items });
   }
   return modules;
 }

@@ -51,11 +51,14 @@ import {
   extractParagraphs,
   extractIconBulletCardGroups,
   extractNumberedModuleCourse,
+  extractHeadingBulletModule,
+  extractIconWithTextModules,
   extractScheduleBlocks,
   type ScheduleBlock,
 } from "../../../lib/modern-course-content";
 import type { TestimonialItem } from "../../../scripts/wp-shortcode-render";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
+import { getCityAbbr } from "../../../lib/modern-site-meta";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
 import ModernInstructorsPage from "../../../components/modern/ModernInstructorsPage";
 import ModernInstructorBioPage from "../../../components/modern/ModernInstructorBioPage";
@@ -553,6 +556,23 @@ export default async function CatchAllPage({ params }: Args) {
       for (let i = 0; i < sections.length; i++) {
         sections[i] = { ...sections[i], bodyHtml: sections[i].bodyHtml.replace(/Next Batch/g, "Next Cohort") };
       }
+      // comparisonTableHtml's own "Side-by-Side Overview" table (see its
+      // own comment) hardcodes "Garnish LA" and, on the "18427" variant,
+      // "Exclusive LA Events & Master Classes" - both true for la itself,
+      // wrong on every other modern site whose own course pages reuse the
+      // exact same three image ids (pdx/hou/staging, and now
+      // ModernComparisonTable's own always-on section - see its matching
+      // fix for the same row), so both get swapped for the real per-site
+      // abbreviation here rather than in that shared builder, which has no
+      // access to `site` at all.
+      for (let i = 0; i < sections.length; i++) {
+        sections[i] = {
+          ...sections[i],
+          bodyHtml: sections[i].bodyHtml
+            .replace(/>Garnish LA</g, `>Garnish ${getCityAbbr(site)}<`)
+            .replace(/Exclusive LA Events & Master Classes/g, `Exclusive ${getCityAbbr(site)} Events & Master Classes`),
+        };
+      }
       const curriculum = sections.length > 0 ? [] : extractCurriculumModules(raw);
       // ai-music-composition-marketing's own byline+overview lead-in isn't
       // reached by extractCourseIntro's own two shapes at all (see
@@ -867,8 +887,16 @@ export default async function CatchAllPage({ params }: Args) {
       // when the icon-bullet one finds nothing - the two never coexist on
       // the same page.
       const iconBulletModules = extractIconBulletCardGroups(raw);
+      const numberedModules = extractNumberedModuleCourse(raw).modules;
+      const iconWithTextModules = extractIconWithTextModules(raw);
       const whatYouWillLearn =
-        iconBulletModules.length > 0 ? iconBulletModules : extractNumberedModuleCourse(raw).modules;
+        iconBulletModules.length > 0
+          ? iconBulletModules
+          : numberedModules.length > 0
+            ? numberedModules
+            : iconWithTextModules.length > 0
+              ? iconWithTextModules
+              : extractHeadingBulletModule(raw);
 
       return (
         <ModernCoursePage
@@ -908,6 +936,10 @@ export default async function CatchAllPage({ params }: Args) {
               "courses/electronic-sound-art",
               // staging/la
               "courses/synthesis-and-sound-design",
+              // staging/la both use this exact slug now - staging's own
+              // page was renamed from courses/release-party to match,
+              // after being repurposed as its Advanced Mastering course
+              // with content copied over from la's real page.
               "courses/advanced-mastering",
               "courses/electronic-music-emp",
             ].includes(slug.join("/"))
@@ -916,6 +948,15 @@ export default async function CatchAllPage({ params }: Args) {
           }
           isSpanish={slug.join("/") === "courses/curso-de-dj-espanol"}
           hideStudentStories={slug.join("/") === "courses/vocal-production"}
+          hideVideo={[
+            "courses/ableton-live-course",
+            "courses/logic-course",
+            "courses/electronic-music-emp",
+            "courses/composition",
+            "courses/rhythm-section-programming",
+          ].includes(
+            slug.join("/")
+          )}
         />
       );
     }
