@@ -21,12 +21,14 @@ import ModernInlineAccordion from "./ModernInlineAccordion";
 export default function ModernCourseScheduleAccordion({
   bodyHtml,
   paypalButtons,
+  title = "View Course Schedule & Details",
 }: {
   bodyHtml: string;
   paypalButtons?: PayPalButton[];
+  title?: string;
 }) {
   return (
-    <ModernInlineAccordion title="View Course Schedule & Details">
+    <ModernInlineAccordion title={title}>
       <div className="text-center">
         <div
           className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"

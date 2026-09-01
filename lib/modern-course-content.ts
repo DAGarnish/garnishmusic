@@ -380,15 +380,49 @@ function extractBareParagraphs(rawChunk: string): string {
 // <p> gets carried into BLOCK_RE's own match here, so it goes through the
 // exact same downstream decoding (iconParagraphToHtml) real <p> content
 // already does, rather than duplicating that logic ahead of time.
+// A [vc_column_text] block that mixes real <p> tags with a leading and/or
+// trailing paragraph missing its own open/close half - confirmed on mia's
+// academy page, where every multi-paragraph block in its raw content has
+// this exact shape: the block's first paragraph has no opening <p> (just
+// bare text ending in a stray, unmatched </p>), and/or its last paragraph
+// opens a real <p> that's never closed, running straight to
+// [/vc_column_text] - a migration artifact affecting the whole page, not a
+// one-off typo (confirmed on its intro block and on two of its own
+// [mkd_accordion_tab] bodies, "Logic Pro" and "More Free Stuff", both
+// silently dropped entirely before this). BLOCK_RE's own <p> alternative
+// requires a matched open+close pair, so both edge cases were previously
+// lost rather than just left unstyled - this repairs the block's
+// boundaries before BLOCK_RE ever sees it.
+function repairUnbalancedParagraphEdges(inner: string): string {
+  const openCount = (inner.match(/<p(?:\s[^>]*)?>/gi) || []).length;
+  if (openCount === 0) return inner;
+  let repaired = inner;
+  if (!/^\s*</.test(repaired)) {
+    repaired = `<p>${repaired}`;
+  }
+  const closeCount = (repaired.match(/<\/p>/gi) || []).length;
+  const openCountAfter = (repaired.match(/<p(?:\s[^>]*)?>/gi) || []).length;
+  if (openCountAfter > closeCount) {
+    repaired = `${repaired}</p>`;
+  }
+  return repaired;
+}
+
 function wrapBareColumnText(html: string): string {
-  return html.replace(/\[vc_column_text[^\]]*\]([\s\S]*?)\[\/vc_column_text\]/gi, (whole, inner: string) => {
-    if (/<(p|h[1-4]|ul|ol)[^>]*>/i.test(inner)) return whole;
-    const paragraphs = inner
-      .split(/\n\s*\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 3 && !/^\d{1,4}$/.test(line));
-    return paragraphs.length ? paragraphs.map((p) => `<p>${p}</p>`).join("") : whole;
-  });
+  return html.replace(
+    /(\[vc_column_text[^\]]*\])([\s\S]*?)(\[\/vc_column_text\])/gi,
+    (whole, openTag: string, inner: string, closeTag: string) => {
+      if (/<(p|h[1-4]|ul|ol)[^>]*>/i.test(inner)) {
+        const repairedInner = repairUnbalancedParagraphEdges(inner);
+        return repairedInner === inner ? whole : `${openTag}${repairedInner}${closeTag}`;
+      }
+      const paragraphs = inner
+        .split(/\n\s*\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 3 && !/^\d{1,4}$/.test(line));
+      return paragraphs.length ? `${openTag}${paragraphs.map((p) => `<p>${p}</p>`).join("")}${closeTag}` : whole;
+    }
+  );
 }
 
 // Converts a raw chunk of WPBakery content (which mixes literal paragraph

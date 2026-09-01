@@ -59,6 +59,7 @@ import ModernInstructorBioPage from "../../../components/modern/ModernInstructor
 import { extractInstructorBio, extractInstructorDirectory } from "../../../lib/modern-instructors-content";
 import { MODERN_SITE_ROUTES } from "../../../lib/modern-site-routes";
 import type { InstructorGridItem } from "../../../components/modern/ModernInstructorGrid";
+import LegacyThemeAssets from "../../../components/LegacyThemeAssets";
 
 // Blog post bodies get the "video" block (blocks/Video.ts, added to
 // Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
@@ -852,6 +853,7 @@ export default async function CatchAllPage({ params }: Args) {
               ? "gmpm-theme-classic-dark"
               : undefined
           }
+          isSpanish={slug.join("/") === "courses/curso-de-dj-espanol"}
         />
       );
     }
@@ -1261,6 +1263,10 @@ export default async function CatchAllPage({ params }: Args) {
 
     return (
       <>
+        {/* The root layout skips every legacy theme stylesheet for a
+            "modern" site (see LegacyThemeAssets' own comment) - this page
+            doesn't fit any modern template, so it still needs them. */}
+        {modernRoutes && <LegacyThemeAssets customCss={site.customCss} />}
         {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
         <Header menu={site.mainMenu as any} currentPath={slug.join("/")} siteDomain={site.domain} />
         <main className="w-full flex flex-col min-h-screen">
@@ -1298,6 +1304,10 @@ export default async function CatchAllPage({ params }: Args) {
 
   return (
     <>
+      {/* The root layout skips every legacy theme stylesheet for a
+          "modern" site (see LegacyThemeAssets' own comment) - this page
+          doesn't fit any modern template, so it still needs them. */}
+      {modernRoutes && <LegacyThemeAssets customCss={site.customCss} />}
       {customCss && <style dangerouslySetInnerHTML={{ __html: customCss }} />}
       <Header menu={site.mainMenu as any} currentPath={slug.join("/")} siteDomain={site.domain} />
       {/* The title bar sits BEFORE .mkd-container/.mkd-full-width in the

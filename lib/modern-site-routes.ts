@@ -128,12 +128,15 @@ MODERN_SITE_ROUTES.la = LA_ROUTES;
 // pages confirmed to already fit the existing course-page shape
 // ([mkd_section_title] + [mkd_accordion]) are listed here; mia's shop,
 // affiliate, Apple-certification, blog, calendar, and a few not-yet-fitting
-// program-shaped pages (the ba-* degree pathways, empty academy stub pages,
-// private-tuition) are deliberately left off and fall through to the legacy
-// theme.
+// program-shaped pages (the ba-* degree pathways, empty academy stub pages)
+// are deliberately left off and fall through to the legacy theme. private-
+// tuition was in that same left-off list originally (its content didn't fit
+// extractPrivateInstructionContent's la-tuned shape at all), but that
+// extractor now has a real mia fallback (see its own comment) so this page
+// wires up properly.
 const MIA_ROUTES: ModernSiteRoutes = {
   contactSlug: "contact-miami",
-  privateInstructionSlug: null,
+  privateInstructionSlug: "private-tuition",
   instructorsSlug: "instructors",
   programSlugs: [
     "academy/emp-electronic-music-producer",

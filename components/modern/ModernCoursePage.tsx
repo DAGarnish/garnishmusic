@@ -48,6 +48,7 @@ export default function ModernCoursePage({
   themeClassName,
   courseSchedule,
   whatYouWillLearn,
+  isSpanish = false,
 }: {
   site: any;
   title: string;
@@ -93,6 +94,13 @@ export default function ModernCoursePage({
   // above (that prop's own <h2>+<ul> shape never matches mia's <h4>+
   // [mkd_icon] one).
   whatYouWillLearn?: CurriculumModule[];
+  // curso-de-dj-espanol is Spanish-language body copy sitting inside this
+  // same shared English-labeled template (course pages have no real i18n
+  // system) - the handful of this template's own hardcoded UI labels (not
+  // the imported blog posts below, which are real English-only editorial
+  // content on a separate hub site) get swapped to Spanish when set, keyed
+  // off slug by the caller.
+  isSpanish?: boolean;
 }) {
   // See the "Student stories" section below for what this gates.
   const showsInstructorsInSections = sections.some((s) => /instructors|collaborators/i.test(s.heading));
@@ -235,7 +243,10 @@ export default function ModernCoursePage({
           extractCourseIntro's own oldShape/parallaxCards split), so this
           renders after both rather than only one. */}
       {whatYouWillLearn && whatYouWillLearn.length > 0 && (
-        <ModernCurriculumAccordion title="What You Will Learn" modules={whatYouWillLearn} />
+        <ModernCurriculumAccordion
+          title={isSpanish ? "Lo Que Aprenderás" : "What You Will Learn"}
+          modules={whatYouWillLearn}
+        />
       )}
 
       {/* mia's own standalone "Testimonials" row - see
@@ -251,7 +262,11 @@ export default function ModernCoursePage({
       )}
 
       {courseSchedule && (
-        <ModernCourseScheduleAccordion bodyHtml={courseSchedule.bodyHtml} paypalButtons={courseSchedule.paypalButtons} />
+        <ModernCourseScheduleAccordion
+          title={isSpanish ? "Ver Horario y Detalles del Curso" : undefined}
+          bodyHtml={courseSchedule.bodyHtml}
+          paypalButtons={courseSchedule.paypalButtons}
+        />
       )}
 
       {curriculum.length > 0 && (
@@ -382,7 +397,7 @@ export default function ModernCoursePage({
         </section>
       )}
 
-      <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} />
+      <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} isSpanish={isSpanish} />
 
       <ModernFooter siteName={site.name} cityName={getCityName(site)} />
     </div>
