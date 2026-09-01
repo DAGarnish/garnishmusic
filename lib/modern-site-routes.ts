@@ -57,16 +57,7 @@ export const MODERN_SITE_ROUTES: Record<string, ModernSiteRoutes> = {
   },
 };
 
-// la's real site route config. Was keyed directly under "staging" here -
-// staging.garnishmusicproduction.com was an la content clone used to
-// preview this modern rebuild before la's own domain got pointed at it.
-// Needs to stay reachable under BOTH the "la" and "staging" slugs for one
-// deploy: the CMS site doc now live at la.garnishmusicproduction.com still
-// has slug "staging" until that gets renamed to "la" too, and this code has
-// to already recognize "la" *before* that DB rename happens, or the live
-// site would drop back to the legacy theme for the gap between deploying
-// this and renaming the DB row. Drop the "staging" key (and this comment)
-// once that rename is confirmed done and nothing depends on it any more.
+// la's real site route config.
 const LA_ROUTES: ModernSiteRoutes = {
   contactSlug: "music-production-school-los-angeles-contact",
   privateInstructionSlug: null,
@@ -125,4 +116,75 @@ const LA_ROUTES: ModernSiteRoutes = {
 };
 
 MODERN_SITE_ROUTES.la = LA_ROUTES;
-MODERN_SITE_ROUTES.staging = LA_ROUTES;
+
+// mia's real site route config - staging.garnishmusicproduction.com (CMS
+// site doc slug "staging", id 24) is a clone of mia's own content, same
+// preview-then-cutover shape la's "staging" clone used. mia's raw content
+// uses a different WPBakery authoring dialect than la's - plain <h2> section
+// headings instead of [mkd_section_title], [mkd_button] instead of a raw
+// <a class="btn-grand"> CTA, and [mkd_portfolio_list category="..."] widgets
+// (resolved via lib/wp-portfolio-resolver.ts, not inline page text) for both
+// its homepage course grid and its instructors directory - so only the
+// pages confirmed to already fit the existing course-page shape
+// ([mkd_section_title] + [mkd_accordion]) are listed here; mia's shop,
+// affiliate, Apple-certification, blog, calendar, and a few not-yet-fitting
+// program-shaped pages (the ba-* degree pathways, empty academy stub pages,
+// private-tuition) are deliberately left off and fall through to the legacy
+// theme.
+const MIA_ROUTES: ModernSiteRoutes = {
+  contactSlug: "contact-miami",
+  privateInstructionSlug: null,
+  instructorsSlug: "instructors",
+  programSlugs: [
+    "academy/emp-electronic-music-producer",
+    "programs/ableton-producer-program",
+    "programs/logic-producer-program",
+  ],
+  // mia's real /instructors page's own [mkd_portfolio_list
+  // category="instructors"] widget turned out to be dormant - no
+  // "instructors" category exists anywhere in mia's data at all (confirmed:
+  // only Dave Garnish's own courses/dave-garnish page has any
+  // portfolioCategories tag, "founder" - every other instructor bio page
+  // has none), so buildPortfolioListResolver always finds zero, same as it
+  // would on mia's real live site today. This list is the actual, real
+  // courses/{slug} instructor bio pages instead (confirmed against every
+  // courses/* page on the site - these 27 are personal-name bio pages, the
+  // ~30 other courses/* slugs are real course/event pages, not
+  // instructors) - getInstructorDirectoryCached falls back to building
+  // directory cards straight from these pages' own title/featuredImage
+  // when both the parsed-markup and portfolio-category routes find
+  // nothing, same as la's own instructorSlugs list gates which bio pages
+  // get the modern template, just also the source of the roster itself
+  // here since mia has no other way to enumerate it.
+  instructorSlugs: [
+    "courses/dave-garnish",
+    "courses/nico-luminous",
+    "courses/matthew-engst",
+    "courses/dan-goodman",
+    "courses/jamaal-taylor",
+    "courses/loren-moore",
+    "courses/appu-krishnan",
+    "courses/cosmic-quest",
+    "courses/zack-johnson",
+    "courses/michael-hatsis",
+    "courses/casey-k",
+    "courses/darryl-swann",
+    "courses/matthew-kratz-aka-kraddy",
+    "courses/darren-burgos",
+    "courses/daniel-rosenwald",
+    "courses/vasco-ispirian",
+    "courses/josh-brooks-pzb",
+    "courses/joe-coloreo",
+    "courses/michael-cupino",
+    "courses/angelo-fajardo",
+    "courses/kiva",
+    "courses/dito-godwin",
+    "courses/adam-moseley",
+    "courses/robert-dante",
+    "courses/joe-cruz",
+    "courses/pete-griffin",
+    "courses/mark-v-sheldon-a-k-a-havoc-razor",
+  ],
+};
+
+MODERN_SITE_ROUTES.staging = MIA_ROUTES;

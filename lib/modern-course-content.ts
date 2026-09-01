@@ -59,6 +59,26 @@ function restyleLegacyConnectButton(html: string): string {
   );
 }
 
+// mia's homepage uses [mkd_button text="..." link="..."] for its CTAs
+// instead of la's raw <a class="btn-grand" href="...">Apply</a> anchors -
+// sitting bare in the flow (no <p> wrapper), so it never reaches any of
+// extractParagraphs's block matches at all and would otherwise just vanish
+// under stripShortcodesExceptIcon's generic bracket-strip once the
+// surrounding text did get matched. Converted to the exact same
+// <p><a class="btn-grand"> shape la's own CTAs already use - already
+// styled, already flows through extractParagraphs's <p> block match
+// unchanged - before any of that stripping runs. Attribute order isn't
+// assumed (mia's shortcode always types text before link, but this doesn't
+// rely on that).
+function convertMkdButtonsToLinks(html: string): string {
+  return html.replace(/\[mkd_button\b([^\]]*)\]/gi, (whole, attrs) => {
+    const text = attrs.match(/\btext="([^"]*)"/i)?.[1];
+    const link = attrs.match(/\blink="([^"]*)"/i)?.[1];
+    if (!text || !link) return "";
+    return `<p><a class="btn-grand" href="${link}">${decodeEntities(text)}</a></p>`;
+  });
+}
+
 function stripShortcodesExceptIcon(s: string): string {
   return s.replace(/\[\/?(?!mkd_icon\b)[a-z_][a-z0-9_]*(?:\s[^\]]*)?\]/gi, "");
 }
@@ -340,6 +360,37 @@ function extractBareParagraphs(rawChunk: string): string {
   return paragraphs.map((p) => `<p>${p}</p>`).join("");
 }
 
+// mia's own [vc_column_text] copy is written the same bare, unwrapped way
+// (confirmed on its homepage's program blurbs and course descriptions), but
+// extractBareParagraphs above only ever fires when a *whole chunk* produced
+// no BLOCK_RE matches at all - it's an all-or-nothing per-chunk fallback,
+// not a per-paragraph one. A chunk that mixes bare vc_column_text with any
+// already-real markup (e.g. mia's own <h2> sub-heading for the next card,
+// or a [mkd_button] converted to a real <p><a> by convertMkdButtonsToLinks
+// above) already makes blocks.length > 0, so that fallback never runs and
+// the bare paragraph is silently dropped - confirmed on mia's homepage
+// "Ableton Producer Program"/"Logic Producer Program" cards, which kept
+// their "See More" button but lost their entire description. Normalizing
+// every bare [vc_column_text] into real <p> tags up front, before BLOCK_RE
+// ever runs, fixes this at the source for every consumer of
+// extractParagraphs (course pages included, not just the homepage) instead
+// of only the single-bare-block case extractBareParagraphs already
+// handled. Same blank-line-paragraph-splitting behavior as that function,
+// deliberately not reusing its own decode/strip-tags step - the wrapped
+// <p> gets carried into BLOCK_RE's own match here, so it goes through the
+// exact same downstream decoding (iconParagraphToHtml) real <p> content
+// already does, rather than duplicating that logic ahead of time.
+function wrapBareColumnText(html: string): string {
+  return html.replace(/\[vc_column_text[^\]]*\]([\s\S]*?)\[\/vc_column_text\]/gi, (whole, inner: string) => {
+    if (/<(p|h[1-4]|ul|ol)[^>]*>/i.test(inner)) return whole;
+    const paragraphs = inner
+      .split(/\n\s*\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 3 && !/^\d{1,4}$/.test(line));
+    return paragraphs.length ? paragraphs.map((p) => `<p>${p}</p>`).join("") : whole;
+  });
+}
+
 // Converts a raw chunk of WPBakery content (which mixes literal paragraph
 // HTML with bracket shortcodes) into safe, readable HTML: <h1>-<h4>
 // sub-headings become sub-heading markup, <p> content becomes either a
@@ -373,7 +424,7 @@ const BLOCK_RE =
 function extractParagraphs(rawChunk: string): string {
   const blocks: string[] = [];
   let skipping = false;
-  for (const m of stripAccordionBlocks(rawChunk).matchAll(BLOCK_RE)) {
+  for (const m of stripAccordionBlocks(wrapBareColumnText(rawChunk)).matchAll(BLOCK_RE)) {
     const [, heading, ol, ul, p, img, div] = m;
     if (heading !== undefined) {
       const headingText = decodeEntities(heading.replace(/<[^>]+>/g, "")).trim();
@@ -764,6 +815,51 @@ function taglinesToHtml(taglines: string[]): string {
 }
 
 function extractOfferingCardsFromRow(row: string, rowHeading: string, rowTaglines: string[]): OfferingCard[] {
+  // mia's own multi-program rows (e.g. "Certified Producer Programs":
+  // Ableton + Logic) use one *separate* [mkd_elements_holder] block per
+  // program, each independently holding just its own image+text pair -
+  // unlike la's multi-card rows, which pack every sub-card's image+text
+  // pair into holder_items inside ONE shared holder instead. The flat
+  // background_image scan below can't tell those two shapes apart on its
+  // own: scanning straight across a row with two separate holders lets one
+  // holder's real content bleed into its neighbor's card (confirmed on
+  // mia's own Ableton/Logic row - Logic's entire heading+body+CTA ended up
+  // appended inside the Ableton card instead of forming its own). Recursing
+  // per top-level holder first avoids that; a row with exactly one holder
+  // (la's own shape) falls straight through unchanged below, since
+  // holderMatches.length > 1 is false there.
+  const holderMatches = [...row.matchAll(/\[mkd_elements_holder(?![a-zA-Z_])[^\]]*\]/gi)];
+  if (holderMatches.length > 1) {
+    // Each holder gets its own heading extracted directly (wherever it
+    // falls inside that holder - Ableton's own holder has its <h2> after
+    // the image marker, Logic's has it *before*), rather than reusing the
+    // one heading extractRowHeading found for the row as a whole (which is
+    // always just whichever <h2> happens to appear textually first across
+    // the entire row, e.g. always "Ableton Producer Program" even while
+    // processing Logic's own holder) or relying on background_image's own
+    // position within the holder to decide where the real content starts
+    // (only correct when the image marker happens to precede the text,
+    // which isn't consistent even between mia's own two holders here).
+    const perHolderCards: OfferingCard[] = [];
+    for (let i = 0; i < holderMatches.length; i++) {
+      const start = holderMatches[i].index ?? 0;
+      const end = holderMatches[i + 1]?.index ?? row.length;
+      const holderChunk = row.slice(start, end);
+      const imageId = holderChunk.match(/\[mkd_elements_holder_item\s+background_image="(\d+)"/i)?.[1] ?? null;
+      const inner = extractRowHeading(holderChunk);
+      const heading = inner?.heading || (i === 0 ? rowHeading : `${rowHeading} ${i + 1}`);
+      // Only the first holder's row-level taglines (e.g. Certificate's "1
+      // Year in Los Angeles" line) belong to the row as a whole - later
+      // holders are separate programs with no tagline of their own.
+      const bodyHtml = bulletizeIfProseOnly(
+        taglinesToHtml(i === 0 ? rowTaglines : inner?.taglines ?? []) +
+          extractParagraphs(inner ? holderChunk.slice(inner.contentStart) : holderChunk)
+      );
+      if (bodyHtml) perHolderCards.push({ heading, bodyHtml, imageId });
+    }
+    if (perHolderCards.length > 0) return perHolderCards;
+  }
+
   const matches = [...row.matchAll(/\[mkd_elements_holder_item\s+background_image="(\d+)"/gi)];
   if (matches.length === 0) return [];
   if (matches.length === 1) {
@@ -794,7 +890,7 @@ function extractOfferingCardsFromRow(row: string, rowHeading: string, rowTagline
 // heading (see extractOfferingCardsFromRow), so callers only need to render
 // a separate group label above a group's cards when it holds more than one.
 export function extractHomepageOfferings(wpRawContent: string): OfferingGroup[] {
-  const raw = wpRawContent || "";
+  const raw = convertMkdButtonsToLinks(wpRawContent || "");
   const groups: OfferingGroup[] = [];
   for (const row of splitTopLevelRows(raw)) {
     const parsed = extractRowHeading(row);
@@ -878,13 +974,57 @@ export function extractCurriculumModules(wpRawContent: string): CurriculumModule
 // content, and are dropped.
 export function extractCourseIntro(wpRawContent: string): string[] {
   const raw = wpRawContent || "";
+
+  let oldShape: string[] = [];
   const columnMatch = raw.match(/\[vc_column_text\]([\s\S]*?)(?:<h2|\[\/vc_column_text\])/i);
-  if (!columnMatch) return [];
-  const afterH1 = columnMatch[1].replace(/<h1[^>]*>[\s\S]*?<\/h1>/i, "");
-  return afterH1
-    .split(/\n\s*\n/)
-    .map((line) => decodeEntities(line.replace(/<[^>]+>/g, "").trim()))
-    .filter((line) => line.length > 3 && !/^\d{1,4}$/.test(line));
+  if (columnMatch) {
+    const afterH1 = columnMatch[1].replace(/<h1[^>]*>[\s\S]*?<\/h1>/i, "");
+    oldShape = afterH1
+      .split(/\n\s*\n/)
+      .map((line) => decodeEntities(line.replace(/<[^>]+>/g, "").trim()))
+      .filter((line) => line.length > 3 && !/^\d{1,4}$/.test(line));
+  }
+
+  // mia's own program pages (Ableton/Logic/Electronic Music Academy
+  // producer programs) use a third shape neither extractCourseSections's
+  // own [mkd_section_title] pipeline nor the shape above fits: a run of
+  // [vc_row_inner]...[vc_column_text]plain text[/vc_column_text]...
+  // [/vc_row_inner] photo-parallax "cards" (one per paragraph, a background
+  // image on the wrapping [vc_row_inner], no heading of its own at all)
+  // sitting before any real section heading appears - confirmed on
+  // programs/ableton-producer-program, which has three full paragraphs of
+  // real body copy in exactly this shape. Each card's own [vc_column_text]
+  // is matched directly; one with a real <h1-4> of its own (e.g. the same
+  // page's later "Levels" divider card) is skipped - that's a real section
+  // heading, not body prose, and shouldn't be flattened into the intro.
+  const parallaxCards: string[] = [];
+  for (const m of raw.matchAll(/\[vc_row_inner\b[^\]]*\]([\s\S]*?)\[\/vc_row_inner\]/gi)) {
+    const textMatch = m[1].match(/\[vc_column_text[^\]]*\]([\s\S]*?)\[\/vc_column_text\]/i);
+    if (!textMatch || /<h[1-4][^>]*>/i.test(textMatch[1])) continue;
+    // Each card can itself hold more than one blank-line-separated thought
+    // (e.g. Ableton's own second card: a paragraph, then a pull-quote, then
+    // a closing paragraph) - split the same way the older shape's own
+    // paragraphs are, rather than gluing them into one run-on <p>.
+    for (const line of textMatch[1].split(/\r?\n\s*\r?\n/)) {
+      const text = decodeEntities(stripShortcodesExceptIcon(line).replace(/<[^>]+>/g, "")).trim();
+      if (text.length > 3) parallaxCards.push(text);
+    }
+  }
+
+  // Whichever shape actually found real content wins, by total length -
+  // the older shape's own regex above matches the *first bare*
+  // [vc_column_text] (no css= attribute) anywhere in the whole page, not
+  // specifically near the top: on mia's program pages that's "Levels", a
+  // section divider far down the page (every one of the real
+  // [vc_column_text css="..."] paragraph blocks has a css attribute and so
+  // never matches that regex at all), producing a single useless
+  // heading-fragment "intro" instead of falling through to real content.
+  // Comparing lengths rather than always preferring one shape keeps this
+  // safe for whichever other site oldShape's own comment already covers
+  // (hou's electronic-sound-art page and similar) - those have no
+  // [vc_row_inner] parallax cards at all, so parallaxCards stays empty and
+  // oldShape wins unchanged.
+  return parallaxCards.join(" ").length > oldShape.join(" ").length ? parallaxCards : oldShape;
 }
 
 // "courses/" is shared in this data with instructor bio pages (migrated
@@ -1066,6 +1206,39 @@ export function extractRawHtmlVideoSrc(wpRawContent: string): string | null {
 // shortcode's own "sound design" (a space) needs to match the real stored
 // category slug "sounddesign" (no space, no hyphen either), which a normal
 // kebab-case slugify wouldn't produce.
+// mia's homepage course grid ("Shorter Music Production Classes") is a
+// [mkd_portfolio_list category="short-courses"] widget - a dynamic query
+// against the pages collection's portfolioCategories relationship (see
+// lib/wp-portfolio-resolver.ts's buildPortfolioListResolver, already used
+// by the legacy pipeline for this exact shortcode), not inline page text.
+// extractHomepageOfferings has no way to render this: the widget sits in
+// its own [vc_row] with no heading of its own (mia's heading - "Shorter
+// Music Production Classes" - is in the row *before* it), so
+// extractRowHeading finds nothing there and the whole row is silently
+// skipped. This is a separate, narrower extractor just for that one
+// widget: finds the shortcode's category/count, then looks backward for
+// the nearest preceding <h2> to use as the section heading. Callers still
+// need to resolve real items via buildPortfolioListResolver themselves
+// (this only parses the raw string, no DB access here - same split as
+// extractPortfolioSliderSpec above).
+export type HomepagePortfolioSection = { heading: string; categorySlug: string; count: number };
+export function extractHomepagePortfolioSection(wpRawContent: string): HomepagePortfolioSection | null {
+  const raw = wpRawContent || "";
+  const widgetMatch = raw.match(/\[mkd_portfolio_(?:list|slider)\b([^\]]*)\]/i);
+  if (!widgetMatch) return null;
+  const categoryMatch = widgetMatch[1].match(/\bcategory="([^"]*)"/i);
+  const categorySlug = categoryMatch?.[1]?.split(",")[0]?.trim();
+  if (!categorySlug) return null;
+  const countMatch = widgetMatch[1].match(/\bportfolios_shown="(\d+)"/i);
+  const count = countMatch ? Number(countMatch[1]) : 8;
+
+  const before = raw.slice(0, widgetMatch.index ?? 0);
+  const h2Matches = [...before.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)];
+  if (!h2Matches.length) return null;
+  const heading = decodeEntities(h2Matches[h2Matches.length - 1][1].replace(/<[^>]+>/g, "")).trim();
+  return heading ? { heading, categorySlug, count } : null;
+}
+
 export function extractPortfolioSliderSpec(
   wpRawContent: string
 ): { categorySlugs: string[]; count: number } | null {

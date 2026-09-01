@@ -261,9 +261,32 @@ const findContentCached = cache(findContent);
 // real, hand-maintained roster, not the empty shell pdx/hou's instructors
 // pages are). Cached per-request via React's cache() so visiting a single
 // instructor's own page doesn't pay for this fetch+parse twice.
+//
+// mia's own instructors page has no hand-authored directory markup at all -
+// just a bare [mkd_portfolio_list category="instructors"] widget (real
+// pages tagged via portfolioCategories, resolved through the same
+// buildPortfolioListResolver the legacy pipeline already uses for this
+// shortcode - see lib/wp-portfolio-resolver.ts). extractInstructorDirectory
+// finds nothing there (no card markup to match), so that empty result falls
+// through to this second resolve attempt instead of leaving the page with
+// no roster at all. PortfolioItem carries no role/credits text (unlike la's
+// hand-parsed cards), so those two fields are just left empty -
+// ModernInstructorsPage already renders them conditionally.
+//
+// That second attempt still comes up empty on mia specifically - no
+// "instructors" category exists anywhere in mia's data at all (confirmed:
+// only Dave Garnish's own bio page has any portfolioCategories tag at all,
+// "founder"), so the shortcode's own category query was already dormant on
+// mia's real live site, not something this rebuild broke. Falls through to
+// a third attempt: build directory cards directly from
+// modernRoutes.instructorSlugs's own pages (real, confirmed courses/{slug}
+// bio pages - see that list's own comment in modern-site-routes.ts),
+// reading each one's title/featuredImage the same way PortfolioItem does,
+// just skipping the broken category lookup entirely.
 const getInstructorDirectoryCached = cache(async function getInstructorDirectory(
   site: any,
-  instructorsSlug: string
+  instructorsSlug: string,
+  instructorSlugs: string[]
 ) {
   const payload = await getPayloadClient();
   const instructorsPageRes = await payload.find({
@@ -272,7 +295,40 @@ const getInstructorDirectoryCached = cache(async function getInstructorDirectory
     limit: 1,
   });
   const instructorsPageDoc = instructorsPageRes.docs[0] as any;
-  return extractInstructorDirectory(instructorsPageDoc?.wpRawContent || "");
+  const raw = instructorsPageDoc?.wpRawContent || "";
+  const directory = extractInstructorDirectory(raw);
+  if (directory.length > 0) return directory;
+
+  const resolver = await buildPortfolioListResolver(site.id, raw);
+  const categoryMatch = raw.match(/\[mkd_portfolio_(?:list|slider)\b[^\]]*\bcategory="([^"]*)"/i);
+  const fromPortfolio = categoryMatch
+    ? resolver(categoryMatch[1].split(",")[0].trim()).map((item) => ({
+        name: item.title,
+        title: "",
+        photoUrl: item.imageUrl,
+        href: item.href.replace(/\/$/, "") || "/",
+        info: [] as string[],
+      }))
+    : [];
+  if (fromPortfolio.length > 0) return fromPortfolio;
+
+  if (instructorSlugs.length === 0) return fromPortfolio;
+  const bioPagesRes = await payload.find({
+    collection: "pages",
+    where: { and: [{ site: { equals: site.id } }, { slug: { in: instructorSlugs } }] },
+    depth: 1,
+    limit: instructorSlugs.length,
+  });
+  return instructorSlugs
+    .map((slug) => bioPagesRes.docs.find((d: any) => d.slug === slug) as any)
+    .filter(Boolean)
+    .map((doc: any) => ({
+      name: doc.title,
+      title: "",
+      photoUrl: typeof doc.featuredImage === "object" ? doc.featuredImage?.url : undefined,
+      href: `/${doc.slug}`,
+      info: [] as string[],
+    }));
 });
 
 export async function generateMetadata({ params }: Args): Promise<Metadata> {
@@ -760,7 +816,7 @@ export default async function CatchAllPage({ params }: Args) {
     // fall back to a curated few individual bio pages instead - see each
     // site's instructorSlugs entry in modern-site-routes.ts for why those
     // specific ones.
-    const directory = await getInstructorDirectoryCached(site, modernRoutes.instructorsSlug);
+    const directory = await getInstructorDirectoryCached(site, modernRoutes.instructorsSlug, modernRoutes.instructorSlugs);
     if (directory.length > 0) {
       return <ModernInstructorsPage site={site} instructors={[]} directory={directory} />;
     }
@@ -803,7 +859,7 @@ export default async function CatchAllPage({ params }: Args) {
     });
     const bioDoc = bioPageRes.docs[0] as any;
     if (bioDoc) {
-      const directory = await getInstructorDirectoryCached(site, modernRoutes.instructorsSlug);
+      const directory = await getInstructorDirectoryCached(site, modernRoutes.instructorsSlug, modernRoutes.instructorSlugs);
       const directoryEntry = directory.find((d) => d.href === `/${slug.join("/")}`);
       return (
         <ModernInstructorBioPage

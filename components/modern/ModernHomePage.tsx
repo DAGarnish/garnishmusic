@@ -7,9 +7,11 @@ import {
   resolveSingleImages,
   extractRawHtmlVideoSrc,
   extractHomepageOfferings,
+  extractHomepagePortfolioSection,
   extractTestimonialCategorySlugs,
   stripHardcodedWhiteText,
 } from "../../lib/modern-course-content";
+import { buildPortfolioListResolver } from "../../lib/wp-portfolio-resolver";
 import ModernHeader from "./ModernHeader";
 import ModernHero from "./ModernHero";
 import ModernFooter from "./ModernFooter";
@@ -64,6 +66,20 @@ export default async function ModernHomePage({ site }: { site: any }) {
     raw = resolveSingleImages(raw, urlsById);
   }
 
+  // mia's homepage course grid ("Shorter Music Production Classes") is a
+  // [mkd_portfolio_list category="short-courses"] widget - real pages
+  // (portfolioCategories-tagged), not inline text, so it needs its own DB
+  // resolve rather than anything extractHomepageOfferings can find in raw
+  // text (see extractHomepagePortfolioSection's own comment for why that
+  // extractor can't see this row at all).
+  const portfolioSection = extractHomepagePortfolioSection(raw);
+  const portfolioItems = portfolioSection
+    ? (await buildPortfolioListResolver(site.id, raw))(portfolioSection.categorySlug).slice(
+        0,
+        portfolioSection.count
+      )
+    : [];
+
   // la's real homepage is content-dense - real [mkd_section_title] offering
   // rows (Degree Programs, 360 Academy, each Music Production Programs
   // sub-card, Express Courses, Private Instruction...), most paired with
@@ -72,7 +88,17 @@ export default async function ModernHomePage({ site }: { site: any }) {
   // (extractProgramCards) pdx/hou's own homepages still need - their raw
   // content doesn't use this shape at all (confirmed: 0 offerings found on
   // either).
-  const offerings = extractHomepageOfferings(raw);
+  // extractHomepageOfferings still finds the portfolio widget's own
+  // preceding heading-only row (mia's heading and the [mkd_portfolio_list]
+  // itself sit in two separate top-level rows) and turns it into its own
+  // text-only offering card (heading + the row's subtitle as body) - a real
+  // card by that extractor's own rules, but a duplicate of the heading the
+  // grid section above already renders. Dropped here rather than in the
+  // extractor itself, since "this heading belongs to the portfolio grid
+  // instead" is only knowable once portfolioSection has been resolved.
+  const offerings = extractHomepageOfferings(raw).filter(
+    (g) => !portfolioSection || g.groupHeading.trim().toLowerCase() !== portfolioSection.heading.trim().toLowerCase()
+  );
   const cards = offerings.length === 0 && homeDoc?.content ? extractProgramCards(homeDoc.content) : [];
   const accordionItems = extractAccordionModules(raw);
   const heroVideo = extractRawHtmlVideoSrc(raw);
@@ -247,6 +273,33 @@ export default async function ModernHomePage({ site }: { site: any }) {
           })}
         </div>
       ))}
+
+      {portfolioSection && portfolioItems.length > 0 && (
+        <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-24 border-t border-[var(--gmpm-line)]">
+          <h2 className="gmpm-display font-bold text-3xl md:text-5xl max-w-2xl mb-12">
+            {portfolioSection.heading}
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {portfolioItems.map((item, i) => (
+              <a key={i} href={item.href} className="group block">
+                {item.imageUrl && (
+                  <div className="gmpm-corner border border-[var(--gmpm-line)] aspect-[4/5] overflow-hidden mb-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <h3 className="gmpm-display font-bold text-lg group-hover:text-[var(--gmpm-accent)] transition-colors">
+                  {item.title}
+                </h3>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {cards.length > 0 && (
         <section id="programs" className="max-w-[1400px] mx-auto px-6 md:px-10 py-24">
