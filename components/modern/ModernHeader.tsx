@@ -64,18 +64,25 @@ function NavGroup({ item }: { item: MenuNode }) {
       </button>
       <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity absolute left-0 top-full pt-3 z-50">
         <div className="w-[min(90vw,640px)] max-h-[70vh] overflow-y-auto bg-[var(--gmpm-bg-raised)] border border-[var(--gmpm-line)] p-6 flex gap-x-8 shadow-2xl">
-          {/* Two independent flex columns (left gets even indices, right
-              gets odd), not a 2-col CSS grid - a grid's row-major placement
-              shares row height across both columns, so a short group (e.g.
-              "USA F1 Visa Eligible", one item) sharing a row with a tall one
-              (e.g. "Intermediate Classes", nine items) left a large dead gap
-              under the short group's own content before the next row
-              started. Flex columns size independently, closing that gap. */}
-          {[0, 1].map((col) => (
-            <div key={col} className="flex-1 space-y-5">
-              {item.children!
-                .filter((_, i) => i % 2 === col)
-                .map((sub, i) => (
+          {/* Two independent flex columns, not a 2-col CSS grid - a grid's
+              row-major placement shares row height across both columns, so
+              a short group (e.g. "USA F1 Visa Eligible", one item) sharing a
+              row with a tall one (e.g. "Intermediate Classes", nine items)
+              left a large dead gap under the short group's own content
+              before the next row started. Flex columns size independently,
+              closing that gap.
+              Split sequentially (first half in col0, rest in col1), not by
+              even/odd index - groups are stored in the exact top-to-bottom
+              reading order MobileNavItem's own single-column accordion
+              needs below, so the desktop columns have to read that same
+              array left-to-right-then-down rather than interleaving it. */}
+          {[0, 1].map((col) => {
+            const children = item.children!;
+            const splitAt = Math.ceil(children.length / 2);
+            const colChildren = col === 0 ? children.slice(0, splitAt) : children.slice(splitAt);
+            return (
+              <div key={col} className="flex-1 space-y-5">
+                {colChildren.map((sub, i) => (
                   <div key={i}>
                     <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-2">
                       {sub.label}
@@ -105,8 +112,9 @@ function NavGroup({ item }: { item: MenuNode }) {
                     )}
                   </div>
                 ))}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
