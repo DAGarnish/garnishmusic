@@ -48,6 +48,7 @@ import {
   programHighlightsHtml,
   extractTestimonialCategorySlugs,
   extractAccordionBlogTab,
+  extractParagraphs,
 } from "../../../lib/modern-course-content";
 import type { TestimonialItem } from "../../../scripts/wp-shortcode-render";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
@@ -751,10 +752,69 @@ export default async function CatchAllPage({ params }: Args) {
       const allSites = await getAllSitesCached();
       const eduSite = allSites.find((s: any) => s.slug === "edu");
       const relatedPosts = eduSite ? await getRelatedPosts(payload, eduSite.id, slug.join("/")) : [];
+
+      // "View Course Schedule & Details" - see COURSE_SCHEDULE_PAGES's own
+      // comment further down (the legacy branch's version of this fetch)
+      // for what this data actually is and why it lives on a separate
+      // `products` doc. Built independently here rather than sharing that
+      // branch's courseScheduleHtml: this needs extractParagraphs's real
+      // <p>/<strong>/<a> output (the same shape every other course-page
+      // body section on this template already renders), not
+      // wpContentToStyledHtml's legacy wpb_*/mkd-* CSS classes, which have
+      // no matching styles loaded on a modern page. Not gated by site.slug
+      // (unlike the legacy branch) - the site-scoped `products` query below
+      // already only ever finds a match for whichever site actually has
+      // that product cloned in, so this works for any future modern site
+      // with its own schedule data, not just mia's.
+      const modernCourseScheduleConfig = COURSE_SCHEDULE_PAGES[slug.join("/")];
+      const modernCourseScheduleHtml = modernCourseScheduleConfig
+        ? await courseScheduleCache(
+            `${site.id}:${modernCourseScheduleConfig.productSlug}:modern-schedule`,
+            async () => {
+              const productRes = await payload.find({
+                collection: "products",
+                where: {
+                  and: [
+                    { site: { equals: site.id } },
+                    { slug: { equals: modernCourseScheduleConfig.productSlug } },
+                  ],
+                },
+                limit: 1,
+                depth: 0,
+              });
+              const productDoc = productRes.docs[0] as any;
+              if (!productDoc?.wpRawContent) return null;
+              // Cohort rows carry data-cohort-start/data-cohort-banner-html
+              // attributes (used by some other, unrelated legacy "next
+              // class" banner widget) - the banner one's own value is
+              // itself a snippet of HTML (e.g. `data-cohort-banner-html="
+              // Next <span class=&quot;next-class-arrow&quot;>👇🏽</span>
+              // Class"`), and the *unescaped* ">" inside that nested <span>
+              // prematurely closes extractParagraphs's own <p[^>]*> tag
+              // match right there, leaking the rest of the attribute value
+              // out as if it were real paragraph text ('Class">L) Sundays
+              // ...' - confirmed on this exact content. Neither attribute
+              // means anything to this rendering path, so both are just
+              // dropped before extraction rather than taught to extractParagraphs
+              // itself, which has no other caller that has ever hit this shape.
+              const withoutCohortAttrs = productDoc.wpRawContent.replace(
+                /\s+data-cohort-(?:start|banner-html)="[^"]*"/gi,
+                ""
+              );
+              return extractParagraphs(withoutCohortAttrs);
+            }
+          )
+        : null;
+
       return (
         <ModernCoursePage
           site={site}
           title={courseDoc.title}
+          courseSchedule={
+            modernCourseScheduleConfig && modernCourseScheduleHtml
+              ? { bodyHtml: modernCourseScheduleHtml, paypalButtons: modernCourseScheduleConfig.paypalButtons }
+              : undefined
+          }
           heroImageUrl={heroImage}
           sections={sections}
           curriculum={curriculum}

@@ -8,6 +8,7 @@ import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import ModernRelatedPosts from "./ModernRelatedPosts";
 import ModernInstructorGrid, { type InstructorGridItem } from "./ModernInstructorGrid";
 import ModernTestimonialCarousel from "./ModernTestimonialCarousel";
+import ModernCourseScheduleAccordion from "./ModernCourseScheduleAccordion";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import { stripHardcodedWhiteText } from "../../lib/modern-course-content";
@@ -21,6 +22,7 @@ import type {
 } from "../../lib/modern-course-content";
 import type { RelatedPost } from "../../lib/modern-related-posts";
 import type { TestimonialItem } from "../../scripts/wp-shortcode-render";
+import type { PayPalButton } from "../PayPalHostedButtons";
 
 export default function ModernCoursePage({
   site,
@@ -43,6 +45,7 @@ export default function ModernCoursePage({
   relatedPosts,
   eduDomain,
   themeClassName,
+  courseSchedule,
 }: {
   site: any;
   title: string;
@@ -77,6 +80,11 @@ export default function ModernCoursePage({
   // set by page.tsx keyed off slug. Undefined for every other course page,
   // which keeps the site-wide default look.
   themeClassName?: string;
+  // mia's "View Course Schedule & Details" disclosure (cohort dates,
+  // pricing breakdown, PayPal checkout) - see COURSE_SCHEDULE_PAGES in
+  // page.tsx. Undefined for every course page without a matching product
+  // doc, which is every course page on every other modern site so far.
+  courseSchedule?: { bodyHtml: string; paypalButtons?: PayPalButton[] };
 }) {
   return (
     <div className={`gmpm-root min-h-screen ${themeClassName || ""}`}>
@@ -152,6 +160,10 @@ export default function ModernCoursePage({
           {/students say/i.test(s.heading) && <ModernTestimonialCarousel items={testimonials} />}
         </section>
       ))}
+
+      {courseSchedule && (
+        <ModernCourseScheduleAccordion bodyHtml={courseSchedule.bodyHtml} paypalButtons={courseSchedule.paypalButtons} />
+      )}
 
       {curriculum.length > 0 && (
         <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-24">

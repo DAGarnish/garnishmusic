@@ -421,7 +421,12 @@ function wrapBareColumnText(html: string): string {
 const BLOCK_RE =
   /<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>|<ol[^>]*>([\s\S]*?)<\/ol>|<ul[^>]*>([\s\S]*?)<\/ul>|<p[^>]*>((?:(?!<p[^>]*>|<\/p>)[\s\S])*?)<\/p>|(<img\b[^>]*>)|<div\b[^>]*\bstyle="text-align:\s*(?:left|center)"[^>]*>((?:(?!<div|<ul|<ol|<p\b)[\s\S])*?)<\/div>/gi;
 
-function extractParagraphs(rawChunk: string): string {
+// Exported for the modern course-schedule accordion (mia's "View Course
+// Schedule & Details" content, a `products` doc's own wpRawContent - plain
+// <p>/<strong>/<a> markup, the exact shape this already handles) - every
+// other caller in this file already used it internally before this needed
+// to reach outside it.
+export function extractParagraphs(rawChunk: string): string {
   const blocks: string[] = [];
   let skipping = false;
   for (const m of stripAccordionBlocks(wrapBareColumnText(rawChunk)).matchAll(BLOCK_RE)) {
