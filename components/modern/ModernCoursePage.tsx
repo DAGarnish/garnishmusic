@@ -9,6 +9,7 @@ import ModernRelatedPosts from "./ModernRelatedPosts";
 import ModernInstructorGrid, { type InstructorGridItem } from "./ModernInstructorGrid";
 import ModernTestimonialCarousel from "./ModernTestimonialCarousel";
 import ModernCourseScheduleAccordion from "./ModernCourseScheduleAccordion";
+import ModernCurriculumAccordion from "./ModernCurriculumAccordion";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import { stripHardcodedWhiteText } from "../../lib/modern-course-content";
@@ -46,6 +47,7 @@ export default function ModernCoursePage({
   eduDomain,
   themeClassName,
   courseSchedule,
+  whatYouWillLearn,
 }: {
   site: any;
   title: string;
@@ -85,7 +87,16 @@ export default function ModernCoursePage({
   // page.tsx. Undefined for every course page without a matching product
   // doc, which is every course page on every other modern site so far.
   courseSchedule?: { bodyHtml: string; paypalButtons?: PayPalButton[] };
+  // mia's own curriculum breakdown (extractIconBulletCardGroups, see that
+  // function's own comment) - a real module-by-module bullet list this
+  // template had nowhere to show at all before, distinct from `curriculum`
+  // above (that prop's own <h2>+<ul> shape never matches mia's <h4>+
+  // [mkd_icon] one).
+  whatYouWillLearn?: CurriculumModule[];
 }) {
+  // See the "Student stories" section below for what this gates.
+  const showsInstructorsInSections = sections.some((s) => /instructors|collaborators/i.test(s.heading));
+
   return (
     <div className={`gmpm-root min-h-screen ${themeClassName || ""}`}>
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
@@ -161,6 +172,17 @@ export default function ModernCoursePage({
         </section>
       ))}
 
+      {/* "Below the certified logos" - on the pages that have this content
+          at all (mia's own), the logo is the last thing in the intro/
+          sections body above, whichever shape produced it (plain `intro`
+          array vs a real [mkd_section_title] `sections` entry - confirmed
+          both shapes exist across different course pages, see
+          extractCourseIntro's own oldShape/parallaxCards split), so this
+          renders after both rather than only one. */}
+      {whatYouWillLearn && whatYouWillLearn.length > 0 && (
+        <ModernCurriculumAccordion title="What You Will Learn" modules={whatYouWillLearn} />
+      )}
+
       {courseSchedule && (
         <ModernCourseScheduleAccordion bodyHtml={courseSchedule.bodyHtml} paypalButtons={courseSchedule.paypalButtons} />
       )}
@@ -192,30 +214,50 @@ export default function ModernCoursePage({
         </section>
       )}
 
-      {videoEmbeds.length > 0 && (
+      {/* Real instructor photos (see extractPortfolioSliderSpec) take this
+          slot over the video-testimonials section below when they're
+          available and not already shown - a section whose own heading
+          matches /instructors|collaborators/i (above) already renders
+          instructorGridItems itself, so this would otherwise duplicate the
+          exact same grid a second time on those pages. mia's own course
+          pages regularly have neither a real "Meet Our Instructors" section
+          nor a genuine student-testimonial video (extractVideoEmbeds's
+          match here is often just a generic school-promo clip, not
+          testimonial content, confirmed on courses/ableton-live-course -
+          real instructor photos are the more useful, accurate thing to
+          show in this spot on pages like that one). */}
+      {!showsInstructorsInSections && instructorGridItems.length > 0 ? (
         <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
-          <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Student stories</div>
-          <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {videoEmbeds.map((v, i) => (
-              <div key={i} className="gmpm-corner border border-[var(--gmpm-line)]">
-                <div className="aspect-video">
-                  <iframe
-                    src={v.embedUrl}
-                    title={v.title}
-                    className="w-full h-full"
-                    style={{ border: 0 }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                </div>
-                {v.title && (
-                  <div className="px-4 py-3 gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">{v.title}</div>
-                )}
-              </div>
-            ))}
-          </div>
+          <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Instructors</div>
+          <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-4">Meet your instructors.</h2>
+          <ModernInstructorGrid items={instructorGridItems} />
         </section>
+      ) : (
+        videoEmbeds.length > 0 && (
+          <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
+            <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Student stories</div>
+            <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              {videoEmbeds.map((v, i) => (
+                <div key={i} className="gmpm-corner border border-[var(--gmpm-line)]">
+                  <div className="aspect-video">
+                    <iframe
+                      src={v.embedUrl}
+                      title={v.title}
+                      className="w-full h-full"
+                      style={{ border: 0 }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  </div>
+                  {v.title && (
+                    <div className="px-4 py-3 gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">{v.title}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )
       )}
 
       <ModernAccordionSection eyebrow={curriculumEyebrow} heading={curriculumHeading} items={curriculumAccordion} />

@@ -49,6 +49,7 @@ import {
   extractTestimonialCategorySlugs,
   extractAccordionBlogTab,
   extractParagraphs,
+  extractIconBulletCardGroups,
 } from "../../../lib/modern-course-content";
 import type { TestimonialItem } from "../../../scripts/wp-shortcode-render";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
@@ -806,10 +807,16 @@ export default async function CatchAllPage({ params }: Args) {
           )
         : null;
 
+      // mia's own module-by-module curriculum breakdown (<h4>+[mkd_icon]-
+      // bulleted cards - see extractIconBulletCardGroups's own comment for
+      // why none of the other extractors above ever reach this shape).
+      const whatYouWillLearn = extractIconBulletCardGroups(raw);
+
       return (
         <ModernCoursePage
           site={site}
           title={courseDoc.title}
+          whatYouWillLearn={whatYouWillLearn}
           courseSchedule={
             modernCourseScheduleConfig && modernCourseScheduleHtml
               ? { bodyHtml: modernCourseScheduleHtml, paypalButtons: modernCourseScheduleConfig.paypalButtons }

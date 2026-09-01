@@ -973,6 +973,41 @@ export function extractCurriculumModules(wpRawContent: string): CurriculumModule
   return modules;
 }
 
+// mia's own course pages (e.g. courses/ableton-live-course) lay out their
+// curriculum as a run of two-up [vc_column_inner width="1/2"] "cards"
+// inside the same photo-parallax [vc_row_inner] wrapper extractCourseIntro
+// above already handles for plain-prose cards - except these open with a
+// real <h4>Module Name</h4> heading, followed by a [mkd_icon]-bulleted <p>
+// (2+ icons in one paragraph, the exact shape iconParagraphToHtml already
+// turns into a real <ul> elsewhere in this file) instead of plain prose.
+// extractCourseIntro's own "no heading inside this card" check
+// deliberately excludes these (a real module name, not body copy, would
+// get flattened into an intro paragraph otherwise), and neither
+// extractCourseSections ([mkd_section_title]/bare <h1-3> row headings)
+// nor extractCurriculumModules (literal <h2>+<ul>) reach <h4>+[mkd_icon]
+// content at all - confirmed on ableton-live-course, which has four real
+// modules (Let's Get Going!, Creating With MIDI & Audio, DJing and Live
+// Performance, MIDI Tracks and Composing with Virtual Instruments) totally
+// invisible to every existing extractor. Bounded by the card's own closing
+// [/vc_column_text] rather than a literal </p> - these paragraphs are
+// routinely left unclosed in the source (a WPBakery authoring habit
+// already confirmed as a real hydration hazard elsewhere in this file, see
+// BLOCK_RE's own comment), so a literal-</p> requirement would swallow the
+// next card's own heading into the wrong module.
+export function extractIconBulletCardGroups(wpRawContent: string): CurriculumModule[] {
+  const raw = wpRawContent || "";
+  const groups: CurriculumModule[] = [];
+  for (const m of raw.matchAll(/<h4[^>]*>([^<]*?)<\/h4>\s*<p[^>]*>([\s\S]*?)\[\/vc_column_text\]/gi)) {
+    const heading = decodeEntities(m[1] || "").trim();
+    const items = m[2]
+      .split(/\[mkd_icon[^\]]*\]/gi)
+      .map((s) => decodeEntities(s.replace(/<[^>]+>/g, "")).trim())
+      .filter(Boolean);
+    if (heading && items.length) groups.push({ heading, items });
+  }
+  return groups;
+}
+
 // The free-text intro before the first <h2> in that same older shape -
 // plain lines separated by blank lines, no <p> wrapper. Bare short numeric
 // lines (e.g. "101", "201") are WPBakery pagination/anchor artifacts, not
