@@ -14,12 +14,16 @@ export const MODERN_SITE_SLUGS = new Set(Object.keys(MODERN_SITE_ROUTES));
 // Sites on the warm cream + terracotta look (.gmpm-theme-cream in
 // modern-globals.css) rather than the network-wide dark/lime default -
 // pdx originated it, staging (la's content clone) got it too in a later
-// rollout. Shared here rather than left as a literal `site.slug === "pdx"`
-// check in each consumer (layout.tsx's <body> class, ModernHomePage's
-// lime-vs-red partner logo pick, ...) - that pattern is exactly how the
-// partner logos stayed lime-green on staging after the theme rollout: the
-// theme rolled out, but a second, separate "is this site cream-themed"
-// check elsewhere didn't get updated along with it.
+// rollout, and now la itself (the CMS site doc live at
+// la.garnishmusicproduction.com still carries slug "staging" until that's
+// renamed - see modern-site-routes.ts's own comment on LA_ROUTES for why
+// both need to keep working here for one deploy). Shared here rather than
+// left as a literal `site.slug === "pdx"` check in each consumer
+// (layout.tsx's <body> class, ModernHomePage's lime-vs-red partner logo
+// pick, ...) - that pattern is exactly how the partner logos stayed
+// lime-green on staging after the theme rollout: the theme rolled out, but
+// a second, separate "is this site cream-themed" check elsewhere didn't
+// get updated along with it.
 export function isCreamThemeSite(slug: string): boolean {
-  return slug === "pdx" || slug === "staging";
+  return slug === "pdx" || slug === "staging" || slug === "la";
 }

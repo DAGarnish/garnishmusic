@@ -55,60 +55,74 @@ export const MODERN_SITE_ROUTES: Record<string, ModernSiteRoutes> = {
       "courses/zack-johnson",
     ],
   },
-  staging: {
-    contactSlug: "music-production-school-los-angeles-contact",
-    privateInstructionSlug: null,
-    instructorsSlug: "music-production-instructors-los-angeles",
-    programSlugs: [
-      "la-music-production-academy",
-      "programs/ableton-production-program",
-      "programs/logic-production-program",
-      "songcraft-production-program",
-      "dj-production-program",
-      "music-production-private-instruction",
-      "certificate-music-production-songwriting",
-      "social-media-and-branding-for-artists",
-      "garnish-la-artist-services",
-    ],
-    // Every instructor actually listed on la's own real instructors
-    // directory (extractInstructorDirectory finds this page has real
-    // content, so the curated-set fallback these slugs would otherwise
-    // feed never runs - this list's job here is purely to gate which
-    // courses/{slug} pages get the modern bio template, matching the
-    // network's own current roster exactly. Deliberately not the broader
-    // ~60-page courses/* roster network-wide - e.g. courses/maggie-szabo
-    // exists but isn't linked from la's own directory anymore, so it's
-    // left off rather than resurfacing a no-longer-featured instructor.
-    instructorSlugs: [
-      "courses/baddluck",
-      "courses/shuba",
-      "courses/laureli",
-      "courses/cole-nystrom",
-      "courses/th3ory",
-      "courses/lvma-black",
-      "courses/k-sotomayor",
-      "courses/marianna-matyja",
-      "courses/ethan-ziemba",
-      "courses/matthew-engst",
-      "courses/matt-bang",
-      "courses/irving-victoria",
-      "courses/will-kast",
-      "courses/cameron-neilson",
-      "courses/dj-jes-danz",
-      "courses/chinsaku",
-      "courses/marie-klausmeyer",
-      "courses/joseph-immanuel",
-      "courses/sandra-cucho",
-      "courses/cameron-colley",
-      "courses/cairo",
-      "courses/nic-ten-grotenhuis",
-      "courses/paola-gladys",
-      "courses/dj-flossy",
-      "courses/zhou",
-      "courses/taylor-dubray",
-      "courses/orion-navaille",
-      "courses/igor-krasnienko",
-      "courses/appu-krishnan",
-    ],
-  },
 };
+
+// la's real site route config. Was keyed directly under "staging" here -
+// staging.garnishmusicproduction.com was an la content clone used to
+// preview this modern rebuild before la's own domain got pointed at it.
+// Needs to stay reachable under BOTH the "la" and "staging" slugs for one
+// deploy: the CMS site doc now live at la.garnishmusicproduction.com still
+// has slug "staging" until that gets renamed to "la" too, and this code has
+// to already recognize "la" *before* that DB rename happens, or the live
+// site would drop back to the legacy theme for the gap between deploying
+// this and renaming the DB row. Drop the "staging" key (and this comment)
+// once that rename is confirmed done and nothing depends on it any more.
+const LA_ROUTES: ModernSiteRoutes = {
+  contactSlug: "music-production-school-los-angeles-contact",
+  privateInstructionSlug: null,
+  instructorsSlug: "music-production-instructors-los-angeles",
+  programSlugs: [
+    "la-music-production-academy",
+    "programs/ableton-production-program",
+    "programs/logic-production-program",
+    "songcraft-production-program",
+    "dj-production-program",
+    "music-production-private-instruction",
+    "certificate-music-production-songwriting",
+    "social-media-and-branding-for-artists",
+    "garnish-la-artist-services",
+  ],
+  // Every instructor actually listed on la's own real instructors
+  // directory (extractInstructorDirectory finds this page has real
+  // content, so the curated-set fallback these slugs would otherwise
+  // feed never runs - this list's job here is purely to gate which
+  // courses/{slug} pages get the modern bio template, matching the
+  // network's own current roster exactly. Deliberately not the broader
+  // ~60-page courses/* roster network-wide - e.g. courses/maggie-szabo
+  // exists but isn't linked from la's own directory anymore, so it's
+  // left off rather than resurfacing a no-longer-featured instructor.
+  instructorSlugs: [
+    "courses/baddluck",
+    "courses/shuba",
+    "courses/laureli",
+    "courses/cole-nystrom",
+    "courses/th3ory",
+    "courses/lvma-black",
+    "courses/k-sotomayor",
+    "courses/marianna-matyja",
+    "courses/ethan-ziemba",
+    "courses/matthew-engst",
+    "courses/matt-bang",
+    "courses/irving-victoria",
+    "courses/will-kast",
+    "courses/cameron-neilson",
+    "courses/dj-jes-danz",
+    "courses/chinsaku",
+    "courses/marie-klausmeyer",
+    "courses/joseph-immanuel",
+    "courses/sandra-cucho",
+    "courses/cameron-colley",
+    "courses/cairo",
+    "courses/nic-ten-grotenhuis",
+    "courses/paola-gladys",
+    "courses/dj-flossy",
+    "courses/zhou",
+    "courses/taylor-dubray",
+    "courses/orion-navaille",
+    "courses/igor-krasnienko",
+    "courses/appu-krishnan",
+  ],
+};
+
+MODERN_SITE_ROUTES.la = LA_ROUTES;
+MODERN_SITE_ROUTES.staging = LA_ROUTES;
