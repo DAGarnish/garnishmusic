@@ -107,7 +107,7 @@ function NavGroup({ item }: { item: MenuNode }) {
                         target={sub.newTab ? "_blank" : undefined}
                         className="text-sm text-[var(--gmpm-text)] hover:text-[var(--gmpm-accent)] transition-colors"
                       >
-                        View
+                        {sub.label}
                       </Link>
                     )}
                   </div>
