@@ -665,6 +665,15 @@ export function stripParisHiltonQuote(bodyHtml: string): string {
   );
 }
 
+// Strips a trailing " | <city/qualifier>" so "Electronic Music DJ Class"
+// and "Electronic Music DJ Class | Miami" dedupe as the same heading (see
+// extractCourseSections' own use below) - mia's own course pages repeat
+// their intro/first section's heading with this exact "| Miami" suffix on
+// its hidden desktop-column duplicate.
+function normalizeSectionHeading(heading: string): string {
+  return heading.replace(/\s*\|\s*[^|]*$/, "").trim().toLowerCase();
+}
+
 export function extractCourseSections(wpRawContent: string, limit = 6): CourseSection[] {
   const raw = wpRawContent || "";
   const sections: CourseSection[] = [];
@@ -682,6 +691,21 @@ export function extractCourseSections(wpRawContent: string, limit = 6): CourseSe
     // etc.) only ever show up after genuine course content, never as the
     // first or second row on the page.
     if (sections.length > 0 && isBoilerplateHeading(parsed.heading)) break;
+    // mia's own hidden desktop-column mirror of the whole page (see the
+    // <h4> module-card duplication extractIconBulletCardGroups' own
+    // comment covers) repeats this same section's heading verbatim, plus a
+    // "| Miami" suffix, right before dumping every module's bullets
+    // flattened into one blob with no real card structure (confirmed on
+    // electronic-dj-course - the second "section" was 34 unrelated bullets
+    // under one heading). Once a heading repeats (city suffix or not),
+    // everything from here on is that same duplicate mirror, not new
+    // content, so this stops rather than skipping just the one row.
+    if (
+      sections.length > 0 &&
+      sections.some((s) => normalizeSectionHeading(s.heading) === normalizeSectionHeading(parsed.heading))
+    ) {
+      break;
+    }
     // parsed.taglines (e.g. certificate-music-production-songwriting's own
     // "Los Angeles & Live Online" / "International Students Study..." pair)
     // were previously discarded here - every other extractRowHeading caller
@@ -928,15 +952,18 @@ export function extractHomepageOfferings(wpRawContent: string): OfferingGroup[] 
 // - unlike that legacy resolver - doesn't filter by the *category* doc's
 // own site, since staging's cloned testimonials keep pointing at la's
 // original category docs rather than freshly cloned ones).
-// Scoped to the row whose own heading is "Our Students Say..." (rather than
-// a flat whole-content scan) - la's homepage has a second, unrelated
-// [mkd_testimonials category="famous-testimonials"] instance sitting in an
-// earlier row of its own (right after the "Enroll Now" banner, nothing to
-// do with student reviews), which a flat scan would incorrectly fold into
-// this one, mixing an unrelated testimonial set into the carousel under
-// Paris Hilton's own quote.
+// Scoped to the row whose own heading is "Our Students Say..." or a plain
+// "Testimonials" (mia's course pages use this exact
+// [mkd_section_title title_text="Testimonials"] heading over their own
+// [mkd_testimonials category="..."] widget) - rather than a flat
+// whole-content scan. la's homepage has a second, unrelated
+// [mkd_testimonials category="famous-testimonials"] instance sitting in a
+// disabled row of its own (right after the "Enroll Now" banner, with no
+// heading at all), which a flat scan would incorrectly fold into this one,
+// mixing an unrelated testimonial set into the carousel under Paris
+// Hilton's own quote - an empty heading matches neither pattern here.
 function isStudentsSayHeading(heading: string): boolean {
-  return /students say/i.test(heading);
+  return /students say|^testimonials$/i.test(heading.trim());
 }
 
 export function extractTestimonialCategorySlugs(wpRawContent: string): string[] {
@@ -997,8 +1024,18 @@ export function extractCurriculumModules(wpRawContent: string): CurriculumModule
 export function extractIconBulletCardGroups(wpRawContent: string): CurriculumModule[] {
   const raw = wpRawContent || "";
   const groups: CurriculumModule[] = [];
-  for (const m of raw.matchAll(/<h4[^>]*>([^<]*?)<\/h4>\s*<p[^>]*>([\s\S]*?)\[\/vc_column_text\]/gi)) {
+  // The <p> wrapper is optional - some cards' [mkd_icon] bullets sit bare
+  // right after </h4> with no <p> at all (confirmed on hit-songwriting-
+  // course's 1st and 4th module cards; its 2nd and 3rd do have one) -
+  // [/vc_column_text] is each card's own reliable close either way.
+  for (const m of raw.matchAll(/<h4[^>]*>([^<]*?)<\/h4>\s*(?:<p[^>]*>)?([\s\S]*?)\[\/vc_column_text\]/gi)) {
     const heading = decodeEntities(m[1] || "").trim();
+    // A bare "101"/"201"-style <h4> is the same WPBakery pagination/anchor
+    // artifact extractCourseIntro's own numeric-line filter already drops
+    // (confirmed on logic-course, sitting right before a duplicate,
+    // differently-shaped <strong>+<ul> copy of this same content further
+    // down the page - real module headings are never purely numeric).
+    if (/^\d+$/.test(heading)) continue;
     const items = m[2]
       .split(/\[mkd_icon[^\]]*\]/gi)
       .map((s) => decodeEntities(s.replace(/<[^>]+>/g, "")).trim())
@@ -1192,18 +1229,36 @@ export function hasModulesAccordion(wpRawContent: string): boolean {
 // dropping every one of those videos. Handles both youtu.be/ID and
 // youtube.com/watch?v=ID link shapes, since WPBakery's own video widget
 // accepts either.
-export type VideoEmbed = { embedUrl: string; title: string };
+export type VideoEmbed = { embedUrl: string; title: string; vertical: boolean };
 
 export function extractVideoEmbeds(wpRawContent: string): VideoEmbed[] {
   const raw = wpRawContent || "";
   const videos: VideoEmbed[] = [];
+  const seenUrls = new Set<string>();
   for (const m of raw.matchAll(/\[vc_video\s+link="([^"]*)"[^\]]*\]/gi)) {
     const link = m[1] || "";
     const titleMatch = m[0].match(/\btitle="([^"]*)"/i);
     const title = titleMatch ? decodeEntities(titleMatch[1] || "").trim() : "";
-    const idMatch = link.match(/(?:youtu\.be\/|[?&]v=)([a-zA-Z0-9_-]{6,})/);
+    // electronic-dj-course's own quick-sample clip is a youtube.com/shorts/ID
+    // link (a vertical Short, not a regular watch?v= upload) - the same ID
+    // shape, just a different URL path, so it needs its own alternative here
+    // rather than falling through unmatched.
+    const idMatch = link.match(/(?:youtu\.be\/|[?&]v=|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{6,})/);
     if (!idMatch) continue;
-    videos.push({ embedUrl: `https://www.youtube.com/embed/${idMatch[1]}`, title });
+    const embedUrl = `https://www.youtube.com/embed/${idMatch[1]}`;
+    // el_aspect="916" (9:16) marks a vertical Short - a fixed 16:9 aspect-
+    // video box would badly letterbox one of these, so the caller needs to
+    // know to size it differently. Also true for a bare /shorts/ link even
+    // without an explicit el_aspect, since every Short is vertical.
+    const vertical = /\bel_aspect="916"/i.test(m[0]) || /youtube\.com\/shorts\//i.test(link);
+    // electronic-dj-course's own [vc_video] shortcode is repeated verbatim
+    // in a second, hidden mobile-column copy of the same content further
+    // down the page (same duplication pattern as the <h4> module cards -
+    // see extractIconBulletCardGroups) - deduped here rather than double-
+    // rendering the identical clip twice.
+    if (seenUrls.has(embedUrl)) continue;
+    seenUrls.add(embedUrl);
+    videos.push({ embedUrl, title, vertical });
   }
   return videos;
 }

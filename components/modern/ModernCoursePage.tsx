@@ -96,6 +96,29 @@ export default function ModernCoursePage({
 }) {
   // See the "Student stories" section below for what this gates.
   const showsInstructorsInSections = sections.some((s) => /instructors|collaborators/i.test(s.heading));
+  // Gates the standalone testimonials block below - a section with this
+  // heading already renders `testimonials` itself (see the sections.map
+  // loop), so this avoids a double carousel on la/pdx pages that use that
+  // shape. mia's own course pages never produce a "students say" section at
+  // all (see extractCourseSections/the sections check above); their
+  // [mkd_testimonials] widget sits under its own standalone "Testimonials"
+  // heading (extractTestimonialCategorySlugs' isStudentsSayHeading matches
+  // that literal heading too), which the standalone block below covers.
+  const showsTestimonialsInSections = sections.some((s) => /students say/i.test(s.heading));
+  // True whenever the standalone testimonials block below will actually
+  // render - reused by the "Student stories" video fallback further down so
+  // it doesn't also show once real written testimonials are already up.
+  const showsStandaloneTestimonials = !showsTestimonialsInSections && testimonials.length > 0;
+  // mia's own single "quick sample" clip sits beside its intro section at
+  // the very top of the page (a real two-column row in the source, text
+  // left/video right - e.g. electronic-dj-course's own "Garnish DJ
+  // Classes, worldwide" Short), not buried down in the "Student stories"
+  // section with the rest of this template's video fallback further below
+  // - that section is for a genuine multi-video testimonial gallery
+  // (la's academy page), which a single clip paired with the intro isn't.
+  // Only pairs with sections[0] when there's exactly one video and a real
+  // first section to sit beside.
+  const showsVideoBesideIntro = sections.length > 0 && videoEmbeds.length === 1;
 
   return (
     <div className={`gmpm-root min-h-screen ${themeClassName || ""}`}>
@@ -150,27 +173,59 @@ export default function ModernCoursePage({
         </section>
       )}
 
-      {sections.map((s, i) => (
-        <section key={i} className="max-w-[900px] mx-auto px-6 md:px-10 py-12 border-t border-[var(--gmpm-line)]">
-          <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-6">{s.heading}</h2>
-          <div
-            className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
-            dangerouslySetInnerHTML={{ __html: stripHardcodedWhiteText(s.bodyHtml) }}
-          />
-          {/* The real instructor photo grid behind this page's own "Meet
-              Our World-Class Instructors" section - the [mkd_portfolio_slider]
-              shortcode itself was previously silently stripped, leaving just
-              this heading + intro paragraph with no photos. Some pages'
-              heading calls the same real roster "Collaborators" instead
-              (garnish-la-artist-services) - matched too, rather than only
-              the literal word "instructors". */}
-          {/instructors|collaborators/i.test(s.heading) && <ModernInstructorGrid items={instructorGridItems} />}
-          {/* The real [mkd_testimonials] widget behind this section - see
-              page.tsx's own testimonials fetch (explicitly excludes Paris
-              Hilton, kept off these pages until specifically asked for). */}
-          {/students say/i.test(s.heading) && <ModernTestimonialCarousel items={testimonials} />}
-        </section>
-      ))}
+      {sections.map((s, i) =>
+        i === 0 && showsVideoBesideIntro ? (
+          <section
+            key={i}
+            className="max-w-[1400px] mx-auto px-6 md:px-10 py-12 border-t border-[var(--gmpm-line)] grid md:grid-cols-3 gap-10 items-start"
+          >
+            <div className="md:col-span-2">
+              <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-6">{s.heading}</h2>
+              <div
+                className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
+                dangerouslySetInnerHTML={{ __html: stripHardcodedWhiteText(s.bodyHtml) }}
+              />
+            </div>
+            <div className={`gmpm-corner border border-[var(--gmpm-line)] ${videoEmbeds[0].vertical ? "max-w-xs md:ml-auto" : ""}`}>
+              <div className={videoEmbeds[0].vertical ? "aspect-[9/16]" : "aspect-video"}>
+                <iframe
+                  src={videoEmbeds[0].embedUrl}
+                  title={videoEmbeds[0].title}
+                  className="w-full h-full"
+                  style={{ border: 0 }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+              {videoEmbeds[0].title && (
+                <div className="px-4 py-3 gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">
+                  {videoEmbeds[0].title}
+                </div>
+              )}
+            </div>
+          </section>
+        ) : (
+          <section key={i} className="max-w-[900px] mx-auto px-6 md:px-10 py-12 border-t border-[var(--gmpm-line)]">
+            <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-6">{s.heading}</h2>
+            <div
+              className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
+              dangerouslySetInnerHTML={{ __html: stripHardcodedWhiteText(s.bodyHtml) }}
+            />
+            {/* The real instructor photo grid behind this page's own "Meet
+                Our World-Class Instructors" section - the [mkd_portfolio_slider]
+                shortcode itself was previously silently stripped, leaving just
+                this heading + intro paragraph with no photos. Some pages'
+                heading calls the same real roster "Collaborators" instead
+                (garnish-la-artist-services) - matched too, rather than only
+                the literal word "instructors". */}
+            {/instructors|collaborators/i.test(s.heading) && <ModernInstructorGrid items={instructorGridItems} />}
+            {/* The real [mkd_testimonials] widget behind this section - see
+                page.tsx's own testimonials fetch (explicitly excludes Paris
+                Hilton, kept off these pages until specifically asked for). */}
+            {/students say/i.test(s.heading) && <ModernTestimonialCarousel items={testimonials} />}
+          </section>
+        )
+      )}
 
       {/* "Below the certified logos" - on the pages that have this content
           at all (mia's own), the logo is the last thing in the intro/
@@ -181,6 +236,18 @@ export default function ModernCoursePage({
           renders after both rather than only one. */}
       {whatYouWillLearn && whatYouWillLearn.length > 0 && (
         <ModernCurriculumAccordion title="What You Will Learn" modules={whatYouWillLearn} />
+      )}
+
+      {/* mia's own standalone "Testimonials" row - see
+          showsTestimonialsInSections' own comment above for why this is
+          separate from the sections.map carousel used by la/pdx's
+          "Students Say" section shape. */}
+      {showsStandaloneTestimonials && (
+        <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
+          <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Testimonials</div>
+          <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>
+          <ModernTestimonialCarousel items={testimonials} />
+        </section>
       )}
 
       {courseSchedule && (
@@ -225,7 +292,12 @@ export default function ModernCoursePage({
           match here is often just a generic school-promo clip, not
           testimonial content, confirmed on courses/ableton-live-course -
           real instructor photos are the more useful, accurate thing to
-          show in this spot on pages like that one). */}
+          show in this spot on pages like that one). The video also drops
+          out entirely once real written testimonials are already shown
+          above (see the standalone Testimonials section) - both under the
+          same "What our students say." heading would be redundant, and the
+          video is frequently that generic promo clip rather than real
+          student testimony anyway. */}
       {!showsInstructorsInSections && instructorGridItems.length > 0 ? (
         <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
           <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Instructors</div>
@@ -233,29 +305,56 @@ export default function ModernCoursePage({
           <ModernInstructorGrid items={instructorGridItems} />
         </section>
       ) : (
-        videoEmbeds.length > 0 && (
+        !showsStandaloneTestimonials && !showsVideoBesideIntro && videoEmbeds.length > 0 && (
           <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
             <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Student stories</div>
             <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              {videoEmbeds.map((v, i) => (
-                <div key={i} className="gmpm-corner border border-[var(--gmpm-line)]">
-                  <div className="aspect-video">
+            {/* A lone vertical clip (e.g. electronic-dj-course's own YouTube
+                Short) gets its own right-aligned, portrait-proportioned
+                layout instead of stretching into a half-width 16:9 grid
+                cell - the standard two-up grid below is for the common case
+                of one or more regular landscape clips. */}
+            {videoEmbeds.length === 1 && videoEmbeds[0].vertical ? (
+              <div className="flex md:justify-end">
+                <div className="gmpm-corner border border-[var(--gmpm-line)] w-full max-w-xs">
+                  <div className="aspect-[9/16]">
                     <iframe
-                      src={v.embedUrl}
-                      title={v.title}
+                      src={videoEmbeds[0].embedUrl}
+                      title={videoEmbeds[0].title}
                       className="w-full h-full"
                       style={{ border: 0 }}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
                     />
                   </div>
-                  {v.title && (
-                    <div className="px-4 py-3 gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">{v.title}</div>
+                  {videoEmbeds[0].title && (
+                    <div className="px-4 py-3 gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">
+                      {videoEmbeds[0].title}
+                    </div>
                   )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-8">
+                {videoEmbeds.map((v, i) => (
+                  <div key={i} className="gmpm-corner border border-[var(--gmpm-line)]">
+                    <div className={v.vertical ? "aspect-[9/16] max-w-xs mx-auto" : "aspect-video"}>
+                      <iframe
+                        src={v.embedUrl}
+                        title={v.title}
+                        className="w-full h-full"
+                        style={{ border: 0 }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                    {v.title && (
+                      <div className="px-4 py-3 gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">{v.title}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         )
       )}
