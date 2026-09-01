@@ -50,6 +50,9 @@ import {
   extractAccordionBlogTab,
   extractParagraphs,
   extractIconBulletCardGroups,
+  extractNumberedModuleCourse,
+  extractScheduleBlocks,
+  type ScheduleBlock,
 } from "../../../lib/modern-course-content";
 import type { TestimonialItem } from "../../../scripts/wp-shortcode-render";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
@@ -101,6 +104,12 @@ const postRichTextConverters: JSXConvertersFunction = ({ defaultConverters }) =>
 const contentCache = createTtlCache<Awaited<ReturnType<typeof findContentUncached>>>(30_000);
 const resolverCache = createTtlCache<unknown>(30_000);
 const courseScheduleCache = createTtlCache<string | null>(30_000);
+// Separate from courseScheduleCache above - ScheduleBlock's own
+// isNextCohort flag depends on "today" at the moment it's computed, so this
+// needs the same short TTL (a stale "next" cohort self-corrects within 30s
+// of the real one changing, never noticeable) but a different value shape,
+// hence its own cache rather than reusing that one.
+const scheduleBlocksCache = createTtlCache<ScheduleBlock[] | null>(30_000);
 
 // Course pages whose "View Course Schedule & Details" disclosure portals in
 // content scraped from a separate product doc - see the comment at its call
@@ -545,7 +554,24 @@ export default async function CatchAllPage({ params }: Args) {
         sections[i] = { ...sections[i], bodyHtml: sections[i].bodyHtml.replace(/Next Batch/g, "Next Cohort") };
       }
       const curriculum = sections.length > 0 ? [] : extractCurriculumModules(raw);
-      const intro = sections.length > 0 ? [] : extractCourseIntro(raw);
+      // ai-music-composition-marketing's own byline+overview lead-in isn't
+      // reached by extractCourseIntro's own two shapes at all (see
+      // extractNumberedModuleCourse's own comment for why). Checked first,
+      // ahead of extractCourseIntro, not just as its fallback -
+      // extractCourseIntro's own oldShape regex requires a literal
+      // "[vc_column_text]" with no attributes, so on this page (whose real
+      // first block is "[vc_column_text css=""]") it skips straight past
+      // that to the next bare occurrence it finds, which happens to be the
+      // FAQ section's own heading further down - a real bug in oldShape,
+      // but only ever a problem for a page this specific fallback already
+      // has a solid, narrowly-scoped match for.
+      const introFromNumberedModules = sections.length > 0 ? [] : extractNumberedModuleCourse(raw).intro;
+      const intro =
+        sections.length > 0
+          ? []
+          : introFromNumberedModules.length > 0
+            ? introFromNumberedModules
+            : extractCourseIntro(raw);
       // A page's one [mkd_accordion] can be a real FAQ or a curriculum-
       // modules breakdown (la's academy page: 10 real program modules, not
       // Q&A) - hasModulesAccordion tells the two apart so modules don't
@@ -807,11 +833,42 @@ export default async function CatchAllPage({ params }: Args) {
             }
           )
         : null;
+      // Per-paragraph blocks for the same product doc, tagged with which
+      // cohort (if any) is chronologically next - see ScheduleBlock's own
+      // comment. Only used by the "Next 👇🏽 Class" banner; modernCourseScheduleHtml
+      // above stays the fallback for a product doc with no real cohort dates.
+      const modernScheduleBlocks = modernCourseScheduleConfig
+        ? await scheduleBlocksCache(
+            `${site.id}:${modernCourseScheduleConfig.productSlug}:schedule-blocks`,
+            async () => {
+              const productRes = await payload.find({
+                collection: "products",
+                where: {
+                  and: [
+                    { site: { equals: site.id } },
+                    { slug: { equals: modernCourseScheduleConfig.productSlug } },
+                  ],
+                },
+                limit: 1,
+                depth: 0,
+              });
+              const productDoc = productRes.docs[0] as any;
+              if (!productDoc?.wpRawContent) return null;
+              return extractScheduleBlocks(productDoc.wpRawContent);
+            }
+          )
+        : null;
 
       // mia's own module-by-module curriculum breakdown (<h4>+[mkd_icon]-
       // bulleted cards - see extractIconBulletCardGroups's own comment for
       // why none of the other extractors above ever reach this shape).
-      const whatYouWillLearn = extractIconBulletCardGroups(raw);
+      // Falls back to the numbered "N - Title" + "N. " shape
+      // (extractNumberedModuleCourse, ai-music-composition-marketing's own)
+      // when the icon-bullet one finds nothing - the two never coexist on
+      // the same page.
+      const iconBulletModules = extractIconBulletCardGroups(raw);
+      const whatYouWillLearn =
+        iconBulletModules.length > 0 ? iconBulletModules : extractNumberedModuleCourse(raw).modules;
 
       return (
         <ModernCoursePage
@@ -820,7 +877,11 @@ export default async function CatchAllPage({ params }: Args) {
           whatYouWillLearn={whatYouWillLearn}
           courseSchedule={
             modernCourseScheduleConfig && modernCourseScheduleHtml
-              ? { bodyHtml: modernCourseScheduleHtml, paypalButtons: modernCourseScheduleConfig.paypalButtons }
+              ? {
+                  bodyHtml: modernCourseScheduleHtml,
+                  scheduleBlocks: modernScheduleBlocks ?? undefined,
+                  paypalButtons: modernCourseScheduleConfig.paypalButtons,
+                }
               : undefined
           }
           heroImageUrl={heroImage}
@@ -854,6 +915,7 @@ export default async function CatchAllPage({ params }: Args) {
               : undefined
           }
           isSpanish={slug.join("/") === "courses/curso-de-dj-espanol"}
+          hideStudentStories={slug.join("/") === "courses/vocal-production"}
         />
       );
     }

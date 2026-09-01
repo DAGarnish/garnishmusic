@@ -20,6 +20,7 @@ import type {
   Faq,
   AccordionModule,
   VideoEmbed,
+  ScheduleBlock,
 } from "../../lib/modern-course-content";
 import type { RelatedPost } from "../../lib/modern-related-posts";
 import type { TestimonialItem } from "../../scripts/wp-shortcode-render";
@@ -49,6 +50,7 @@ export default function ModernCoursePage({
   courseSchedule,
   whatYouWillLearn,
   isSpanish = false,
+  hideStudentStories = false,
 }: {
   site: any;
   title: string;
@@ -87,7 +89,7 @@ export default function ModernCoursePage({
   // pricing breakdown, PayPal checkout) - see COURSE_SCHEDULE_PAGES in
   // page.tsx. Undefined for every course page without a matching product
   // doc, which is every course page on every other modern site so far.
-  courseSchedule?: { bodyHtml: string; paypalButtons?: PayPalButton[] };
+  courseSchedule?: { bodyHtml: string; scheduleBlocks?: ScheduleBlock[]; paypalButtons?: PayPalButton[] };
   // mia's own curriculum breakdown (extractIconBulletCardGroups, see that
   // function's own comment) - a real module-by-module bullet list this
   // template had nowhere to show at all before, distinct from `curriculum`
@@ -101,6 +103,12 @@ export default function ModernCoursePage({
   // content on a separate hub site) get swapped to Spanish when set, keyed
   // off slug by the caller.
   isSpanish?: boolean;
+  // Opt-out for the "Student stories" video fallback below (see its own
+  // comment on why it exists at all) - keyed off slug by the caller for
+  // pages where that clip isn't wanted (e.g. courses/vocal-production, per
+  // explicit request). Doesn't touch the real written-testimonials section
+  // or the instructor grid, only this specific video fallback.
+  hideStudentStories?: boolean;
 }) {
   // See the "Student stories" section below for what this gates.
   const showsInstructorsInSections = sections.some((s) => /instructors|collaborators/i.test(s.heading));
@@ -265,6 +273,7 @@ export default function ModernCoursePage({
         <ModernCourseScheduleAccordion
           title={isSpanish ? "Ver Horario y Detalles del Curso" : undefined}
           bodyHtml={courseSchedule.bodyHtml}
+          scheduleBlocks={courseSchedule.scheduleBlocks}
           paypalButtons={courseSchedule.paypalButtons}
         />
       )}
@@ -320,7 +329,7 @@ export default function ModernCoursePage({
           <ModernInstructorGrid items={instructorGridItems} />
         </section>
       ) : (
-        !showsStandaloneTestimonials && !showsVideoBesideIntro && videoEmbeds.length > 0 && (
+        !showsStandaloneTestimonials && !showsVideoBesideIntro && !hideStudentStories && videoEmbeds.length > 0 && (
           <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20">
             <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Student stories</div>
             <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-12">What our students say.</h2>

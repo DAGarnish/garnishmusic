@@ -66,8 +66,18 @@ body {
   height: auto;
 }
 
+/* overflow-x alone (no overflow-y) makes the browser auto-compute
+   overflow-y: auto per spec, turning body into its own independent scroll
+   container nested inside <html> - which breaks position: sticky on any
+   descendant (the modern header, ModernHeader.tsx) whenever the page gets
+   tall enough for the two scroll contexts to diverge (confirmed on a
+   course page once its schedule accordion - 24 items on some course pages
+   - is expanded: the sticky header stops tracking scroll and disappears).
+   overflow-x: clip prevents the same horizontal-overflow spillover this
+   rule exists for without establishing a scroll container at all, so it
+   doesn't trigger that implicit overflow-y side effect. */
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Buro theme's title-banner background color. On production this is

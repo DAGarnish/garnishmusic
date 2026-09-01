@@ -531,6 +531,62 @@ export function extractParagraphs(rawChunk: string): string {
   return restyleLegacyConnectButton(stripCruftAttributes(blocks.join("")));
 }
 
+export type ScheduleBlock = { html: string; isNextCohort: boolean };
+
+// A products doc's own course-schedule content marks exactly one <p> per
+// real cohort with data-cohort-start="YYYY-MM-DD" (and a
+// data-cohort-banner-html attribute - always the same literal "Next
+// <span class=&quot;next-class-arrow&quot;>👇🏽</span> Class" markup on
+// every cohort row checked, which is why its value is never actually read
+// here: the unescaped ">" inside its own nested <span> would prematurely
+// close a naive <p[^>]*> opening-tag match the same way it does in
+// COURSE_SCHEDULE_PAGES' plain-schedule rendering in page.tsx, so it's
+// stripped up front and the fixed banner text is reconstructed directly
+// instead). Returns each paragraph as its own block (not one joined HTML
+// string, the way extractParagraphs works) with the block whose own cohort
+// date is soonest-but-not-past (relative to when this runs) flagged
+// isNextCohort - some products list many upcoming cohorts (e.g.
+// electronic-music-dj-course's own 19 rows), so "next" has to be computed
+// at render time from real dates, not assumed to be the first or only row.
+export function extractScheduleBlocks(wpRawContent: string): ScheduleBlock[] {
+  const raw = wpRawContent || "";
+  const withoutBannerAttr = raw.replace(/\s+data-cohort-banner-html="[^"]*"/gi, "");
+  const rawBlocks: { html: string; cohortStartDate: string | null }[] = [];
+  for (const m of wrapBareColumnText(stripAccordionBlocks(withoutBannerAttr)).matchAll(BLOCK_RE)) {
+    const [, heading, ol, ul, p, img, div] = m;
+    let html = "";
+    if (heading !== undefined) {
+      const headingText = decodeEntities(heading.replace(/<[^>]+>/g, "")).trim();
+      if (headingText) html = `<h4 class="gmpm-display font-bold text-lg mt-8 mb-3">${headingText}</h4>`;
+    } else if (ol !== undefined) {
+      html = plainListToHtml(ol);
+    } else if (ul !== undefined) {
+      html = plainListToHtml(ul);
+    } else if (img !== undefined) {
+      html = bareImageToHtml(img);
+    } else if (p !== undefined) {
+      html = iconParagraphToHtml(p);
+    } else if (div !== undefined) {
+      const text = decodeEntities(div.replace(/<[^>]+>/g, "")).trim();
+      html = text ? `<p>${text}</p>` : "";
+    }
+    if (!html) continue;
+    const cohortStartDate = m[0].match(/\bdata-cohort-start="([^"]*)"/i)?.[1] || null;
+    rawBlocks.push({ html: restyleLegacyConnectButton(stripCruftAttributes(html)), cohortStartDate });
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const nextDate = rawBlocks
+    .map((b) => b.cohortStartDate)
+    .filter((d): d is string => d !== null && d >= today)
+    .sort()[0];
+
+  return rawBlocks.map((b) => ({
+    html: b.html,
+    isNextCohort: nextDate !== undefined && b.cohortStartDate === nextDate,
+  }));
+}
+
 // These pages reuse a handful of boilerplate section labels
 // (Testimonials/Our Instructors/From The Blog/Our Partners) as generic
 // wrappers around whatever unrelated content (pricing, other cities'
@@ -1077,6 +1133,58 @@ export function extractIconBulletCardGroups(wpRawContent: string): CurriculumMod
     if (heading && items.length) groups.push({ heading, items });
   }
   return groups;
+}
+
+// mia's own "by <author>" + numbered-module course shape (confirmed on
+// courses/ai-music-composition-marketing) - the whole page is one flat,
+// completely bare [vc_column_text] block: no [vc_row_inner] nesting and no
+// [mkd_section_title]/<h1-3> row heading at all (which is why
+// extractRowHeading/extractCourseSections skip this row entirely), and no
+// <p>/<h[1-4]>/<ul>/<ol> tags anywhere either (which is why
+// extractCourseIntro's own two shapes both miss it too) - just plain
+// blank-line-separated text with <strong>N - Title</strong> module
+// headings and "N. " numbered sub-items. Returns the free-text lead-in
+// (byline + overview paragraph) separately from the numbered modules
+// themselves, since the caller shows each in a different part of the page
+// (intro paragraphs vs. a "What You Will Learn" accordion).
+export function extractNumberedModuleCourse(wpRawContent: string): { intro: string[]; modules: CurriculumModule[] } {
+  const raw = wpRawContent || "";
+  const blockMatch = raw.match(/\[vc_column_text[^\]]*\]([\s\S]*?)\[\/vc_column_text\]/i);
+  if (!blockMatch) return { intro: [], modules: [] };
+  const inner = blockMatch[1];
+  const firstModuleIdx = inner.search(/<strong>\d+\s*-/i);
+  if (firstModuleIdx === -1) return { intro: [], modules: [] };
+  // Real tags in the lead-in mean it's already a shape another extractor
+  // handles - a real <p>/<h[1-4]> elsewhere past the modules themselves is
+  // fine (ai-music-composition-marketing's own trailing connect-button
+  // paragraphs are real <p> markup, harmlessly filtered out below since
+  // they're not "N. "-numbered lines).
+  if (/<(p|h[1-4]|ul|ol)[^>]*>/i.test(inner.slice(0, firstModuleIdx))) return { intro: [], modules: [] };
+
+  const intro = inner
+    .slice(0, firstModuleIdx)
+    .split(/\n\s*\n/)
+    .map((line) => decodeEntities(line.replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim())
+    .filter((line) => line.length > 3);
+
+  const modules: CurriculumModule[] = [];
+  for (const m of inner.matchAll(/<strong>(\d+\s*-\s*[^<]+)<\/strong>\s*([\s\S]*?)(?=<strong>\d+\s*-|$)/gi)) {
+    const heading = decodeEntities(m[1]).trim();
+    // Only the "N. " numbered lines are real module bullets - the block's
+    // own trailing "Each class will include..." paragraph and connect-
+    // button markup fall inside the last module's own capture (there's no
+    // other boundary marker before them), but neither starts with a digit,
+    // so this filter drops them the same way it would drop any other
+    // non-bullet text mixed into a module's own content.
+    const items = m[2]
+      .split("\n")
+      .map((line) => decodeEntities(line.replace(/<[^>]+>/g, "")).trim())
+      .filter((line) => /^\d+\.\s*/.test(line))
+      .map((line) => line.replace(/^\d+\.\s*/, ""));
+    if (heading && items.length) modules.push({ heading, items });
+  }
+
+  return { intro, modules };
 }
 
 // The free-text intro before the first <h2> in that same older shape -

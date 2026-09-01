@@ -14,6 +14,15 @@ export function getCityName(site: { name?: string; slug?: string }): string {
   return city || (site.slug || "").toUpperCase();
 }
 
+// staging's own slug is a preview-clone name, not a real airport-style city
+// code like every other modern site's slug already is (pdx/hou/la) - it's
+// mia's own content under the hood, so its header mark reads "MIA" instead
+// of the literal, meaningless "STAGING".
+const CITY_ABBR_OVERRIDES: Record<string, string> = {
+  staging: "MIA",
+};
+
 export function getCityAbbr(site: { slug?: string }): string {
-  return (site.slug || "").toUpperCase();
+  const slug = site.slug || "";
+  return CITY_ABBR_OVERRIDES[slug] || slug.toUpperCase();
 }
