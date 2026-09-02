@@ -1012,9 +1012,21 @@ function extractOfferingCardsFromRow(row: string, rowHeading: string, rowTagline
   if (matches.length === 0) return [];
   if (matches.length === 1) {
     const imageId = matches[0][1];
-    const bodyHtml = bulletizeIfProseOnly(
+    let bodyHtml = bulletizeIfProseOnly(
       taglinesToHtml(rowTaglines) + extractParagraphs(row.slice((matches[0].index ?? 0) + matches[0][0].length))
     );
+    if (!bodyHtml) {
+      // mia's own single-card rows (e.g. homepage's "360° Electronic Music
+      // Academy") put the real content *before* the bare-image item instead
+      // of after it - the opposite of la's convention above, which the
+      // slice-after attempt just came back empty against. Retry from the
+      // row's own start up to the image marker instead.
+      const beforeImage = row.slice(0, matches[0].index ?? 0);
+      const inner = extractRowHeading(beforeImage);
+      bodyHtml = bulletizeIfProseOnly(
+        taglinesToHtml(rowTaglines) + extractParagraphs(inner ? beforeImage.slice(inner.contentStart) : beforeImage)
+      );
+    }
     return bodyHtml ? [{ heading: rowHeading, bodyHtml, imageId }] : [];
   }
   const cards: OfferingCard[] = [];
@@ -1081,7 +1093,7 @@ export function extractHomepageOfferings(wpRawContent: string): OfferingGroup[] 
 // heading at all), which a flat scan would incorrectly fold into this one,
 // mixing an unrelated testimonial set into the carousel under Paris
 // Hilton's own quote - an empty heading matches neither pattern here.
-function isStudentsSayHeading(heading: string): boolean {
+export function isStudentsSayHeading(heading: string): boolean {
   // Broadened from an exact "Testimonials" match to any heading containing
   // that word - mia's own hip-hop-course page titles its row "Our
   // Testimonials", not the bare word alone, and was silently never
@@ -1094,6 +1106,15 @@ function isStudentsSayHeading(heading: string): boolean {
 
 export function extractTestimonialCategorySlugs(wpRawContent: string): string[] {
   const slugs = new Set<string>();
+  // A row with no heading of its own carries forward the previous row's own
+  // match state; any row that does declare its own heading resets it,
+  // whether or not that heading itself matches. Needed because every
+  // non-la homepage (mia/staging included) splits its "Featured ...
+  // Testimonials" <h2>/<h3> and the [mkd_testimonials] widget that follows
+  // it across two separate, adjacent [vc_row]s rather than la's one
+  // combined row (Our Students Say + quote + widget, all together) - a
+  // same-row-only check never sees the widget's own row at all there.
+  let carry = false;
   for (const row of splitTopLevelRows(wpRawContent || "")) {
     // Checked against every [mkd_section_title] in the row, not just its
     // own primary heading (extractRowHeading's own single heading+taglines
@@ -1103,8 +1124,18 @@ export function extractTestimonialCategorySlugs(wpRawContent: string): string[] 
     // nowhere near the row's start, and was never seen here at all before
     // this checked only extractRowHeading's own heading).
     const headings = [...row.matchAll(/\[mkd_section_title[^\]]*\btitle_text="([^"]*)"[^\]]*\]/gi)];
-    const hasStudentsSayHeading = headings.some((h) => isStudentsSayHeading(decodeEntities(h[1] || "")));
-    if (!hasStudentsSayHeading) continue;
+    // Also checked against the row's own bare-<h2>/<h3> heading (falls back
+    // to that when no [mkd_section_title] is present - see extractRowHeading)
+    // - the homepage's own testimonials row uses plain <h2>/<h3> tags rather
+    // than that shortcode, and was never seen here at all before this.
+    const rowHeading = extractRowHeading(row)?.heading;
+    const hasOwnHeading = rowHeading != null || headings.length > 0;
+    const ownMatches =
+      headings.some((h) => isStudentsSayHeading(decodeEntities(h[1] || ""))) ||
+      (rowHeading != null && isStudentsSayHeading(rowHeading));
+    const active = hasOwnHeading ? ownMatches : carry;
+    if (hasOwnHeading) carry = ownMatches;
+    if (!active) continue;
     for (const m of row.matchAll(/\[mkd_testimonials[^\]]*\bcategory="([^"]*)"/gi)) {
       for (const slug of (m[1] || "").split(",")) {
         const trimmed = slug.trim();

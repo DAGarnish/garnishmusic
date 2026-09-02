@@ -10,6 +10,7 @@ import {
   extractHomepagePortfolioSection,
   extractTestimonialCategorySlugs,
   stripHardcodedWhiteText,
+  isStudentsSayHeading,
 } from "../../lib/modern-course-content";
 import { buildPortfolioListResolver } from "../../lib/wp-portfolio-resolver";
 import ModernHeader from "./ModernHeader";
@@ -259,13 +260,18 @@ export default async function ModernHomePage({ site }: { site: any }) {
                       className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_p]:mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
                       dangerouslySetInnerHTML={{
                         __html: stripHardcodedWhiteText(
-                          /^our students say/i.test(card.heading) ? studentsSayBodyHtml(card.bodyHtml) : card.bodyHtml
+                          isStudentsSayHeading(card.heading) ? studentsSayBodyHtml(card.bodyHtml) : card.bodyHtml
                         ),
                       }}
                     />
                     {/* The real [mkd_testimonials] widget behind this specific
-                        card's own single quote - see testimonials above. */}
-                    {/^our students say/i.test(card.heading) && <ModernTestimonialCarousel items={testimonials} />}
+                        card's own single quote - see testimonials above.
+                        isStudentsSayHeading (not the old exact "^our students
+                        say" match) so this also mounts under headings like
+                        "Featured Sound Engineering School Testimonials"
+                        (mia/staging's own homepage row), which
+                        extractTestimonialCategorySlugs now resolves too. */}
+                    {isStudentsSayHeading(card.heading) && <ModernTestimonialCarousel items={testimonials} />}
                   </div>
                 </div>
               </section>
