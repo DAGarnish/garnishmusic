@@ -117,10 +117,14 @@ const LA_ROUTES: ModernSiteRoutes = {
 
 MODERN_SITE_ROUTES.la = LA_ROUTES;
 
-// mia's real site route config - staging.garnishmusicproduction.com (CMS
-// site doc slug "staging", id 24) is a clone of mia's own content, same
-// preview-then-cutover shape la's "staging" clone used. mia's raw content
-// uses a different WPBakery authoring dialect than la's - plain <h2> section
+// mia's real site route config - site doc id 24 (originally cloned under
+// slug "staging" for a preview-then-cutover, same shape la's own "staging"
+// clone used) was promoted to the live "mia" slug once the preview was
+// approved; the pre-cutover content moved to "mia-old" (see the site.slug
+// "mia"/"mia-old" pairing in app/(frontend)/[[...slug]]/page.tsx, kept in
+// sync for the legacy content both now carry) rather than being deleted, so
+// this stays keyed "mia" rather than "staging" going forward. mia's raw
+// content uses a different WPBakery authoring dialect than la's - plain <h2> section
 // headings instead of [mkd_section_title], [mkd_button] instead of a raw
 // <a class="btn-grand"> CTA, and [mkd_portfolio_list category="..."] widgets
 // (resolved via lib/wp-portfolio-resolver.ts, not inline page text) for both
@@ -190,4 +194,4 @@ const MIA_ROUTES: ModernSiteRoutes = {
   ],
 };
 
-MODERN_SITE_ROUTES.staging = MIA_ROUTES;
+MODERN_SITE_ROUTES.mia = MIA_ROUTES;

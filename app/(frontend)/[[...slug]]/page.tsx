@@ -24,6 +24,7 @@ import { buildBlogListResolver } from "../../../lib/wp-blog-list-resolver";
 import { resolvePartners } from "../../../lib/wp-partners-resolver";
 import { wpContentToStyledHtml } from "../../../scripts/wp-shortcode-render";
 import { isCoursePagePath } from "../../../lib/course-pages";
+import { isLegacyMiaContentSite } from "../../../lib/modern-sites";
 import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
 import { createTtlCache } from "../../../lib/ttl-cache";
 import ModernHomePage from "../../../components/modern/ModernHomePage";
@@ -1138,7 +1139,7 @@ export default async function CatchAllPage({ params }: Args) {
   // render inside the matching course page's newsletter box - fetch and
   // convert the product's content the same way as above, independently of
   // whichever doc this request actually resolved to.
-  const courseScheduleConfig = site.slug === "mia" ? COURSE_SCHEDULE_PAGES[slug.join("/")] : undefined;
+  const courseScheduleConfig = isLegacyMiaContentSite(site.slug) ? COURSE_SCHEDULE_PAGES[slug.join("/")] : undefined;
   // "product/electronic-dj-class" is an older, no-longer-linked alias for
   // the DJ product with no course-page equivalent of its own - it still
   // gets the DJ buttons at the bottom of the page (see render site below).
@@ -1728,7 +1729,7 @@ export default async function CatchAllPage({ params }: Args) {
                 })()
               ) : (
                 <>
-                  {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && slug.join("/") !== "product/electronic-music-dj-course" && (
+                  {type === "product" && !isLegacyMiaContentSite(site.slug) && slug.join("/") !== "product/electronic-dj-class" && slug.join("/") !== "product/electronic-music-dj-course" && (
                     <div className="mkd-container" style={{ paddingTop: "40px" }}>
                       <div className="mkd-container-inner" style={{ padding: "0 20px" }}>
                         {(("price" in doc && doc.price != null) || ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)) && (
@@ -1813,7 +1814,7 @@ export default async function CatchAllPage({ params }: Args) {
                     )}
                   </div>
                 )}
-                {type === "product" && site.slug !== "mia" && slug.join("/") !== "product/electronic-dj-class" && slug.join("/") !== "product/electronic-music-dj-course" && (
+                {type === "product" && !isLegacyMiaContentSite(site.slug) && slug.join("/") !== "product/electronic-dj-class" && slug.join("/") !== "product/electronic-music-dj-course" && (
                   ("price" in doc && doc.price != null) ||
                   ("variations" in doc && Array.isArray((doc as any).variations) && (doc as any).variations.length > 0)
                 ) && (
