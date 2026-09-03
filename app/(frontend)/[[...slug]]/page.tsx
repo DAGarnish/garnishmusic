@@ -57,6 +57,8 @@ import {
   extractAccordionBlogTab,
   extractParagraphs,
   extractIconBulletCardGroups,
+  extractH3IconBulletCardGroups,
+  stripH3IconBulletCardGroups,
   extractNumberedModuleCourse,
   extractHeadingBulletModule,
   extractIconWithTextModules,
@@ -569,6 +571,16 @@ export default async function CatchAllPage({ params }: Args) {
       // via a full sweep of all 20 staging course/program pages. Left in
       // place only on the two DJ-related pages it's actually relevant to.
       const isDjCoursePage = slug.join("/") === "courses/dj-course" || slug.join("/") === "dj-production-program";
+      // edu's own real course pages use [mkd_icon]-bulleted <h3> module
+      // cards (electronic-dj-course, reality-dj-class, ...) - detected and
+      // stripped here, before extractCourseSections runs, so they render
+      // once (in the "What You Will Learn" accordion below) instead of
+      // twice (also inline, via extractParagraphs, which has no per-card
+      // heading exclusion the way the <h4>/extractCourseIntro path does -
+      // see extractH3IconBulletCardGroups/stripH3IconBulletCardGroups'
+      // own comments). Scoped to staging only.
+      const h3IconBulletModules = site.slug === "staging" ? extractH3IconBulletCardGroups(raw) : [];
+      const sectionsSourceRaw = h3IconBulletModules.length > 0 ? stripH3IconBulletCardGroups(raw) : raw;
       // extractCourseSections' own default limit (6) is too tight here: once
       // resolveSingleImages (above) turns a [vc_single_image] comparison-
       // table shortcode into a real <img>, a "Why choose X at Garnish?"
@@ -580,7 +592,7 @@ export default async function CatchAllPage({ params }: Args) {
       // page has more than 8 genuine sections, and isBoilerplateHeading
       // already stops the loop at real boilerplate (Testimonials, From The
       // Blog, ...), so raising this is safe.
-      const rawSections = extractCourseSections(raw, 10);
+      const rawSections = extractCourseSections(sectionsSourceRaw, 10);
       const sections = isDjCoursePage
         ? rawSections
         : rawSections.map((s) => ({ ...s, bodyHtml: stripParisHiltonQuote(s.bodyHtml) }));
@@ -954,6 +966,9 @@ export default async function CatchAllPage({ params }: Args) {
       const iconBulletModules = extractIconBulletCardGroups(raw);
       const numberedModules = extractNumberedModuleCourse(raw).modules;
       const iconWithTextModules = extractIconWithTextModules(raw);
+      // h3IconBulletModules computed above (see sectionsSourceRaw's own
+      // comment) - reused here rather than re-extracted, since it also
+      // drove which raw content extractCourseSections ran against.
       const whatYouWillLearn =
         iconBulletModules.length > 0
           ? iconBulletModules
@@ -961,7 +976,9 @@ export default async function CatchAllPage({ params }: Args) {
             ? numberedModules
             : iconWithTextModules.length > 0
               ? iconWithTextModules
-              : extractHeadingBulletModule(raw);
+              : h3IconBulletModules.length > 0
+                ? h3IconBulletModules
+                : extractHeadingBulletModule(raw);
 
       return (
         <ModernCoursePage

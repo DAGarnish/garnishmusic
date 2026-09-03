@@ -1264,6 +1264,48 @@ export function extractIconBulletCardGroups(wpRawContent: string): CurriculumMod
   return groups;
 }
 
+// edu's own real course pages (e.g. electronic-dj-course, confirmed with 10
+// real modules - Beats & Pieces, Arrangement of Electronic Music, Set
+// Building, FX, Hardware and Software, Your Set, Advanced Mixing & Digital
+// Tricks, Advanced Set Building & Improvisation, Preparing for Your Show,
+// What Next? - none reached by any extractor above) use the identical
+// [mkd_icon]-bulleted card shape extractIconBulletCardGroups handles for
+// mia, just one heading level down: real <h3>Module Name</h3>, not <h4>.
+// A shared regex accepting either tag isn't used here on purpose - broadening
+// that one, network-wide function risks sweeping some *other* site's
+// genuine <h3> body copy (a real subheading, not a module) into "What You
+// Will Learn" by accident, so this stays a separate function only called
+// for edu-sourced content (see [[...slug]] page.tsx, staging-only).
+const H3_ICON_BULLET_CARD_RE = /<h3[^>]*>([^<]*?)<\/h3>\s*(?:<p[^>]*>)?([\s\S]*?)\[\/vc_column_text\]/gi;
+
+export function extractH3IconBulletCardGroups(wpRawContent: string): CurriculumModule[] {
+  const raw = wpRawContent || "";
+  const groups: CurriculumModule[] = [];
+  for (const m of raw.matchAll(H3_ICON_BULLET_CARD_RE)) {
+    const heading = decodeEntities(m[1] || "").trim();
+    if (/^\d+$/.test(heading)) continue;
+    const items = m[2]
+      .split(/\[mkd_icon[^\]]*\]/gi)
+      .map((s) => decodeEntities(s.replace(/<[^>]+>/g, "")).trim())
+      .filter(Boolean);
+    if (heading && items.length) groups.push({ heading, items });
+  }
+  return groups;
+}
+
+// Removes every card extractH3IconBulletCardGroups pulled into "What You
+// Will Learn" from the raw content before it reaches extractCourseSections/
+// extractParagraphs - without this, the same module content renders twice:
+// once inline (extractParagraphs has no equivalent "skip this card, it has
+// its own heading" exclusion extractCourseIntro's <h4> path already gets -
+// see extractIconBulletCardGroups' own comment), and again in the
+// accordion. Only called when extractH3IconBulletCardGroups already found
+// real modules on this exact content, so it's a no-op everywhere else.
+export function stripH3IconBulletCardGroups(wpRawContent: string): string {
+  const raw = wpRawContent || "";
+  return raw.replace(H3_ICON_BULLET_CARD_RE, "[/vc_column_text]");
+}
+
 // mia's own "by <author>" + numbered-module course shape (confirmed on
 // courses/ai-music-composition-marketing) - the whole page is one flat,
 // completely bare [vc_column_text] block: no [vc_row_inner] nesting and no
