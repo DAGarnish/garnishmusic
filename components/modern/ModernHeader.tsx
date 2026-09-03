@@ -30,8 +30,20 @@ import { getTalkToUsHref } from "../../lib/modern-sites";
 // turned a working cross-site link into a 404 on every modern site's own
 // domain, since none of them actually have that page. edu.* is excluded
 // from the match so it's left absolute and still bounces to production.
+//
+// "F1 USA Visa Eligible (LA)" (under Programs > Accredited) is a second,
+// narrower exception, listed by exact URL rather than by domain: unlike
+// "Art of Remix" above, this specific page (la's own accredited-certificate
+// program) genuinely only exists on la - no other site has a local copy -
+// so it's deliberately excluded from relativizeOwnDomain even though most
+// other la.garnishmusicproduction.com links should still be relativized
+// (see scripts/fix-f1-visa-nav-link.ts, which set this URL network-wide).
+const CROSS_SITE_ONLY_URLS = new Set([
+  "https://la.garnishmusicproduction.com/certificate-music-production-songwriting/",
+]);
 const OWN_DOMAIN = /^https?:\/\/(?!edu\.)([^/]*\.)?garnishmusicproduction\.com(?::\d+)?(\/[^?#]*)/i;
 function relativizeOwnDomain(url: string): string {
+  if (CROSS_SITE_ONLY_URLS.has(url)) return url;
   const m = url.match(OWN_DOMAIN);
   return m ? m[2] || "/" : url;
 }
