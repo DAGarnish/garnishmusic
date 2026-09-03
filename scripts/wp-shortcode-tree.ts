@@ -39,6 +39,15 @@ const VOID_TAGS = new Set([
   "mkd_custom_font",
   "mkd_section_subtitle",
   "vc_zigzag",
+  // Contact Form 7's own shortcode - always self-closing in this content
+  // (confirmed network-wide: 37 pages use [contact-form-7 ...], zero have a
+  // matching [/contact-form-7]). Previously fell through TOKEN_RE entirely
+  // (its tag name has hyphens, which TOKEN_RE's tag-name group didn't
+  // allow), so it was never recognized as a shortcode at all and leaked
+  // onto the live page as literal "[contact-form-7 id=&quot;...&quot;]"
+  // text (e.g. la/mia's academy/application, dj-experiences, ...) instead
+  // of being dropped like any other unrenderable shortcode.
+  "contact-form-7",
 ]);
 
 function parseAttrs(attrString: string): Record<string, string> {
@@ -51,7 +60,12 @@ function parseAttrs(attrString: string): Record<string, string> {
   return attrs;
 }
 
-const TOKEN_RE = /\[(\/?)([a-zA-Z_][a-zA-Z0-9_]*)([^\]]*)\]/g;
+// Tag name allows hyphens (e.g. "contact-form-7") - a bare
+// [a-zA-Z0-9_]* here previously stopped matching at the first hyphen, which
+// left that whole shortcode unrecognized as a token at all and passed
+// through as literal visible text instead of going through VOID_TAGS/
+// renderNode's default-case handling like every other shortcode.
+const TOKEN_RE = /\[(\/?)([a-zA-Z_][a-zA-Z0-9_-]*)([^\]]*)\]/g;
 
 export function parseShortcodes(content: string): ShortcodeNode[] {
   const root: ShortcodeNode = { type: "tag", tag: "__root__", attrs: {}, children: [] };
