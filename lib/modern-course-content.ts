@@ -1308,6 +1308,31 @@ export function stripH3IconBulletCardGroups(wpRawContent: string): string {
   return raw.replace(H3_ICON_BULLET_CARD_RE, "[/vc_column_text]");
 }
 
+// edu's own real reality-dj-class page lays its "What you'll learn inside"
+// content out as 4 separate single-tab [mkd_accordion]s, each
+// [mkd_accordion_tab title="Module N – Title"][vc_column_text]<ul>...</ul>
+// - matches extractAccordionModules' own regex shape closely enough that
+// hasModulesAccordion picks the whole page up as a "modules accordion" page
+// (none of these 4 titles end in "?"), which puts them under the generic
+// "Program modules." accordion (curriculumAccordion) instead of under the
+// page's own real "What you'll learn inside" heading, nowhere near it -
+// reads as if the bullets are just missing. Extracted directly by the
+// "Module " title prefix instead, so the caller can feed them into
+// whatYouWillLearn (the real "What You Will Learn" accordion) and drop
+// them from curriculumAccordion to avoid showing them in both places.
+export function extractModuleAccordionTabs(wpRawContent: string): CurriculumModule[] {
+  const raw = wpRawContent || "";
+  const modules: CurriculumModule[] = [];
+  for (const m of raw.matchAll(/\[mkd_accordion_tab title="(Module\s[^"]*)"[^\]]*\]([\s\S]*?)\[\/mkd_accordion_tab\]/gi)) {
+    const heading = decodeEntities(m[1] || "").trim();
+    const items = [...m[2].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+      .map((li) => decodeEntities(li[1].replace(/<[^>]+>/g, "")).trim())
+      .filter(Boolean);
+    if (heading && items.length) modules.push({ heading, items });
+  }
+  return modules;
+}
+
 // mia's own "by <author>" + numbered-module course shape (confirmed on
 // courses/ai-music-composition-marketing) - the whole page is one flat,
 // completely bare [vc_column_text] block: no [vc_row_inner] nesting and no
@@ -1752,6 +1777,44 @@ export function resolveSingleImages(wpRawContent: string, urlsById: Map<string, 
     // <img> straight from wpRawContent.
     return url ? `<img src="${url}" alt="" class="gmpm-resolved-image w-full h-auto gmpm-corner my-4" />` : "";
   });
+}
+
+// A second, separate way a real image ends up broken in raw content: not a
+// [vc_single_image] shortcode at all, but a literal <img class="...
+// wp-image-{ID}..." src="/some-stale-path.png"> already sitting in the
+// page's own HTML (a WordPress convention - every inserted image gets a
+// wp-image-{attachment ID} class, but the migrated `src` itself can be a
+// stale/unmigrated path). Confirmed on reality-dj-class's own real
+// screenshot of Paris Hilton's tweets about Dave - src="/paris-tweets.png"
+// 404s (not a real route), but the same image is really in the media
+// library as wpAttachmentId 26418 (extractSingleImageIds/resolveSingleImages
+// above only ever look at [vc_single_image]'s own `image="ID"` shortcode
+// attribute, never a literal <img>'s class, so this needed its own pair of
+// functions rather than reusing those).
+export function extractBareWpImageIds(wpRawContent: string): string[] {
+  const raw = wpRawContent || "";
+  const ids = new Set<string>();
+  for (const m of raw.matchAll(/<img[^>]*\bclass="[^"]*\bwp-image-(\d+)\b[^"]*"[^>]*>/gi)) ids.add(m[1]);
+  return [...ids];
+}
+
+export function resolveBareWpImages(wpRawContent: string, urlsById: Map<string, string>): string {
+  return (wpRawContent || "").replace(
+    /<img[^>]*\bclass="[^"]*\bwp-image-(\d+)\b[^"]*"[^>]*>/gi,
+    (whole, id) => {
+      const url = urlsById.get(id);
+      if (!url) return whole;
+      const alt = whole.match(/\balt="([^"]*)"/i)?.[1] || "";
+      // gmpm-resolved-image is the same "already styled, don't re-run
+      // through the small-logo cert-badge treatment" marker
+      // resolveSingleImages' own resolved <img>s carry - bareImageToHtml
+      // checks for it (see its own comment) before ever reaching this tag,
+      // and without it this real screenshot was being shrunk to a 48px-tall
+      // logo, same as every other genuinely-bare certification-badge <img>
+      // on these pages.
+      return `<img src="${url}" alt="${decodeEntities(alt)}" class="gmpm-resolved-image w-full h-auto gmpm-corner my-4" />`;
+    }
+  );
 }
 
 export type CoursePricing = { priceLine: string | null; enrollLink: string | null };

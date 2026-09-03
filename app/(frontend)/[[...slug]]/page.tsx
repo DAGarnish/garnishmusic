@@ -52,6 +52,8 @@ import {
   extractVideoEmbeds,
   extractSingleImageIds,
   resolveSingleImages,
+  extractBareWpImageIds,
+  resolveBareWpImages,
   extractPortfolioSliderSpec,
   extractProgramHighlights,
   programHighlightsHtml,
@@ -62,6 +64,7 @@ import {
   extractIconBulletCardGroups,
   extractH3IconBulletCardGroups,
   stripH3IconBulletCardGroups,
+  extractModuleAccordionTabs,
   extractNumberedModuleCourse,
   extractHeadingBulletModule,
   extractIconWithTextModules,
@@ -589,6 +592,21 @@ export default async function CatchAllPage({ params }: Args) {
         const urlsById = new Map(mediaRes.docs.map((d: any) => [String(d.wpAttachmentId), d.url as string]));
         raw = resolveSingleImages(raw, urlsById);
       }
+      // Same idea, for a literal <img class="...wp-image-{ID}..."> already
+      // in the raw HTML (not a [vc_single_image] shortcode) whose own src
+      // is a stale/unmigrated path - see extractBareWpImageIds' own
+      // comment (reality-dj-class's real Paris Hilton tweets screenshot).
+      const bareWpImageIds = extractBareWpImageIds(raw);
+      if (bareWpImageIds.length > 0) {
+        const bareMediaRes = await payload.find({
+          collection: "media",
+          where: { wpAttachmentId: { in: bareWpImageIds.map(Number) } },
+          limit: bareWpImageIds.length + 20,
+          depth: 0,
+        });
+        const bareUrlsById = new Map(bareMediaRes.docs.map((d: any) => [String(d.wpAttachmentId), d.url as string]));
+        raw = resolveBareWpImages(raw, bareUrlsById);
+      }
       const heroImage =
         (typeof courseDoc.titleBackgroundImage === "object" && courseDoc.titleBackgroundImage?.url) ||
         (typeof courseDoc.featuredImage === "object" && courseDoc.featuredImage?.url) ||
@@ -735,7 +753,15 @@ export default async function CatchAllPage({ params }: Args) {
             ]
           : null;
       const faqs = draftFaqs ?? (isModulesAccordion ? [] : extractFaqs(raw));
-      const curriculumAccordion = isModulesAccordion ? extractAccordionModules(raw) : [];
+      // reality-dj-class's own "Module N – Title" tabs (see
+      // extractModuleAccordionTabs' own comment) belong in the real "What
+      // You Will Learn" accordion below, not here - filtered out by title
+      // so they don't also show up under the generic "Program modules."
+      // one. Scoped to staging only.
+      const moduleAccordionTabs = site.slug === "staging" ? extractModuleAccordionTabs(raw) : [];
+      const curriculumAccordion = (isModulesAccordion ? extractAccordionModules(raw) : []).filter(
+        (m) => !moduleAccordionTabs.some((mod) => mod.heading === m.title)
+      );
       // This page's one accordion is instructor bios (Shuba, LVMA BLACK,
       // Jake McPherson) plus a trailing syllabus tab, not curriculum
       // modules - "CURRICULUM / Program modules." mislabels it. Using
@@ -1009,9 +1035,9 @@ export default async function CatchAllPage({ params }: Args) {
       const iconBulletModules = extractIconBulletCardGroups(raw);
       const numberedModules = extractNumberedModuleCourse(raw).modules;
       const iconWithTextModules = extractIconWithTextModules(raw);
-      // h3IconBulletModules computed above (see sectionsSourceRaw's own
-      // comment) - reused here rather than re-extracted, since it also
-      // drove which raw content extractCourseSections ran against.
+      // h3IconBulletModules/moduleAccordionTabs computed above (see
+      // sectionsSourceRaw's and curriculumAccordion's own comments) -
+      // reused here rather than re-extracted.
       const whatYouWillLearn =
         iconBulletModules.length > 0
           ? iconBulletModules
@@ -1021,7 +1047,9 @@ export default async function CatchAllPage({ params }: Args) {
               ? iconWithTextModules
               : h3IconBulletModules.length > 0
                 ? h3IconBulletModules
-                : extractHeadingBulletModule(raw);
+                : moduleAccordionTabs.length > 0
+                  ? moduleAccordionTabs
+                  : extractHeadingBulletModule(raw);
 
       return (
         <ModernCoursePage
