@@ -1,6 +1,16 @@
 import Link from "next/link";
+import { getFooterCourseLinks } from "../../lib/modern-sites";
 
-export default function ModernFooter({ siteName, cityName }: { siteName: string; cityName: string }) {
+export default function ModernFooter({
+  siteName,
+  cityName,
+  siteSlug,
+}: {
+  siteName: string;
+  cityName: string;
+  siteSlug?: string | null;
+}) {
+  const courseLinks = getFooterCourseLinks(siteSlug);
   return (
     <footer className="border-t border-[var(--gmpm-line)] bg-[var(--gmpm-bg)]">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 grid gap-12 md:grid-cols-3">
@@ -17,10 +27,11 @@ export default function ModernFooter({ siteName, cityName }: { siteName: string;
         <div>
           <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-3">Courses</div>
           <ul className="space-y-2 text-sm text-[var(--gmpm-text-dim)]">
-            <li><Link href="/courses/ableton-live" className="hover:text-[var(--gmpm-text)]">Ableton Live</Link></li>
-            <li><Link href="/courses/logic-pro" className="hover:text-[var(--gmpm-text)]">Logic Pro</Link></li>
-            <li><Link href="/courses/electronic-dj-course" className="hover:text-[var(--gmpm-text)]">DJ Course</Link></li>
-            <li><Link href="/ableton-producer" className="hover:text-[var(--gmpm-text)]">Producer Program</Link></li>
+            {courseLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-[var(--gmpm-text)]">{link.label}</Link>
+              </li>
+            ))}
           </ul>
         </div>
 

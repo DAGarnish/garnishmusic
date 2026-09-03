@@ -39,15 +39,40 @@ export function isLegacyMiaContentSite(slug: string | undefined | null): boolean
 
 // ModernHeader's persistent "Talk to us" button defaults to "/contact-map",
 // correct for pdx/hou (that really is their own contactSlug - see
-// modern-site-routes.ts) but not for any other modern site. la's own real
-// site has no "/contact-map" page at all - confirmed request to point its
-// header CTA at edu's own central /connect/ page instead of la's own real
-// contact page (music-production-school-los-angeles-contact), so this is a
-// deliberate override rather than a generic "use each site's own real
-// contactSlug" fix - scoped to la only, so mia (which currently has this
-// exact same "/contact-map" 404 bug on its header) is left as-is rather
-// than silently changed along with it.
+// modern-site-routes.ts) but not for any other modern site. la's real
+// contact page is now at "/contact-map" too (moved there 2026-09-03 from
+// music-production-school-los-angeles-contact - see
+// scripts/make-contact-map-la-contact-page.ts), but this override predates
+// that move: the explicit request at the time was to point la's header CTA
+// at edu's own central /connect/ page instead of la's own contact page, and
+// that choice hasn't been revisited - scoped to la only, so mia (which
+// currently has this exact same "/contact-map" 404 bug on its header) is
+// left as-is rather than silently changed along with it.
 export function getTalkToUsHref(slug: string | undefined | null): string {
   if (slug === "la") return "https://edu.garnishmusicproduction.com/connect/";
   return "/contact-map";
+}
+
+export type FooterCourseLink = { label: string; href: string };
+
+const DEFAULT_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
+  { label: "Ableton Live", href: "/courses/ableton-live" },
+  { label: "Logic Pro", href: "/courses/logic-pro" },
+  { label: "DJ Course", href: "/courses/electronic-dj-course" },
+  { label: "Producer Program", href: "/ableton-producer" },
+];
+
+// la's real course/program slugs differ from pdx/hou's (see LA_ROUTES in
+// modern-site-routes.ts) - the shared ModernFooter's pdx-tuned course links
+// above 404 on la. Real destinations confirmed by request (2026-09-03).
+const LA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
+  { label: "Ableton Live", href: "/courses/ableton-live-course" },
+  { label: "Logic Pro", href: "/courses/logic-pro-course" },
+  { label: "DJ Course", href: "/courses/dj-course" },
+  { label: "Producer Program", href: "/programs/logic-production-program" },
+];
+
+export function getFooterCourseLinks(slug: string | undefined | null): FooterCourseLink[] {
+  if (slug === "la") return LA_FOOTER_COURSE_LINKS;
+  return DEFAULT_FOOTER_COURSE_LINKS;
 }

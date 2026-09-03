@@ -329,7 +329,7 @@ export default async function ModernHomePage({ site }: { site: any }) {
 
       <ModernPartners logos={isCreamThemeSite(site.slug) ? PARTNER_LOGOS_RED : PARTNER_LOGOS_LIME} />
 
-      <ModernFooter siteName={site.name} cityName={cityName} />
+      <ModernFooter siteName={site.name} cityName={cityName} siteSlug={site.slug} />
     </div>
   );
 }

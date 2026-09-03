@@ -125,7 +125,7 @@ export default function ModernInstructorsPage({
         </section>
       )}
 
-      <ModernFooter siteName={site.name} cityName={cityName} />
+      <ModernFooter siteName={site.name} cityName={cityName} siteSlug={site.slug} />
     </div>
   );
 }

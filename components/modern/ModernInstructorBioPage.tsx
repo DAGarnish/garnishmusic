@@ -71,7 +71,7 @@ export default function ModernInstructorBioPage({
         />
       </section>
 
-      <ModernFooter siteName={site.name} cityName={cityName} />
+      <ModernFooter siteName={site.name} cityName={cityName} siteSlug={site.slug} />
     </div>
   );
 }

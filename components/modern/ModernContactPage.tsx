@@ -75,7 +75,7 @@ export default function ModernContactPage({
         </div>
       </section>
 
-      <ModernFooter siteName={site.name} cityName={getCityName(site)} />
+      <ModernFooter siteName={site.name} cityName={getCityName(site)} siteSlug={site.slug} />
     </div>
   );
 }

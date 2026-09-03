@@ -69,7 +69,7 @@ export default function ModernPrivateInstructionPage({
 
       <ModernFaqAccordion faqs={faqs} />
 
-      <ModernFooter siteName={site.name} cityName={getCityName(site)} />
+      <ModernFooter siteName={site.name} cityName={getCityName(site)} siteSlug={site.slug} />
     </div>
   );
 }

@@ -439,7 +439,7 @@ export default function ModernCoursePage({
 
       <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} isSpanish={isSpanish} />
 
-      <ModernFooter siteName={site.name} cityName={getCityName(site)} />
+      <ModernFooter siteName={site.name} cityName={getCityName(site)} siteSlug={site.slug} />
     </div>
   );
 }
