@@ -65,8 +65,10 @@ import {
 } from "../../../lib/modern-course-content";
 import type { TestimonialItem } from "../../../scripts/wp-shortcode-render";
 import ModernPrivateInstructionPage from "../../../components/modern/ModernPrivateInstructionPage";
+import ModernEduPrivateInstructionPage from "../../../components/modern/ModernEduPrivateInstructionPage";
 import { getCityAbbr } from "../../../lib/modern-site-meta";
 import { extractPrivateInstructionContent } from "../../../lib/modern-private-instruction-content";
+import { extractEduPrivateInstructionContent } from "../../../lib/modern-edu-private-instruction-content";
 import ModernInstructorsPage from "../../../components/modern/ModernInstructorsPage";
 import ModernInstructorBioPage from "../../../components/modern/ModernInstructorBioPage";
 import { extractInstructorBio, extractInstructorDirectory } from "../../../lib/modern-instructors-content";
@@ -1013,14 +1015,34 @@ export default async function CatchAllPage({ params }: Args) {
   }
   if (modernRoutes && slug.join("/") === modernRoutes.privateInstructionSlug) {
     const payload = await getPayloadClient();
+    // Same cross-site lookup as the Comprehensive Programs/course pages
+    // above - staging has no page docs of its own, so edu's (site 15) real
+    // private-instruction page is fetched instead.
+    const privateInstructionSiteId =
+      site.slug === "staging"
+        ? ((await getAllSitesCached()).find((s: any) => s.slug === "edu")?.id ?? site.id)
+        : site.id;
     const privatePages = await payload.find({
       collection: "pages",
-      where: { and: [{ site: { equals: site.id } }, { slug: { equals: modernRoutes.privateInstructionSlug } }] },
+      where: { and: [{ site: { equals: privateInstructionSiteId } }, { slug: { equals: modernRoutes.privateInstructionSlug } }] },
       limit: 1,
     });
     const privateDoc = privatePages.docs[0] as any;
     if (privateDoc) {
       const raw = privateDoc.wpRawContent || "";
+      // edu's own page is a richer, differently-shaped page than la/mia's
+      // (see extractEduPrivateInstructionContent's own comment) - doesn't
+      // fit extractPrivateInstructionContent's shape at all, so it gets
+      // its own extractor/component instead of a garbled render.
+      if (site.slug === "staging") {
+        return (
+          <ModernEduPrivateInstructionPage
+            site={site}
+            title={privateDoc.title}
+            content={extractEduPrivateInstructionContent(raw)}
+          />
+        );
+      }
       return (
         <ModernPrivateInstructionPage
           site={site}

@@ -99,15 +99,14 @@ const MIA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
 // staging's real slugs mostly match pdx/hou's defaults (Ableton Live/Logic
 // Pro both confirmed live at the same /courses/* paths - staging's own nav
 // links there directly, auto-collected by collectNavCourseSlugs), except
-// Producer Program: edu's real page is at /programs/ableton-producer (see
-// MODERN_SITE_ROUTES.staging.programSlugs), not pdx/hou's bare
-// /ableton-producer, which 404s here. DJ Course is left as the (also
-// currently-broken) default - edu's real page is at /electronic-dj-course,
-// not yet wired into modern routing; out of scope for this fix.
+// Producer Program (edu's real page is at /programs/ableton-producer, see
+// MODERN_SITE_ROUTES.staging.programSlugs, not pdx/hou's bare
+// /ableton-producer) and DJ Course (edu's real page is /electronic-dj-course,
+// no "courses/" prefix - also wired into programSlugs).
 const STAGING_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   { label: "Ableton Live", href: "/courses/ableton-live" },
   { label: "Logic Pro", href: "/courses/logic-pro" },
-  { label: "DJ Course", href: "/courses/electronic-dj-course" },
+  { label: "DJ Course", href: "/electronic-dj-course" },
   { label: "Producer Program", href: "/programs/ableton-producer" },
 ];
 

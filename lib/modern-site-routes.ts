@@ -206,20 +206,37 @@ MODERN_SITE_ROUTES.mia = MIA_ROUTES;
 // homepage (see ModernEduHomePage), not a per-city clone like the previous
 // three "staging" tenants (pdx/la/mia all promoted out of this same slug in
 // turn - see MIA_ROUTES's own comment). edu is the network-wide hub, not a
-// single school, so it has no real instructors/program pages of its own -
-// contactSlug points at edu's own real "/connect/" page (confirmed live);
-// the rest are harmless placeholders since this preview is homepage-only.
+// single school, so it has no real instructors page of its own (still a
+// placeholder) - but its own real Comprehensive Programs/Express Classes/
+// Others pages are wired up below (see [[...slug]] page.tsx's own
+// coursePageSiteId/privateInstructionSiteId, which fetch these from edu -
+// site 15 - instead of staging's own id, since staging clones edu's nav
+// only, not its ~100 pages). contactSlug points at edu's own real
+// "/connect/" page (confirmed live).
 const STAGING_ROUTES: ModernSiteRoutes = {
   contactSlug: "connect",
-  privateInstructionSlug: null,
+  // edu's real page (id 1395) uses the older bare-<h2>/[vc_column_text]
+  // shape extractPrivateInstructionContent was built for - same shape
+  // pdx/hou's own private-instruction page uses (see their own entries
+  // above).
+  privateInstructionSlug: "private-instruction",
   instructorsSlug: "instructors",
-  // edu's own real "Comprehensive Programs" pages (see [[...slug]]
-  // page.tsx's coursePageSiteId, which fetches these from edu - site 15 -
-  // instead of staging's own id, since staging clones edu's nav only, not
-  // its pages). Confirmed these 3 use the identical [mkd_section_title]
-  // shape ModernCoursePage/modern-course-content.ts already handles for
-  // pdx/hou's own academy/ableton-producer/logic-producer pages.
-  programSlugs: ["academy", "programs/ableton-producer", "programs/logic-producer"],
+  // academy/programs/ableton-producer/programs/logic-producer are
+  // Comprehensive Programs; electronic-dj-course and reality-dj-class are
+  // two of the "Others" nav section's five items (private-instruction
+  // above and the courses/* ones - Post Production, K-pop Songwriting -
+  // are covered by collectNavCourseSlugs auto-picking up any "courses/*"
+  // nav link, same as every Express Classes item). All 3 confirmed to use
+  // the identical [mkd_section_title] shape ModernCoursePage/
+  // modern-course-content.ts already handles for pdx/hou's own academy/
+  // ableton-producer/logic-producer pages.
+  programSlugs: [
+    "academy",
+    "programs/ableton-producer",
+    "programs/logic-producer",
+    "electronic-dj-course",
+    "reality-dj-class",
+  ],
   instructorSlugs: [],
 };
 
