@@ -1459,6 +1459,14 @@ export function extractFaqs(wpRawContent: string): Faq[] {
   const faqs: Faq[] = [];
   for (const m of raw.matchAll(/\[mkd_accordion_tab title="([^"]*)"[^\]]*\]([\s\S]*?)\[\/mkd_accordion_tab\]/gi)) {
     const question = decodeEntities(m[1] || "").trim();
+    // A "Featured Testimonials" tab (real customer quotes, not a Q&A) is
+    // neither a FAQ nor a curriculum module - confirmed on
+    // electronic-dj-course, whose one non-blog tab is exactly this, which
+    // hasModulesAccordion's own heuristic (no "?" -> treat as modules) was
+    // misreading as a single "Program modules." entry. Excluded from both
+    // this function and extractAccordionModules below so it doesn't just
+    // resurface here as a bogus FAQ instead.
+    if (/testimonial/i.test(question)) continue;
     const answerMatch = m[2].match(/<p[^>]*>([\s\S]*?)<\/p>/i);
     const answer = answerMatch ? decodeEntities(answerMatch[1].replace(/<[^>]+>/g, "")).trim() : "";
     if (question && answer) faqs.push({ question, answer });
@@ -1484,6 +1492,9 @@ export function extractAccordionModules(wpRawContent: string): AccordionModule[]
   const modules: AccordionModule[] = [];
   for (const m of raw.matchAll(/\[mkd_accordion_tab title="([^"]*)"[^\]]*\]([\s\S]*?)\[\/mkd_accordion_tab\]/gi)) {
     const title = decodeEntities(m[1] || "").trim();
+    // See extractFaqs' own comment - a "Featured Testimonials" tab is real
+    // customer quotes, not a curriculum module.
+    if (/testimonial/i.test(title)) continue;
     const bodyHtml = extractParagraphs(m[2]);
     if (title && bodyHtml) modules.push({ title, bodyHtml });
   }
@@ -1529,7 +1540,13 @@ export function hasModulesAccordion(wpRawContent: string): boolean {
   const raw = wpRawContent || "";
   const titles = [...raw.matchAll(/\[mkd_accordion_tab\s+title="([^"]*)"/gi)]
     .map((m) => decodeEntities(m[1] || "").trim())
-    .filter((t) => t && !/\bblog$/i.test(t));
+    // A "Featured Testimonials" tab (real customer quotes) shouldn't count
+    // toward this heuristic either way - see extractFaqs' own comment for
+    // why it's excluded from both functions' actual output. Without this,
+    // electronic-dj-course's own single non-blog tab being exactly that
+    // (no "?", so 0/1 "question-like") tipped this below the 0.5 threshold
+    // and misclassified the whole page as a modules-accordion page.
+    .filter((t) => t && !/\bblog$/i.test(t) && !/testimonial/i.test(t));
   if (titles.length === 0) return false;
   const questionLike = titles.filter((t) => t.endsWith("?")).length;
   return questionLike / titles.length < 0.5;
