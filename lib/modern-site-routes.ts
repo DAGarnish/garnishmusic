@@ -59,7 +59,13 @@ export const MODERN_SITE_ROUTES: Record<string, ModernSiteRoutes> = {
 
 // la's real site route config.
 const LA_ROUTES: ModernSiteRoutes = {
-  contactSlug: "music-production-school-los-angeles-contact",
+  // Was "music-production-school-los-angeles-contact" - that page is now at
+  // "contact-map" (2026-09-03 request), with a 301 redirect left in place
+  // from the old URL (see scripts/make-contact-map-la-contact-page.ts). The
+  // dozens of internal links across la's own pages/nav that still hardcode
+  // the old absolute URL are deliberately left as-is - the redirect covers
+  // them; this comment isn't a TODO to rewrite them.
+  contactSlug: "contact-map",
   privateInstructionSlug: null,
   instructorsSlug: "music-production-instructors-los-angeles",
   programSlugs: [
