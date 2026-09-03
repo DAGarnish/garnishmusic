@@ -741,7 +741,20 @@ export default async function CatchAllPage({ params }: Args) {
         }
       }
       // Requested removal, scoped to this one page only.
-      const videoEmbeds = slug.join("/") === "programs/ableton-production-program" ? [] : extractVideoEmbeds(raw);
+      const rawVideoEmbeds =
+        slug.join("/") === "programs/ableton-production-program" ? [] : extractVideoEmbeds(raw);
+      // "Garnish Music School in Los Angeles" (youtu.be/lw8jCikgUxs) is a
+      // generic promo clip reused as boilerplate across 12 of edu's real
+      // pages (courses/ableton-live among them - see
+      // scripts/find-la-school-video.ts) - user asked (2026-09-03) to
+      // remove it network-wide on staging specifically, not per-page, so
+      // any page's own embeds are filtered by video id here rather than
+      // listed one slug at a time like the ableton-production-program
+      // exclusion above.
+      const videoEmbeds =
+        site.slug === "staging"
+          ? rawVideoEmbeds.filter((v) => !v.embedUrl.includes("lw8jCikgUxs"))
+          : rawVideoEmbeds;
       // The real instructor photo grid behind this page's own "Meet Our
       // World-Class Instructors" section (see extractPortfolioSliderSpec) -
       // real instructor data is the same `pages` docs the individual bio
