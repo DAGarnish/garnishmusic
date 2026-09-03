@@ -37,20 +37,28 @@ export function isLegacyMiaContentSite(slug: string | undefined | null): boolean
   return slug === "mia" || slug === "mia-old";
 }
 
-// ModernHeader's persistent "Talk to us" button defaults to "/contact-map",
-// correct for pdx/hou (that really is their own contactSlug - see
-// modern-site-routes.ts) but not for any other modern site. la's real
-// contact page is now at "/contact-map" too (moved there 2026-09-03 from
-// music-production-school-los-angeles-contact - see
-// scripts/make-contact-map-la-contact-page.ts), but this override predates
-// that move: the explicit request at the time was to point la's header CTA
-// at edu's own central /connect/ page instead of la's own contact page, and
-// that choice hasn't been revisited - scoped to la only, so mia (which
-// currently has this exact same "/contact-map" 404 bug on its header) is
-// left as-is rather than silently changed along with it.
+// The site's own real contact page, per MODERN_SITE_ROUTES.contactSlug -
+// the single source of truth every "Contact"/"Talk to us" link should defer
+// to instead of each hardcoding "/contact-map" (only actually correct for
+// pdx/hou; mia's real page is "/contact-miami" - confirmed 404 audit,
+// 2026-09-03).
+export function getContactHref(slug: string | undefined | null): string {
+  const contactSlug = slug ? MODERN_SITE_ROUTES[slug]?.contactSlug : undefined;
+  return `/${contactSlug ?? "contact-map"}`;
+}
+
+// ModernHeader's persistent "Talk to us" button used to default to a
+// hardcoded "/contact-map", correct for pdx/hou but not mia (whose real
+// contactSlug is "contact-miami") - now resolved per-site via
+// getContactHref instead. la's real contact page is at "/contact-map" too
+// (moved there 2026-09-03 from music-production-school-los-angeles-contact
+// - see scripts/make-contact-map-la-contact-page.ts), but this override
+// predates that move: the explicit request at the time was to point la's
+// header CTA at edu's own central /connect/ page instead of la's own
+// contact page, and that choice hasn't been revisited - scoped to la only.
 export function getTalkToUsHref(slug: string | undefined | null): string {
   if (slug === "la") return "https://edu.garnishmusicproduction.com/connect/";
-  return "/contact-map";
+  return getContactHref(slug);
 }
 
 export type FooterCourseLink = { label: string; href: string };
@@ -72,7 +80,20 @@ const LA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   { label: "Producer Program", href: "/programs/logic-production-program" },
 ];
 
+// mia's real course/program slugs also differ from pdx/hou's - confirmed by
+// audit (2026-09-03) that 3 of the 4 default links 404 on mia (DJ Course
+// happens to already match). Producer Program has two real mia candidates
+// (ableton-producer-program and logic-producer-program); Ableton confirmed
+// by request rather than assumed to mirror la's Logic choice.
+const MIA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
+  { label: "Ableton Live", href: "/courses/ableton-live-course" },
+  { label: "Logic Pro", href: "/courses/logic-course" },
+  { label: "DJ Course", href: "/courses/electronic-dj-course" },
+  { label: "Producer Program", href: "/programs/ableton-producer-program" },
+];
+
 export function getFooterCourseLinks(slug: string | undefined | null): FooterCourseLink[] {
   if (slug === "la") return LA_FOOTER_COURSE_LINKS;
+  if (slug === "mia") return MIA_FOOTER_COURSE_LINKS;
   return DEFAULT_FOOTER_COURSE_LINKS;
 }

@@ -5,6 +5,7 @@ import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
+import { getContactHref } from "../../lib/modern-sites";
 import type { MenuNode } from "../menu-html";
 import type { Faq } from "../../lib/modern-course-content";
 import type { PrivateInstructionContent } from "../../lib/modern-private-instruction-content";
@@ -58,7 +59,7 @@ export default function ModernPrivateInstructionPage({
               ))}
             </ul>
             <Link
-              href="/contact-map"
+              href={getContactHref(site.slug)}
               className="inline-block gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
             >
               Send us a message
