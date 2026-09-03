@@ -42,7 +42,7 @@ export default function ModernEduContactPage({
 
       <section className="max-w-[900px] mx-auto px-6 md:px-10 pb-24">
         {googleFormSrc ? (
-          <div className="gmpm-corner border border-[var(--gmpm-line)] bg-[var(--gmpm-bg)] overflow-hidden">
+          <div className="gmpm-corner">
             <iframe
               src={googleFormSrc}
               width="100%"
@@ -53,6 +53,16 @@ export default function ModernEduContactPage({
               // trimmed rather than copied verbatim to avoid a few hundred
               // px of dead space below the button before the footer.
               height="2300"
+              // Cross-origin (docs.google.com) - no way to reach into the
+              // form's own stylesheet, but mix-blend-multiply still works
+              // on the rendered iframe as a whole, the same trick used for
+              // reality-dj-class's Paris Hilton screenshot: the form's own
+              // white background blends down to this page's real --gmpm-bg
+              // cream, while its darker UI (text, the red Submit button,
+              // gray borders) keeps its own color. Experimental - untested
+              // on a live, interactive embed rather than a static image
+              // before this.
+              className="mix-blend-multiply"
               style={{ border: 0, display: "block" }}
               title="Contact form"
             >
