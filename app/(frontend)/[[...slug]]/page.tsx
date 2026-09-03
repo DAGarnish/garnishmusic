@@ -1046,7 +1046,9 @@ export default async function CatchAllPage({ params }: Args) {
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
           themeClassName={
             [
-              // pdx
+              // pdx (also happens to cover staging's own identically-slugged
+              // Sound Design & Synthesis / Electronic Sound Art with Arturia
+              // pages - same nav slugs, so both already render dark here)
               "courses/sound-design-synthesis-ableton",
               "courses/electronic-sound-art",
               // staging/la
@@ -1057,6 +1059,12 @@ export default async function CatchAllPage({ params }: Args) {
               // with content copied over from la's real page.
               "courses/advanced-mastering",
               "courses/electronic-music-emp",
+              // staging's own real "Mastering" nav item is courses/mastering
+              // (a different slug from la's courses/advanced-mastering
+              // above) - pdx/hou also have their own live courses/mastering
+              // pages, already-approved in the default cream theme, so this
+              // is staging-only rather than added to the list unconditionally.
+              ...(site.slug === "staging" ? ["courses/mastering"] : []),
             ].includes(slug.join("/"))
               ? "gmpm-theme-classic-dark"
               : undefined
