@@ -34,7 +34,8 @@ import ModernBlogPostPage from "../../../components/modern/ModernBlogPostPage";
 import { TOPIC_POST_CATEGORY_SLUGS } from "../../../lib/modern-edu-blog";
 import { EMPTY_RICHTEXT, postRichTextConverters } from "../../../components/modern/modern-post-richtext";
 import ModernContactPage from "../../../components/modern/ModernContactPage";
-import { extractContactDetails } from "../../../lib/modern-contact-content";
+import ModernEduContactPage from "../../../components/modern/ModernEduContactPage";
+import { extractContactDetails, extractGoogleFormSrc } from "../../../lib/modern-contact-content";
 import ModernCoursePage from "../../../components/modern/ModernCoursePage";
 import {
   collectNavCourseSlugs,
@@ -462,6 +463,25 @@ export default async function CatchAllPage({ params }: Args) {
   }
   if (modernRoutes && slug.join("/") === modernRoutes.contactSlug) {
     const payload = await getPayloadClient();
+    // staging's real "connect" page is edu's own (site 15) - staging clones
+    // edu's nav only, not its pages (same reason blog posts/topics and
+    // Comprehensive Programs need the same cross-site lookup). edu's
+    // /connect/ ("Hello!") is also a completely different shape from every
+    // per-city contact page (a Google Form embed, not address/phone/map),
+    // so it routes to ModernEduContactPage instead of ModernContactPage.
+    if (site.slug === "staging") {
+      const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu");
+      const connectPages = eduSite
+        ? await payload.find({
+            collection: "pages",
+            where: { and: [{ site: { equals: eduSite.id } }, { slug: { equals: modernRoutes.contactSlug } }] },
+            limit: 1,
+          })
+        : { docs: [] };
+      const connectDoc = connectPages.docs[0] as any;
+      const googleFormSrc = extractGoogleFormSrc(connectDoc?.wpRawContent || "");
+      return <ModernEduContactPage site={site} googleFormSrc={googleFormSrc} />;
+    }
     const contactPages = await payload.find({
       collection: "pages",
       where: { and: [{ site: { equals: site.id } }, { slug: { equals: modernRoutes.contactSlug } }] },

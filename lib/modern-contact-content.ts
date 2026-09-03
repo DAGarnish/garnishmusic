@@ -42,3 +42,13 @@ export function extractContactDetails(wpRawContent: string): ContactDetails {
 
   return { address, phone, ctaText, ctaLink, mapEmbedSrc };
 }
+
+// edu's real /connect/ page ("Hello!") is a different shape entirely from
+// every per-city contact page extractContactDetails above handles - no
+// address/phone/map, just a raw <iframe> embedding a Google Form (plus a
+// "Some of our partners" block already covered elsewhere by ModernPartners,
+// so not extracted here) - see ModernEduContactPage.
+export function extractGoogleFormSrc(wpRawContent: string): string | null {
+  const raw = wpRawContent || "";
+  return raw.match(/<iframe[^>]*\bsrc="(https:\/\/docs\.google\.com\/forms\/[^"]*)"/i)?.[1] ?? null;
+}
