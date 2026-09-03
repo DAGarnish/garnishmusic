@@ -213,7 +213,13 @@ const STAGING_ROUTES: ModernSiteRoutes = {
   contactSlug: "connect",
   privateInstructionSlug: null,
   instructorsSlug: "instructors",
-  programSlugs: [],
+  // edu's own real "Comprehensive Programs" pages (see [[...slug]]
+  // page.tsx's coursePageSiteId, which fetches these from edu - site 15 -
+  // instead of staging's own id, since staging clones edu's nav only, not
+  // its pages). Confirmed these 3 use the identical [mkd_section_title]
+  // shape ModernCoursePage/modern-course-content.ts already handles for
+  // pdx/hou's own academy/ableton-producer/logic-producer pages.
+  programSlugs: ["academy", "programs/ableton-producer", "programs/logic-producer"],
   instructorSlugs: [],
 };
 

@@ -485,9 +485,20 @@ export default async function CatchAllPage({ params }: Args) {
   ]);
   if (modernRoutes && modernTemplatedSlugs.has(slug.join("/"))) {
     const payload = await getPayloadClient();
+    // "staging" has no page docs of its own for these slugs (it clones
+    // edu's nav only, not its ~100 pages - same reason blog posts/topics
+    // need the same cross-site lookup, see lib/modern-edu-blog.ts's own
+    // comment) - its "Comprehensive Programs" nav items (academy,
+    // programs/ableton-producer, programs/logic-producer - see
+    // modern-site-routes.ts's STAGING_ROUTES.programSlugs) are edu's own
+    // real pages instead.
+    const coursePageSiteId =
+      site.slug === "staging"
+        ? ((await getAllSitesCached()).find((s: any) => s.slug === "edu")?.id ?? site.id)
+        : site.id;
     const coursePages = await payload.find({
       collection: "pages",
-      where: { and: [{ site: { equals: site.id } }, { slug: { equals: slug.join("/") } }] },
+      where: { and: [{ site: { equals: coursePageSiteId } }, { slug: { equals: slug.join("/") } }] },
       limit: 1,
       depth: 1,
     });
