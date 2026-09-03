@@ -35,6 +35,8 @@ import { TOPIC_POST_CATEGORY_SLUGS } from "../../../lib/modern-edu-blog";
 import { EMPTY_RICHTEXT, postRichTextConverters } from "../../../components/modern/modern-post-richtext";
 import ModernContactPage from "../../../components/modern/ModernContactPage";
 import ModernEduContactPage from "../../../components/modern/ModernEduContactPage";
+import ModernWhyUsPage from "../../../components/modern/ModernWhyUsPage";
+import { extractWhyUsBlurbs } from "../../../lib/modern-why-us-content";
 import { extractContactDetails, extractGoogleFormSrc } from "../../../lib/modern-contact-content";
 import ModernCoursePage from "../../../components/modern/ModernCoursePage";
 import {
@@ -464,6 +466,37 @@ export default async function CatchAllPage({ params }: Args) {
   // nav, so these slugs have no page doc of their own to fall through to).
   if (site.slug === "staging" && TOPIC_POST_CATEGORY_SLUGS[slug.join("/")]) {
     return <ModernBlogTopicPage site={site} topicSlug={slug.join("/")} />;
+  }
+  // edu's real /why-us/ ("Discover Qualities That Distinguish Us") - see
+  // extractWhyUsBlurbs' own comment for the real content shape. User
+  // request, made right after the "Why choose Garnish?" comparison table
+  // (ModernComparisonTable) shipped, to build a standalone page around it.
+  if (site.slug === "staging" && slug.join("/") === "why-us") {
+    const payload = await getPayloadClient();
+    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu");
+    const whyUsPages = eduSite
+      ? await payload.find({
+          collection: "pages",
+          where: { and: [{ site: { equals: eduSite.id } }, { slug: { equals: "why-us" } }] },
+          limit: 1,
+          depth: 1,
+        })
+      : { docs: [] };
+    const whyUsDoc = whyUsPages.docs[0] as any;
+    if (whyUsDoc) {
+      const heroImageUrl =
+        (typeof whyUsDoc.titleBackgroundImage === "object" && whyUsDoc.titleBackgroundImage?.url) ||
+        (typeof whyUsDoc.featuredImage === "object" && whyUsDoc.featuredImage?.url) ||
+        undefined;
+      return (
+        <ModernWhyUsPage
+          site={site}
+          title={whyUsDoc.title}
+          heroImageUrl={heroImageUrl}
+          blurbs={extractWhyUsBlurbs(whyUsDoc.wpRawContent || "")}
+        />
+      );
+    }
   }
   if (modernRoutes && slug.join("/") === modernRoutes.contactSlug) {
     const payload = await getPayloadClient();
