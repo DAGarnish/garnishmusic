@@ -36,6 +36,8 @@ import { EMPTY_RICHTEXT, postRichTextConverters } from "../../../components/mode
 import ModernContactPage from "../../../components/modern/ModernContactPage";
 import ModernEduContactPage from "../../../components/modern/ModernEduContactPage";
 import ModernWhyUsPage from "../../../components/modern/ModernWhyUsPage";
+import ModernLegalPage from "../../../components/modern/ModernLegalPage";
+import { extractLegalDocument } from "../../../lib/modern-legal-content";
 import { extractWhyUsBlurbs } from "../../../lib/modern-why-us-content";
 import { extractContactDetails, extractGoogleFormSrc } from "../../../lib/modern-contact-content";
 import ModernCoursePage from "../../../components/modern/ModernCoursePage";
@@ -499,6 +501,29 @@ export default async function CatchAllPage({ params }: Args) {
           heroImageUrl={heroImageUrl}
           blurbs={extractWhyUsBlurbs(whyUsDoc.wpRawContent || "")}
         />
+      );
+    }
+  }
+  // edu's real /tc/ and /privacy-policy/ - see extractLegalDocument's own
+  // comment for the real content shape (neither fits ModernCoursePage or
+  // ModernWhyUsPage's own shapes, so a third, simpler document template).
+  // Linked from About > Information (see scripts/merge-staging-about-
+  // other-into-information.ts) - both currently 404 there.
+  if (site.slug === "staging" && ["tc", "privacy-policy"].includes(slug.join("/"))) {
+    const payload = await getPayloadClient();
+    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu");
+    const legalPages = eduSite
+      ? await payload.find({
+          collection: "pages",
+          where: { and: [{ site: { equals: eduSite.id } }, { slug: { equals: slug.join("/") } }] },
+          limit: 1,
+          depth: 0,
+        })
+      : { docs: [] };
+    const legalDoc = legalPages.docs[0] as any;
+    if (legalDoc) {
+      return (
+        <ModernLegalPage site={site} title={legalDoc.title} sections={extractLegalDocument(legalDoc.wpRawContent || "")} />
       );
     }
   }
