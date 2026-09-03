@@ -5,6 +5,7 @@ import { getUrlRewriteContext, rewriteUrlForLocalDev } from "../../lib/current-s
 import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernPartners from "./ModernPartners";
+import ModernTypewriterHeading from "./ModernTypewriterHeading";
 import { PARTNER_LOGOS_RED } from "../../lib/modern-partner-logos";
 import { getContactHref } from "../../lib/modern-sites";
 import { getTopicPosts, type BlogPost } from "../../lib/modern-edu-blog";
@@ -122,19 +123,44 @@ export default async function ModernEduHomePage({ site }: { site: any }) {
 
   const contactHref = getContactHref(site.slug);
 
+  // Same real photo ModernWhyUsPage's own hero uses (edu's real /why-us/
+  // page, "whychooseus-10.png") - user request (2026-09-03) to give the
+  // homepage the same image+gradient hero treatment, no dedicated
+  // "worldwide" photo of its own existing to reach for instead.
+  const whyUsPage = await payload.find({
+    collection: "pages",
+    where: { and: [{ site: { equals: 15 } }, { slug: { equals: "why-us" } }] },
+    limit: 1,
+    depth: 1,
+  });
+  const heroImageUrl =
+    typeof (whyUsPage.docs[0] as any)?.titleBackgroundImage === "object"
+      ? (whyUsPage.docs[0] as any).titleBackgroundImage?.url
+      : undefined;
+
   return (
     <div className="gmpm-root min-h-screen">
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr="EDU" siteSlug={site.slug} />
 
       <section className="relative overflow-hidden gmpm-grid-bg">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-4 pb-8 md:pt-16 md:pb-16">
+        <div className="absolute inset-0">
+          {heroImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-60" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--gmpm-bg)] via-[var(--gmpm-bg)]/55 to-[var(--gmpm-bg)]/10" />
+        </div>
+
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 pt-16 pb-8 md:pt-24 md:pb-16">
           <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
             Worldwide
           </div>
-          <h1 className="gmpm-display font-bold text-[11vw] leading-[0.95] md:text-[5.5vw] md:leading-[0.95] max-w-4xl">
-            {HERO_HEADING}
-          </h1>
+          <ModernTypewriterHeading
+            key={HERO_HEADING}
+            text={HERO_HEADING}
+            className="font-bold text-[11vw] leading-[0.95] md:text-[5.5vw] md:leading-[0.95] max-w-4xl"
+          />
           <p className="mt-8 text-lg text-[var(--gmpm-text-dim)] max-w-xl">{HERO_SUBHEAD}</p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <a
