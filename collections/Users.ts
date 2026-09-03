@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { adminFieldOnly, adminOnly, ownAccountOrAdmin } from "../lib/access-control";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -8,6 +9,14 @@ export const Users: CollectionConfig = {
   auth: true,
   access: {
     read: () => true,
+    // Only admins can create new accounts - a per-site editor can update
+    // their own account (e.g. name/password), but not anyone else's, and
+    // not their own `roles`/`sites` (see those fields' own access below) -
+    // otherwise they could just grant themselves more sites or promote
+    // themselves to admin.
+    create: adminOnly,
+    update: ownAccountOrAdmin,
+    delete: adminOnly,
   },
   fields: [
     {
@@ -19,6 +28,7 @@ export const Users: CollectionConfig = {
       type: "select",
       hasMany: true,
       defaultValue: ["editor"],
+      access: { update: adminFieldOnly },
       options: [
         { label: "Admin", value: "admin" },
         { label: "Editor", value: "editor" },
@@ -29,8 +39,10 @@ export const Users: CollectionConfig = {
       type: "relationship",
       relationTo: "sites",
       hasMany: true,
+      access: { update: adminFieldOnly },
       admin: {
-        description: "Sites this user can manage (leave empty for all sites)",
+        description:
+          "Sites this editor can manage (Pages/Products only - see collections' own access config). Leave empty for an admin-role account (full access to every site); for an editor-role account, empty means no access to any site's content, not every site.",
       },
     },
   ],

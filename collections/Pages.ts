@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { RowBlock } from "../blocks/Row";
+import { adminFieldOnly, adminOnly, siteScopedAccess } from "../lib/access-control";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -10,6 +11,12 @@ export const Pages: CollectionConfig = {
   },
   access: {
     read: () => true,
+    // A per-site editor can update this site's own pages' content, but not
+    // create or delete pages outright, or move them to a different URL -
+    // see the `slug` field's own access below.
+    update: siteScopedAccess,
+    create: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {
@@ -21,6 +28,11 @@ export const Pages: CollectionConfig = {
       name: "slug",
       type: "text",
       required: true,
+      // Changing a page's URL is a structural/redirect-affecting change,
+      // not day-to-day content editing - restricted to admins even though
+      // a per-site editor can update everything else about this page (see
+      // the collection's own `update` access above).
+      access: { update: adminFieldOnly },
       admin: {
         description: "URL path relative to the site, e.g. about-us",
       },
@@ -30,6 +42,9 @@ export const Pages: CollectionConfig = {
       type: "relationship",
       relationTo: "sites",
       required: true,
+      // Moving a page to a different site is equivalent to granting/
+      // revoking edit access to it - restricted the same way as `slug`.
+      access: { update: adminFieldOnly },
     },
     {
       name: "status",

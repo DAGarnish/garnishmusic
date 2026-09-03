@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import path from "path";
 import { fileURLToPath } from "url";
+import { adminOnly } from "../lib/access-control";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -12,6 +13,11 @@ export const Media: CollectionConfig = {
   },
   access: {
     read: () => true,
+    // Admin-only, even for a site's own editor (explicit user request,
+    // 2026-09-03 - editors are scoped to Pages/Products only).
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   upload: {
     staticDir: path.resolve(dirname, "../media"),

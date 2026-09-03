@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { adminFieldOnly, adminOnly, siteScopedAccess } from "../lib/access-control";
 
 export const Products: CollectionConfig = {
   slug: "products",
@@ -9,6 +10,11 @@ export const Products: CollectionConfig = {
   },
   access: {
     read: () => true,
+    // Course schedule/pricing "dates" live in a product's own content
+    // (wpRawContent) - same per-site editor scoping as Pages.
+    update: siteScopedAccess,
+    create: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {
@@ -20,12 +26,14 @@ export const Products: CollectionConfig = {
       name: "slug",
       type: "text",
       required: true,
+      access: { update: adminFieldOnly },
     },
     {
       name: "site",
       type: "relationship",
       relationTo: "sites",
       required: true,
+      access: { update: adminFieldOnly },
     },
     {
       name: "sku",

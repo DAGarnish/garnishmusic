@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { adminOnly } from "../lib/access-control";
 
 export const Sites: CollectionConfig = {
   slug: "sites",
@@ -8,6 +9,12 @@ export const Sites: CollectionConfig = {
   },
   access: {
     read: () => true,
+    // Site-level config (domain, nav, theme CSS, ...) - admin-only. A
+    // per-site editor's access is scoped to *content within* their site
+    // (Pages/Products), never the site record itself.
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { adminOnly } from "../lib/access-control";
 
 export const Redirects: CollectionConfig = {
   slug: "redirects",
@@ -8,6 +9,12 @@ export const Redirects: CollectionConfig = {
   },
   access: {
     read: () => true,
+    // Redirects are network-wide routing/SEO config, not per-site content
+    // - admin-only, even for a site's own editor (explicit user request,
+    // 2026-09-03).
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {

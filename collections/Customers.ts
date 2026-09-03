@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { adminOnly } from "../lib/access-control";
 
 export const Customers: CollectionConfig = {
   slug: "customers",
@@ -8,6 +9,11 @@ export const Customers: CollectionConfig = {
   },
   access: {
     read: () => true,
+    // Admin-only - real customer PII, never in scope for a per-site
+    // content editor (explicit user request, 2026-09-03).
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {

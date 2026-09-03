@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { BlocksFeature, lexicalEditor } from "@payloadcms/richtext-lexical";
 import { VideoBlock } from "../blocks/Video";
+import { adminOnly } from "../lib/access-control";
 
 export const Posts: CollectionConfig = {
   slug: "posts",
@@ -10,6 +11,14 @@ export const Posts: CollectionConfig = {
   },
   access: {
     read: () => true,
+    // Admin-only, even for a site's own editor (explicit user request,
+    // 2026-09-03 - editors are scoped to Pages/Products only). All real
+    // posts live on edu (site 15) network-wide anyway - see
+    // lib/wp-blog-list-resolver.ts's own comment - so no per-city editor
+    // would need write access here regardless.
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {
