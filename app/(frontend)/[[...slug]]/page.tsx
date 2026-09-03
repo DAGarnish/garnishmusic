@@ -605,7 +605,16 @@ export default async function CatchAllPage({ params }: Args) {
           depth: 0,
         });
         const bareUrlsById = new Map(bareMediaRes.docs.map((d: any) => [String(d.wpAttachmentId), d.url as string]));
-        raw = resolveBareWpImages(raw, bareUrlsById);
+        // The mix-blend-multiply treatment (see resolveBareWpImages' own
+        // comment) only ever requested for reality-dj-class's own Paris
+        // Hilton screenshot, on staging's cream theme - user request
+        // (2026-09-03) to make it "look awesome" against the cream
+        // background specifically.
+        const blend =
+          site.slug === "staging" && slug.join("/") === "reality-dj-class"
+            ? { caption: "Paris Hilton, on working with Dave" }
+            : undefined;
+        raw = resolveBareWpImages(raw, bareUrlsById, blend);
       }
       const heroImage =
         (typeof courseDoc.titleBackgroundImage === "object" && courseDoc.titleBackgroundImage?.url) ||

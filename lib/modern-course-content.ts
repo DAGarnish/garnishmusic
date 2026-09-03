@@ -301,6 +301,37 @@ function bareImageToHtml(imgTag: string): string {
     const variant = TEXT_GRAPHIC_VARIANTS[textGraphicMatch[1]];
     return variant ? textGraphicHtml(variant) : "";
   }
+  // Same marker-tag technique, for resolveBareWpImages' own blend-mode
+  // treatment (reality-dj-class's Paris Hilton screenshot) - a real
+  // <figure>+<figcaption> (or even a second sibling <p>) written directly
+  // in resolveBareWpImages doesn't survive this far: this whole page
+  // collapses into a *single* row/section (one [mkd_section_title] at the
+  // very top, every other <h2> below it just becomes an inline <h4> sub-
+  // heading within that same section's body - confirmed the hard way, a
+  // caption appended after the section's own dangerouslySetInnerHTML div
+  // landed at the very bottom of the entire page, not next to the image
+  // in the middle of it), and every <p>/<strong>/<em> tag extractParagraphs
+  // ever outputs - including one returned from here - has its attributes
+  // stripped bare by this same function's own stripCruftAttributes pass
+  // right before this returns, so a styled <p> caption couldn't ride along
+  // as literal markup either (confirmed the hard way too: it rendered, in
+  // the right place, as plain unstyled body text). A <div> isn't in that
+  // strip list, so the caption is one instead - visually identical to a
+  // <p> once the outer prose-modern wrapper's own line-height/block
+  // display apply, just not silently rewritten. The marker only carries a
+  // caption, not variant data (the image URL/alt already survive as normal
+  // src/alt attributes, unlike the two markers above whose real content
+  // only exists in a lookup table).
+  if (imgTag.includes("gmpm-social-proof-shot")) {
+    const src = imgTag.match(/\bsrc="([^"]*)"/i)?.[1] || "";
+    const alt = decodeEntities(imgTag.match(/\balt="([^"]*)"/i)?.[1] || "");
+    const caption = decodeEntities(imgTag.match(/\bdata-caption="([^"]*)"/i)?.[1] || "");
+    return `<img src="${src}" alt="${alt}" class="mx-auto block max-w-[380px] w-full h-auto mix-blend-multiply gmpm-corner border border-[var(--gmpm-line)] p-2 mt-4" />${
+      caption
+        ? `<div class="text-center gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mt-4 mb-4 tracking-wide">${caption}</div>`
+        : ""
+    }`;
+  }
   // resolveSingleImages already produced a fully-styled <img> (see its own
   // gmpm-resolved-image marker) for a [vc_single_image] shortcode - e.g. a
   // full photo or graphic, sized and styled on its own terms. Passed
@@ -1798,13 +1829,49 @@ export function extractBareWpImageIds(wpRawContent: string): string[] {
   return [...ids];
 }
 
-export function resolveBareWpImages(wpRawContent: string, urlsById: Map<string, string>): string {
+// `blend` opts a resolved image into a treatment built specifically for
+// reality-dj-class's own Paris Hilton screenshot (see resolveBareWpImages'
+// own caller in [[...slug]] page.tsx) - a genuinely white-background X/
+// Twitter screenshot pasted flat into the cream theme's own off-white page
+// looked like a stray browser screenshot, not a designed part of the page.
+// `mix-blend-multiply` blends the image's own white pixels down to
+// whatever's directly behind it (this theme's --gmpm-bg cream, since
+// nothing else sits between the img and the page background here - see
+// resolveBareWpImages' own caller), leaving real (non-white) pixels - the
+// actual tweet text/UI - their own color, so the screenshot reads as part
+// of the page instead of a pasted-in rectangle. Deliberately opt-in, not
+// the resolved-image default: the same trick against a dark theme's near-
+// black background would multiply white down toward black and destroy the
+// image, so it's only requested for this one known-cream context rather
+// than applied to every resolved bare image site-wide.
+//
+// The caption itself rides through as a data-caption attribute on a
+// gmpm-social-proof-shot marker tag, not real markup - see bareImageToHtml's
+// own comment for why (extractParagraphs' BLOCK_RE alternatives all
+// discard their source tag's own attributes/wrapper when rebuilding
+// output, and this page's own content collapses into one big section, so
+// a caption appended after the fact lands at the bottom of the whole page
+// instead of next to the image).
+export function resolveBareWpImages(
+  wpRawContent: string,
+  urlsById: Map<string, string>,
+  blend?: { caption: string }
+): string {
   return (wpRawContent || "").replace(
     /<img[^>]*\bclass="[^"]*\bwp-image-(\d+)\b[^"]*"[^>]*>/gi,
     (whole, id) => {
       const url = urlsById.get(id);
       if (!url) return whole;
-      const alt = whole.match(/\balt="([^"]*)"/i)?.[1] || "";
+      const alt = decodeEntities(whole.match(/\balt="([^"]*)"/i)?.[1] || "");
+      if (blend) {
+        // gmpm-social-proof-shot is a marker only - bareImageToHtml (see
+        // its own comment) swaps this whole tag for a real, fully-styled
+        // <img>+<figcaption>-equivalent pair once extractParagraphs
+        // reaches it, the same technique gmpm-comparison-table/
+        // gmpm-text-graphic already use for reaching richer output than a
+        // bare <img> tag alone can carry.
+        return `<img class="gmpm-social-proof-shot" src="${url}" alt="${alt}" data-caption="${decodeEntities(blend.caption)}" />`;
+      }
       // gmpm-resolved-image is the same "already styled, don't re-run
       // through the small-logo cert-badge treatment" marker
       // resolveSingleImages' own resolved <img>s carry - bareImageToHtml
@@ -1812,7 +1879,7 @@ export function resolveBareWpImages(wpRawContent: string, urlsById: Map<string, 
       // and without it this real screenshot was being shrunk to a 48px-tall
       // logo, same as every other genuinely-bare certification-badge <img>
       // on these pages.
-      return `<img src="${url}" alt="${decodeEntities(alt)}" class="gmpm-resolved-image w-full h-auto gmpm-corner my-4" />`;
+      return `<img src="${url}" alt="${alt}" class="gmpm-resolved-image w-full h-auto gmpm-corner my-4" />`;
     }
   );
 }
