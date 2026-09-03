@@ -158,7 +158,7 @@ export default function ModernCoursePage({
 
   return (
     <div className={`gmpm-root min-h-screen ${themeClassName || ""}`}>
-      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} siteSlug={site.slug} />
 
       <section className="relative overflow-hidden gmpm-grid-bg">
         <div className="absolute inset-0">

@@ -193,7 +193,7 @@ export default async function ModernHomePage({ site }: { site: any }) {
 
   return (
     <div className="gmpm-root min-h-screen">
-      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} />
+      <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} siteSlug={site.slug} />
       <ModernHero
         heroImageUrl={heroImage}
         cityName={cityName}

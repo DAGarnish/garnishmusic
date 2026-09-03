@@ -36,3 +36,18 @@ export function isCreamThemeSite(slug: string): boolean {
 export function isLegacyMiaContentSite(slug: string | undefined | null): boolean {
   return slug === "mia" || slug === "mia-old";
 }
+
+// ModernHeader's persistent "Talk to us" button defaults to "/contact-map",
+// correct for pdx/hou (that really is their own contactSlug - see
+// modern-site-routes.ts) but not for any other modern site. la's own real
+// site has no "/contact-map" page at all - confirmed request to point its
+// header CTA at edu's own central /connect/ page instead of la's own real
+// contact page (music-production-school-los-angeles-contact), so this is a
+// deliberate override rather than a generic "use each site's own real
+// contactSlug" fix - scoped to la only, so mia (which currently has this
+// exact same "/contact-map" 404 bug on its header) is left as-is rather
+// than silently changed along with it.
+export function getTalkToUsHref(slug: string | undefined | null): string {
+  if (slug === "la") return "https://edu.garnishmusicproduction.com/connect/";
+  return "/contact-map";
+}

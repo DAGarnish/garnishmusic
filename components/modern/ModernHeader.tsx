@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { MenuNode } from "../menu-html";
 import ModernAccordionToggleIcon from "./ModernAccordionToggleIcon";
+import { getTalkToUsHref } from "../../lib/modern-sites";
 
 // site.mainMenu is cloned verbatim from the legacy WP data, where a "Home"
 // item points at "/locations" (the network-wide city picker, correct for
@@ -197,12 +198,15 @@ function MobileNavItem({ item, onNavigate }: { item: MenuNode; onNavigate: () =>
 export default function ModernHeader({
   menu,
   cityAbbr,
+  siteSlug,
 }: {
   menu?: MenuNode[] | null;
   cityAbbr?: string;
+  siteSlug?: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const fixedMenu = menu ? fixHomeLink(menu) : menu;
+  const talkToUsHref = getTalkToUsHref(siteSlug);
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--gmpm-bg)]/95 backdrop-blur border-b border-[var(--gmpm-line)]">
@@ -222,7 +226,9 @@ export default function ModernHeader({
 
         <div className="flex items-center gap-4 shrink-0">
           <Link
-            href="/contact-map"
+            href={talkToUsHref}
+            target={talkToUsHref.startsWith("http") ? "_blank" : undefined}
+            rel={talkToUsHref.startsWith("http") ? "noopener" : undefined}
             className="hidden sm:inline-block gmpm-mono text-xs uppercase px-4 py-2 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)] hover:bg-[var(--gmpm-accent)] hover:text-[var(--gmpm-accent-contrast)] transition-colors"
           >
             Talk to us
@@ -260,7 +266,9 @@ export default function ModernHeader({
             <MobileNavItem key={i} item={item} onNavigate={() => setMobileOpen(false)} />
           ))}
           <Link
-            href="/contact-map"
+            href={talkToUsHref}
+            target={talkToUsHref.startsWith("http") ? "_blank" : undefined}
+            rel={talkToUsHref.startsWith("http") ? "noopener" : undefined}
             onClick={() => setMobileOpen(false)}
             className="block sm:hidden my-6 text-center gmpm-mono text-xs uppercase px-4 py-3 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)]"
           >
