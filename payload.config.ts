@@ -20,6 +20,9 @@ import { FormSubmissions } from "./collections/FormSubmissions";
 import { Redirects } from "./collections/Redirects";
 import { Testimonials } from "./collections/Testimonials";
 import { HeroSliders } from "./collections/HeroSliders";
+import { BotAdmins } from "./collections/BotAdmins";
+import { BotAuditLog } from "./collections/BotAuditLog";
+import { BotPendingChanges } from "./collections/BotPendingChanges";
 import { Partners } from "./globals/Partners";
 
 const filename = fileURLToPath(import.meta.url);
@@ -44,6 +47,9 @@ export default buildConfig({
     Redirects,
     Testimonials,
     HeroSliders,
+    BotAdmins,
+    BotAuditLog,
+    BotPendingChanges,
   ],
   globals: [Partners],
   editor: lexicalEditor(),
