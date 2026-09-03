@@ -56,6 +56,7 @@ import {
   extractProgramHighlights,
   programHighlightsHtml,
   extractTestimonialCategorySlugs,
+  extractFeaturedTestimonialsTab,
   extractAccordionBlogTab,
   extractParagraphs,
   extractIconBulletCardGroups,
@@ -906,6 +907,15 @@ export default async function CatchAllPage({ params }: Args) {
             text: t.text,
             imageUrl: typeof t.image === "object" ? t.image?.url : undefined,
           }));
+      }
+      // electronic-dj-course's own real testimonials aren't a
+      // [mkd_testimonials category="..."] widget reference at all (the
+      // path above) - they're typed directly into a "Featured
+      // Testimonials" accordion tab (see extractFeaturedTestimonialsTab's
+      // own comment). Only used as a fallback so pages with real
+      // `testimonials`-collection data keep using that, unchanged.
+      if (testimonials.length === 0) {
+        testimonials = extractFeaturedTestimonialsTab(raw);
       }
       const allSites = await getAllSitesCached();
       const eduSite = allSites.find((s: any) => s.slug === "edu");

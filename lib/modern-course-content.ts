@@ -9,6 +9,8 @@
 // surviving <p>/<strong>/<em>/<a> markup is real content authors wrote, so
 // it's rendered as-is (same trust level as every other CMS rich-text field
 // in this app), not literal WP theme markup.
+import type { TestimonialItem } from "../scripts/wp-shortcode-render";
+
 export type CourseSection = { heading: string; bodyHtml: string };
 
 function decodeEntities(s: string): string {
@@ -1472,6 +1474,36 @@ export function extractFaqs(wpRawContent: string): Faq[] {
     if (question && answer) faqs.push({ question, answer });
   }
   return faqs;
+}
+
+// The real content behind a "Featured Testimonials" tab (see extractFaqs'
+// own comment for why that tab is excluded from FAQs/modules) - not a
+// [mkd_testimonials category="..."] widget reference (extractTestimonial
+// CategorySlugs' own shape, resolved against the `testimonials` collection
+// elsewhere), just real quotes typed directly into the page: one
+// <p><em>"quote"</em> – <strong>[<a>]Name[</a>]</strong></p> per
+// testimonial, confirmed on electronic-dj-course (7 real ones, each ending
+// in a linked Instagram/SoundCloud handle - the link itself isn't needed
+// for display, just the name inside it, except to check for the one
+// signed just "Paris" whose href links her real name (see the belt-and-
+// suspenders Paris Hilton exclusion on the `testimonials`-collection path
+// above, same "not on these pages until asked" instruction, extended here
+// since this path pulls from raw content instead and wouldn't otherwise
+// match on the visible name alone).
+export function extractFeaturedTestimonialsTab(wpRawContent: string): TestimonialItem[] {
+  const raw = wpRawContent || "";
+  const tabMatch = raw.match(
+    /\[mkd_accordion_tab title="Featured Testimonials"[^\]]*\]([\s\S]*?)\[\/mkd_accordion_tab\]/i
+  );
+  if (!tabMatch) return [];
+  const items: TestimonialItem[] = [];
+  for (const m of tabMatch[1].matchAll(/<em>([\s\S]*?)<\/em>\s*–\s*<strong>([\s\S]*?)<\/strong>/gi)) {
+    if (/paris_hilton|parishilton/i.test(m[2])) continue;
+    const text = decodeEntities(m[1].replace(/<[^>]+>/g, "").replace(/[“”]/g, "")).trim();
+    const author = decodeEntities(m[2].replace(/<[^>]+>/g, "")).trim();
+    if (text && author) items.push({ text, author });
+  }
+  return items;
 }
 
 // [mkd_accordion_tab] is also used for genuinely long-form content, not
