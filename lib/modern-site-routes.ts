@@ -201,3 +201,20 @@ const MIA_ROUTES: ModernSiteRoutes = {
 };
 
 MODERN_SITE_ROUTES.mia = MIA_ROUTES;
+
+// "staging"'s real site route config - a preview of a redesigned edu
+// homepage (see ModernEduHomePage), not a per-city clone like the previous
+// three "staging" tenants (pdx/la/mia all promoted out of this same slug in
+// turn - see MIA_ROUTES's own comment). edu is the network-wide hub, not a
+// single school, so it has no real instructors/program pages of its own -
+// contactSlug points at edu's own real "/connect/" page (confirmed live);
+// the rest are harmless placeholders since this preview is homepage-only.
+const STAGING_ROUTES: ModernSiteRoutes = {
+  contactSlug: "connect",
+  privateInstructionSlug: null,
+  instructorsSlug: "instructors",
+  programSlugs: [],
+  instructorSlugs: [],
+};
+
+MODERN_SITE_ROUTES.staging = STAGING_ROUTES;

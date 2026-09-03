@@ -14,13 +14,13 @@ export function getCityName(site: { name?: string; slug?: string }): string {
   return city || (site.slug || "").toUpperCase();
 }
 
-// No overrides currently needed - every modern site's slug (pdx/hou/la/mia)
-// is already a real airport-style city code, so getCityAbbr's own
-// slug.toUpperCase() fallback below reads correctly on its own. Kept as a
-// live map (rather than removed outright) since mia itself needed exactly
-// this override while its content still lived under the "staging" preview
-// slug - see modern-site-routes.ts for that promotion.
-const CITY_ABBR_OVERRIDES: Record<string, string> = {};
+// "staging" is edu's own network-wide-hub homepage preview (see
+// ModernEduHomePage) - "STAGING" is meaningless in the header mark real
+// visitors see, and edu itself has no single city (getCityName's own
+// site.name split also needs an edu-specific fallback - see below).
+const CITY_ABBR_OVERRIDES: Record<string, string> = {
+  staging: "EDU",
+};
 
 export function getCityAbbr(site: { slug?: string }): string {
   const slug = site.slug || "";

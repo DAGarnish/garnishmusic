@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { RichText, type JSXConvertersFunction } from "@payloadcms/richtext-lexical/react";
+import { RichText } from "@payloadcms/richtext-lexical/react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import Sidebar from "../../../components/Sidebar";
@@ -28,6 +28,11 @@ import { isLegacyMiaContentSite } from "../../../lib/modern-sites";
 import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
 import { createTtlCache } from "../../../lib/ttl-cache";
 import ModernHomePage from "../../../components/modern/ModernHomePage";
+import ModernEduHomePage from "../../../components/modern/ModernEduHomePage";
+import ModernBlogTopicPage from "../../../components/modern/ModernBlogTopicPage";
+import ModernBlogPostPage from "../../../components/modern/ModernBlogPostPage";
+import { TOPIC_POST_CATEGORY_SLUGS } from "../../../lib/modern-edu-blog";
+import { EMPTY_RICHTEXT, postRichTextConverters } from "../../../components/modern/modern-post-richtext";
 import ModernContactPage from "../../../components/modern/ModernContactPage";
 import { extractContactDetails } from "../../../lib/modern-contact-content";
 import ModernCoursePage from "../../../components/modern/ModernCoursePage";
@@ -67,37 +72,6 @@ import { extractInstructorBio, extractInstructorDirectory } from "../../../lib/m
 import { MODERN_SITE_ROUTES } from "../../../lib/modern-site-routes";
 import type { InstructorGridItem } from "../../../components/modern/ModernInstructorGrid";
 import LegacyThemeAssets from "../../../components/LegacyThemeAssets";
-
-// Blog post bodies get the "video" block (blocks/Video.ts, added to
-// Posts.ts's Lexical editor via BlocksFeature) so a post can embed a
-// playable YouTube video inline between paragraphs, not just at the top as
-// a featuredImage. Mirrors the styling BlockRenderer's VideoBlock uses for
-// the same block type on pages' `layout` field.
-const postRichTextConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
-  ...defaultConverters,
-  blocks: {
-    video: ({ node }: { node: any }) => (
-      <div style={{ margin: "2rem 0", borderRadius: 14, overflow: "hidden", aspectRatio: "16 / 9" }}>
-        <iframe
-          src={(node.fields as any).link}
-          style={{ width: "100%", height: "100%", border: 0, display: "block" }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          // The legacy theme still loads fluidvids.js on every page (see
-          // layout.tsx's themeScripts), which scans for any
-          // youtube.com/vimeo iframe on DOMContentLoaded and rewraps it in
-          // a `.fluidvids` div via direct DOM mutation - racing React's own
-          // hydration of this exact node and throwing a hydration-mismatch
-          // error. data-fluidvids is the attribute fluidvids.js itself
-          // checks to skip already-processed iframes; this embed is already
-          // responsive via the aspect-ratio wrapper above, so marking it
-          // pre-handled opts it out instead of fighting the script.
-          data-fluidvids="loaded"
-        />
-      </div>
-    ),
-  },
-});
 
 // Same 30s-window tradeoff already accepted for site config in
 // sites-cache.ts: content edits can take up to this long to show up on a
@@ -177,17 +151,6 @@ const NY_DJ_CLASS_PAYPAL_BUTTONS: PayPalButton[] = [
   { id: "DVBYCLCZLAZ34", title: "DJ Class Early Bird Registration" },
   { id: "6E64BWEW8RLQN", title: "DJ Class Regular Registration" },
 ];
-
-const EMPTY_RICHTEXT = {
-  root: {
-    type: "root",
-    children: [],
-    direction: null,
-    format: "" as const,
-    indent: 0,
-    version: 1,
-  },
-};
 
 type Args = {
   params: Promise<{ slug?: string[] }>;
@@ -271,6 +234,35 @@ async function findContentUncached(site: any, slugSegments: string[]) {
 
 const findContentCached = cache(findContent);
 
+// Real blog posts only ever live on edu (site 15) - "staging" clones edu's
+// nav but none of its ~329 posts (see lib/wp-blog-list-resolver.ts's own
+// comment), so a post slug would 404 via findContentCached above, which is
+// scoped to the current site's own id. Checked wherever site.slug ===
+// "staging" and no other modern route already matched (both here and in
+// generateMetadata below), so a post renders through ModernBlogPostPage in
+// the same cream/red design instead of falling through to a 404 or the
+// legacy theme.
+async function findStagingBlogPostUncached(slugSegments: string[]) {
+  const payload = await getPayloadClient();
+  const allSites = await getAllSitesCached();
+  const eduSite = allSites.find((s: any) => s.slug === "edu");
+  if (!eduSite) return null;
+  const res = await payload.find({
+    collection: "posts",
+    where: {
+      and: [
+        { site: { equals: eduSite.id } },
+        { slug: { equals: slugSegments.join("/") } },
+        { status: { equals: "published" } },
+      ],
+    },
+    limit: 1,
+    depth: 2,
+  });
+  return (res.docs[0] as any) || null;
+}
+const findStagingBlogPostCached = cache(findStagingBlogPostUncached);
+
 // Shared by the Instructors listing route and the individual instructor
 // bio-page route below - both need la/staging's real instructors-directory
 // content (see extractInstructorDirectory's own comment for why: it's a
@@ -351,6 +343,16 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const { slug = [] } = await params;
   const site = await getSiteCached();
   if (!site) return {};
+
+  if (site.slug === "staging") {
+    const post = await findStagingBlogPostCached(slug);
+    if (post) {
+      return {
+        title: `${post.title} - ${site.name}`,
+        description: post.excerpt || undefined,
+      };
+    }
+  }
 
   const result = await findContentCached(site, slug);
   if (!result) return {};
@@ -440,7 +442,23 @@ export default async function CatchAllPage({ params }: Args) {
   // completely untouched.
   const modernRoutes = MODERN_SITE_ROUTES[site.slug];
   if (modernRoutes && slug.length === 0) {
+    // "staging" previews a redesigned edu homepage - edu is the network-wide
+    // hub (no courses/offerings/accordion of its own), an entirely
+    // different shape from every per-city homepage ModernHomePage renders,
+    // so it gets its own component rather than one more special case bolted
+    // into that one - see ModernEduHomePage's own comment for what edu's
+    // real homepage content is.
+    if (site.slug === "staging") {
+      return <ModernEduHomePage site={site} />;
+    }
     return <ModernHomePage site={site} />;
+  }
+  // The homepage's own "Browse by topic" tiles (ModernEduHomePage) link
+  // here - a real archive of every published post in that topic, not a
+  // legacy-theme page ("staging" doesn't clone edu's ~100 pages, just its
+  // nav, so these slugs have no page doc of their own to fall through to).
+  if (site.slug === "staging" && TOPIC_POST_CATEGORY_SLUGS[slug.join("/")]) {
+    return <ModernBlogTopicPage site={site} topicSlug={slug.join("/")} />;
   }
   if (modernRoutes && slug.join("/") === modernRoutes.contactSlug) {
     const payload = await getPayloadClient();
@@ -1048,6 +1066,13 @@ export default async function CatchAllPage({ params }: Args) {
           backHref={`/${modernRoutes.instructorsSlug}`}
         />
       );
+    }
+  }
+
+  if (site.slug === "staging") {
+    const post = await findStagingBlogPostCached(slug);
+    if (post) {
+      return <ModernBlogPostPage site={site} post={post} />;
     }
   }
 
