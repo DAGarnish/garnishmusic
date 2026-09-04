@@ -446,8 +446,10 @@ export default function ModernCoursePage({
       )}
 
       {/* Always immediately before the blog section, on every course page -
-          explicit placement request, not just "somewhere on the page". */}
-      {!hasEmbeddedComparisonTable && (
+          explicit placement request, not just "somewhere on the page".
+          staging (ny) opted out entirely, network-wide, per user request
+          (2026-09-04) - every other modern site keeps it. */}
+      {!hasEmbeddedComparisonTable && site.slug !== "staging" && (
         <ModernComparisonTable cityAbbr={getCityAbbr(site)} centered={site.slug === "edu"} />
       )}
 
