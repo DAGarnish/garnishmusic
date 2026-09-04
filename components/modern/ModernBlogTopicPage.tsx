@@ -12,8 +12,8 @@ import type { MenuNode } from "../menu-html";
 // not just the 3-post homepage preview. Routed from the [[...slug]]
 // catch-all for any of TOPIC_POST_CATEGORY_SLUGS's 12 keys (see that map's
 // own comment in lib/modern-edu-blog.ts) instead of falling through to the
-// legacy theme, which has no page of its own at these slugs on "staging"
-// (only edu's real site does).
+// legacy theme, which has no page of its own at these slugs on edu (only
+// edu-2's real site does).
 export default async function ModernBlogTopicPage({
   site,
   topicSlug,
@@ -23,7 +23,7 @@ export default async function ModernBlogTopicPage({
 }) {
   const payload = await getPayloadClient();
   const allSites = await getAllSitesCached();
-  const eduSite = allSites.find((s: any) => s.slug === "edu");
+  const eduSite = allSites.find((s: any) => s.slug === "edu-2");
 
   // Title/image for the tile itself comes from edu's own portfolio-item
   // page doc (same "pages" doc ModernEduHomePage reads for this tile) -

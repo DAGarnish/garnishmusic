@@ -247,18 +247,20 @@ async function findContentUncached(site: any, slugSegments: string[]) {
 
 const findContentCached = cache(findContent);
 
-// Real blog posts only ever live on edu (site 15) - "staging" clones edu's
+// Real blog posts only ever live on edu-2 (site 15, the archived pre-
+// cutover edu content - see scripts/promote-staging-to-edu.ts) - edu
+// (site 28, promoted from its own "staging" preview clone) clones edu-2's
 // nav but none of its ~329 posts (see lib/wp-blog-list-resolver.ts's own
 // comment), so a post slug would 404 via findContentCached above, which is
 // scoped to the current site's own id. Checked wherever site.slug ===
-// "staging" and no other modern route already matched (both here and in
+// "edu" and no other modern route already matched (both here and in
 // generateMetadata below), so a post renders through ModernBlogPostPage in
 // the same cream/red design instead of falling through to a 404 or the
 // legacy theme.
 async function findStagingBlogPostUncached(slugSegments: string[]) {
   const payload = await getPayloadClient();
   const allSites = await getAllSitesCached();
-  const eduSite = allSites.find((s: any) => s.slug === "edu");
+  const eduSite = allSites.find((s: any) => s.slug === "edu-2");
   if (!eduSite) return null;
   const res = await payload.find({
     collection: "posts",
@@ -277,7 +279,7 @@ async function findStagingBlogPostUncached(slugSegments: string[]) {
 const findStagingBlogPostCached = cache(findStagingBlogPostUncached);
 
 // Shared by the Instructors listing route and the individual instructor
-// bio-page route below - both need la/staging's real instructors-directory
+// bio-page route below - both need la/edu's real instructors-directory
 // content (see extractInstructorDirectory's own comment for why: it's a
 // real, hand-maintained roster, not the empty shell pdx/hou's instructors
 // pages are). Cached per-request via React's cache() so visiting a single
@@ -357,7 +359,7 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const site = await getSiteCached();
   if (!site) return {};
 
-  if (site.slug === "staging") {
+  if (site.slug === "edu") {
     const post = await findStagingBlogPostCached(slug);
     if (post) {
       return {
@@ -455,31 +457,31 @@ export default async function CatchAllPage({ params }: Args) {
   // completely untouched.
   const modernRoutes = MODERN_SITE_ROUTES[site.slug];
   if (modernRoutes && slug.length === 0) {
-    // "staging" previews a redesigned edu homepage - edu is the network-wide
-    // hub (no courses/offerings/accordion of its own), an entirely
-    // different shape from every per-city homepage ModernHomePage renders,
-    // so it gets its own component rather than one more special case bolted
-    // into that one - see ModernEduHomePage's own comment for what edu's
-    // real homepage content is.
-    if (site.slug === "staging") {
+    // edu is the redesigned edu homepage - edu is the network-wide hub (no
+    // courses/offerings/accordion of its own), an entirely different shape
+    // from every per-city homepage ModernHomePage renders, so it gets its
+    // own component rather than one more special case bolted into that one
+    // - see ModernEduHomePage's own comment for what edu-2's real homepage
+    // content is.
+    if (site.slug === "edu") {
       return <ModernEduHomePage site={site} />;
     }
     return <ModernHomePage site={site} />;
   }
   // The homepage's own "Browse by topic" tiles (ModernEduHomePage) link
   // here - a real archive of every published post in that topic, not a
-  // legacy-theme page ("staging" doesn't clone edu's ~100 pages, just its
+  // legacy-theme page (edu doesn't clone edu-2's ~100 pages, just its
   // nav, so these slugs have no page doc of their own to fall through to).
-  if (site.slug === "staging" && TOPIC_POST_CATEGORY_SLUGS[slug.join("/")]) {
+  if (site.slug === "edu" && TOPIC_POST_CATEGORY_SLUGS[slug.join("/")]) {
     return <ModernBlogTopicPage site={site} topicSlug={slug.join("/")} />;
   }
-  // edu's real /why-us/ ("Discover Qualities That Distinguish Us") - see
+  // edu-2's real /why-us/ ("Discover Qualities That Distinguish Us") - see
   // extractWhyUsBlurbs' own comment for the real content shape. User
   // request, made right after the "Why choose Garnish?" comparison table
   // (ModernComparisonTable) shipped, to build a standalone page around it.
-  if (site.slug === "staging" && slug.join("/") === "why-us") {
+  if (site.slug === "edu" && slug.join("/") === "why-us") {
     const payload = await getPayloadClient();
-    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu");
+    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu-2");
     const whyUsPages = eduSite
       ? await payload.find({
           collection: "pages",
@@ -504,14 +506,14 @@ export default async function CatchAllPage({ params }: Args) {
       );
     }
   }
-  // edu's real /tc/ and /privacy-policy/ - see extractLegalDocument's own
+  // edu-2's real /tc/ and /privacy-policy/ - see extractLegalDocument's own
   // comment for the real content shape (neither fits ModernCoursePage or
   // ModernWhyUsPage's own shapes, so a third, simpler document template).
   // Linked from About > Information (see scripts/merge-staging-about-
   // other-into-information.ts) - both currently 404 there.
-  if (site.slug === "staging" && ["tc", "privacy-policy"].includes(slug.join("/"))) {
+  if (site.slug === "edu" && ["tc", "privacy-policy"].includes(slug.join("/"))) {
     const payload = await getPayloadClient();
-    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu");
+    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu-2");
     const legalPages = eduSite
       ? await payload.find({
           collection: "pages",
@@ -529,14 +531,14 @@ export default async function CatchAllPage({ params }: Args) {
   }
   if (modernRoutes && slug.join("/") === modernRoutes.contactSlug) {
     const payload = await getPayloadClient();
-    // staging's real "connect" page is edu's own (site 15) - staging clones
-    // edu's nav only, not its pages (same reason blog posts/topics and
-    // Comprehensive Programs need the same cross-site lookup). edu's
+    // edu's real "connect" page is edu-2's own (site 15) - edu clones
+    // edu-2's nav only, not its pages (same reason blog posts/topics and
+    // Comprehensive Programs need the same cross-site lookup). edu-2's
     // /connect/ ("Hello!") is also a completely different shape from every
     // per-city contact page (a Google Form embed, not address/phone/map),
     // so it routes to ModernEduContactPage instead of ModernContactPage.
-    if (site.slug === "staging") {
-      const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu");
+    if (site.slug === "edu") {
+      const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu-2");
       const connectPages = eduSite
         ? await payload.find({
             collection: "pages",
@@ -571,16 +573,16 @@ export default async function CatchAllPage({ params }: Args) {
   ]);
   if (modernRoutes && modernTemplatedSlugs.has(slug.join("/"))) {
     const payload = await getPayloadClient();
-    // "staging" has no page docs of its own for these slugs (it clones
-    // edu's nav only, not its ~100 pages - same reason blog posts/topics
-    // need the same cross-site lookup, see lib/modern-edu-blog.ts's own
+    // edu has no page docs of its own for these slugs (it clones edu-2's
+    // nav only, not its ~100 pages - same reason blog posts/topics need
+    // the same cross-site lookup, see lib/modern-edu-blog.ts's own
     // comment) - its "Comprehensive Programs" nav items (academy,
     // programs/ableton-producer, programs/logic-producer - see
-    // modern-site-routes.ts's STAGING_ROUTES.programSlugs) are edu's own
+    // modern-site-routes.ts's STAGING_ROUTES.programSlugs) are edu-2's own
     // real pages instead.
     const coursePageSiteId =
-      site.slug === "staging"
-        ? ((await getAllSitesCached()).find((s: any) => s.slug === "edu")?.id ?? site.id)
+      site.slug === "edu"
+        ? ((await getAllSitesCached()).find((s: any) => s.slug === "edu-2")?.id ?? site.id)
         : site.id;
     const coursePages = await payload.find({
       collection: "pages",
@@ -632,11 +634,11 @@ export default async function CatchAllPage({ params }: Args) {
         const bareUrlsById = new Map(bareMediaRes.docs.map((d: any) => [String(d.wpAttachmentId), d.url as string]));
         // The mix-blend-multiply treatment (see resolveBareWpImages' own
         // comment) only ever requested for reality-dj-class's own Paris
-        // Hilton screenshot, on staging's cream theme - user request
+        // Hilton screenshot, on edu's cream theme - user request
         // (2026-09-03) to make it "look awesome" against the cream
         // background specifically.
         const blend =
-          site.slug === "staging" && slug.join("/") === "reality-dj-class"
+          site.slug === "edu" && slug.join("/") === "reality-dj-class"
             ? { caption: "Paris Hilton, on working with Dave" }
             : undefined;
         raw = resolveBareWpImages(raw, bareUrlsById, blend);
@@ -654,18 +656,18 @@ export default async function CatchAllPage({ params }: Args) {
       // Every course/program page's "Our Students Say" section carries the
       // exact same hardcoded Paris Hilton / "Garnish DJ Program" quote,
       // including pages with nothing to do with the DJ program - confirmed
-      // via a full sweep of all 20 staging course/program pages. Left in
+      // via a full sweep of all 20 edu course/program pages. Left in
       // place only on the two DJ-related pages it's actually relevant to.
       const isDjCoursePage = slug.join("/") === "courses/dj-course" || slug.join("/") === "dj-production-program";
-      // edu's own real course pages use [mkd_icon]-bulleted <h3> module
+      // edu-2's own real course pages use [mkd_icon]-bulleted <h3> module
       // cards (electronic-dj-course, reality-dj-class, ...) - detected and
       // stripped here, before extractCourseSections runs, so they render
       // once (in the "What You Will Learn" accordion below) instead of
       // twice (also inline, via extractParagraphs, which has no per-card
       // heading exclusion the way the <h4>/extractCourseIntro path does -
       // see extractH3IconBulletCardGroups/stripH3IconBulletCardGroups'
-      // own comments). Scoped to staging only.
-      const h3IconBulletModules = site.slug === "staging" ? extractH3IconBulletCardGroups(raw) : [];
+      // own comments). Scoped to edu only.
+      const h3IconBulletModules = site.slug === "edu" ? extractH3IconBulletCardGroups(raw) : [];
       const sectionsSourceRaw = h3IconBulletModules.length > 0 ? stripH3IconBulletCardGroups(raw) : raw;
       // extractCourseSections' own default limit (6) is too tight here: once
       // resolveSingleImages (above) turns a [vc_single_image] comparison-
@@ -791,8 +793,8 @@ export default async function CatchAllPage({ params }: Args) {
       // extractModuleAccordionTabs' own comment) belong in the real "What
       // You Will Learn" accordion below, not here - filtered out by title
       // so they don't also show up under the generic "Program modules."
-      // one. Scoped to staging only.
-      const moduleAccordionTabs = site.slug === "staging" ? extractModuleAccordionTabs(raw) : [];
+      // one. Scoped to edu only.
+      const moduleAccordionTabs = site.slug === "edu" ? extractModuleAccordionTabs(raw) : [];
       const curriculumAccordion = (isModulesAccordion ? extractAccordionModules(raw) : []).filter(
         (m) => !moduleAccordionTabs.some((mod) => mod.heading === m.title)
       );
@@ -850,15 +852,15 @@ export default async function CatchAllPage({ params }: Args) {
       const rawVideoEmbeds =
         slug.join("/") === "programs/ableton-production-program" ? [] : extractVideoEmbeds(raw);
       // "Garnish Music School in Los Angeles" (youtu.be/lw8jCikgUxs) is a
-      // generic promo clip reused as boilerplate across 12 of edu's real
+      // generic promo clip reused as boilerplate across 12 of edu-2's real
       // pages (courses/ableton-live among them - see
       // scripts/find-la-school-video.ts) - user asked (2026-09-03) to
-      // remove it network-wide on staging specifically, not per-page, so
+      // remove it network-wide on edu specifically, not per-page, so
       // any page's own embeds are filtered by video id here rather than
       // listed one slug at a time like the ableton-production-program
       // exclusion above.
       const videoEmbeds =
-        site.slug === "staging"
+        site.slug === "edu"
           ? rawVideoEmbeds.filter((v) => !v.embedUrl.includes("lw8jCikgUxs"))
           : rawVideoEmbeds;
       // The real instructor photo grid behind this page's own "Meet Our
@@ -868,7 +870,7 @@ export default async function CatchAllPage({ params }: Args) {
       // instructorSlugs list (the same one the Instructors listing page
       // above already trusts as "actually featured", rather than every
       // portfolioCategories-tagged page network-wide - confirmed necessary
-      // on staging: several older/deprecated pages, and even a *course*
+      // on edu: several older/deprecated pages, and even a *course*
       // page, share the same categories as real instructors, and would
       // otherwise show up in this grid too) rather than a broader,
       // unscoped query.
@@ -978,7 +980,7 @@ export default async function CatchAllPage({ params }: Args) {
         testimonials = extractFeaturedTestimonialsTab(raw);
       }
       const allSites = await getAllSitesCached();
-      const eduSite = allSites.find((s: any) => s.slug === "edu");
+      const eduSite = allSites.find((s: any) => s.slug === "edu-2");
       const relatedPosts = eduSite ? await getRelatedPosts(payload, eduSite.id, slug.join("/")) : [];
 
       // "View Course Schedule & Details" - see COURSE_SCHEDULE_PAGES's own
@@ -1118,25 +1120,25 @@ export default async function CatchAllPage({ params }: Args) {
           eduDomain={eduSite?.domain || "edu.garnishmusicproduction.com"}
           themeClassName={
             [
-              // pdx (also happens to cover staging's own identically-slugged
+              // pdx (also happens to cover edu's own identically-slugged
               // Sound Design & Synthesis / Electronic Sound Art with Arturia
               // pages - same nav slugs, so both already render dark here)
               "courses/sound-design-synthesis-ableton",
               "courses/electronic-sound-art",
-              // staging/la
+              // edu/la
               "courses/synthesis-and-sound-design",
-              // staging/la both use this exact slug now - staging's own
-              // page was renamed from courses/release-party to match,
-              // after being repurposed as its Advanced Mastering course
-              // with content copied over from la's real page.
+              // edu/la both use this exact slug now - edu's own page was
+              // renamed from courses/release-party to match, after being
+              // repurposed as its Advanced Mastering course with content
+              // copied over from la's real page.
               "courses/advanced-mastering",
               "courses/electronic-music-emp",
-              // staging's own real "Mastering" nav item is courses/mastering
+              // edu's own real "Mastering" nav item is courses/mastering
               // (a different slug from la's courses/advanced-mastering
               // above) - pdx/hou also have their own live courses/mastering
               // pages, already-approved in the default cream theme, so this
-              // is staging-only rather than added to the list unconditionally.
-              ...(site.slug === "staging" ? ["courses/mastering"] : []),
+              // is edu-only rather than added to the list unconditionally.
+              ...(site.slug === "edu" ? ["courses/mastering"] : []),
             ].includes(slug.join("/"))
               ? "gmpm-theme-classic-dark"
               : undefined
@@ -1159,11 +1161,11 @@ export default async function CatchAllPage({ params }: Args) {
   if (modernRoutes && slug.join("/") === modernRoutes.privateInstructionSlug) {
     const payload = await getPayloadClient();
     // Same cross-site lookup as the Comprehensive Programs/course pages
-    // above - staging has no page docs of its own, so edu's (site 15) real
+    // above - edu has no page docs of its own, so edu-2's (site 15) real
     // private-instruction page is fetched instead.
     const privateInstructionSiteId =
-      site.slug === "staging"
-        ? ((await getAllSitesCached()).find((s: any) => s.slug === "edu")?.id ?? site.id)
+      site.slug === "edu"
+        ? ((await getAllSitesCached()).find((s: any) => s.slug === "edu-2")?.id ?? site.id)
         : site.id;
     const privatePages = await payload.find({
       collection: "pages",
@@ -1173,11 +1175,11 @@ export default async function CatchAllPage({ params }: Args) {
     const privateDoc = privatePages.docs[0] as any;
     if (privateDoc) {
       const raw = privateDoc.wpRawContent || "";
-      // edu's own page is a richer, differently-shaped page than la/mia's
+      // edu-2's own page is a richer, differently-shaped page than la/mia's
       // (see extractEduPrivateInstructionContent's own comment) - doesn't
       // fit extractPrivateInstructionContent's shape at all, so it gets
       // its own extractor/component instead of a garbled render.
-      if (site.slug === "staging") {
+      if (site.slug === "edu") {
         return (
           <ModernEduPrivateInstructionPage
             site={site}
@@ -1265,7 +1267,7 @@ export default async function CatchAllPage({ params }: Args) {
     }
   }
 
-  if (site.slug === "staging") {
+  if (site.slug === "edu") {
     const post = await findStagingBlogPostCached(slug);
     if (post) {
       return <ModernBlogPostPage site={site} post={post} />;

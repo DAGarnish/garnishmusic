@@ -15,11 +15,14 @@ type SidebarSite = {
 // attachment id 10041, same title/link text) is byte-identical across
 // every site's wp_options, and only the resolved image URL differs
 // because each site independently has its own copy of the same file in
-// its own media library. Featured Posts always pulls from edu's posts now
+// its own media library. Featured Posts always pulls from edu-2's posts now
 // (see scripts/migrate-blog-posts.ts - every site's blog content was
-// consolidated there for SEO), opening in a new tab from any other site.
+// consolidated there for SEO, before edu's own later cutover onto its
+// staging redesign moved that content to edu-2 - see
+// scripts/promote-staging-to-edu.ts), opening in a new tab from any other
+// site.
 //
-// FEATURED_CATEGORY_ID (806, edu's "Featured" category, slug "featured" -
+// FEATURED_CATEGORY_ID (806, edu-2's "Featured" category, slug "featured" -
 // not to be confused with the separate 1-post "featured-archives" category
 // that happens to share the display name) is the real, already-established
 // curation mechanism: 23 posts already carry this tag from the original WP
@@ -36,8 +39,8 @@ export default async function Sidebar({ site }: { site: SidebarSite }) {
   const payload = await getPayloadClient();
   const ctx = await getUrlRewriteContext();
   const allSites = await getAllSitesCached();
-  const eduSite = allSites.find((s: any) => s.slug === "edu") || site;
-  const linksOffSite = site.slug !== "edu";
+  const eduSite = allSites.find((s: any) => s.slug === "edu-2") || site;
+  const linksOffSite = site.slug !== "edu-2";
 
   const [pinned, otherFeatured] = await Promise.all([
     payload.find({

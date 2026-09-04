@@ -5,11 +5,15 @@ import type { BlogListResolver, BlogListItem } from "../scripts/wp-shortcode-ren
 
 // All blog posts live on the "edu" site now (see scripts/migrate-blog-posts.ts
 // - the network's ~750 posts were consolidated there to fix duplicate-content
-// SEO drag). This resolver always queries edu's own posts/categories
-// regardless of which site is rendering the [mkd_blog_list] shortcode, and
-// marks every item with targetBlank=true unless the current site IS edu, so
-// a course page on any other subdomain links out to the edu copy in a new
-// tab instead of querying content that no longer exists locally.
+// SEO drag) - that consolidation predates edu's own cutover onto its staging
+// redesign, so the posts themselves still physically live at edu-2 (the
+// archived pre-cutover edu content, site 15 - see
+// scripts/promote-staging-to-edu.ts), not edu itself. This resolver always
+// queries edu-2's own posts/categories regardless of which site is rendering
+// the [mkd_blog_list] shortcode, and marks every item with targetBlank=true
+// unless the current site IS edu-2, so a course page on any other subdomain
+// (edu included) links out to the edu-2 copy in a new tab instead of
+// querying content that no longer exists locally.
 export async function buildBlogListResolver(
   site: { id: number | string; slug: string },
   rawContent: string
@@ -25,9 +29,9 @@ export async function buildBlogListResolver(
 
   const payload = await getPayloadClient();
   const allSites = await getAllSitesCached();
-  const eduSite = allSites.find((s: any) => s.slug === "edu");
+  const eduSite = allSites.find((s: any) => s.slug === "edu-2");
   if (!eduSite) return () => [];
-  const targetBlank = site.slug !== "edu";
+  const targetBlank = site.slug !== "edu-2";
   const ctx = await getUrlRewriteContext();
   const map = new Map<string, BlogListItem[]>();
 

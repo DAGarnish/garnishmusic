@@ -11,7 +11,7 @@ import { getContactHref } from "../../lib/modern-sites";
 import { getTopicPosts, type BlogPost } from "../../lib/modern-edu-blog";
 import type { MenuNode } from "../menu-html";
 
-// edu's real live homepage (site id 15) IS its "Locations" page (WP's own
+// edu-2's real live homepage (site id 15) IS its "Locations" page (WP's own
 // page_on_front points at wpPostId 5271, titled "Locations") - two
 // [mkd_portfolio_list] widgets back to back, "Categories by Topic" (real
 // city sites) and "Blog" (topic tiles, "Browse by Topic"), both rendered
@@ -25,11 +25,11 @@ const HERO_HEADING = "World-class music production, sound engineering & DJ schoo
 const HERO_SUBHEAD =
   "The world's boutique music production, sound engineering & electronic music DJ school - in locations worldwide.";
 
-// Each "locations" portfolio item (edu's own /courses/<slug> pages, id 363-
+// Each "locations" portfolio item (edu-2's own /courses/<slug> pages, id 363-
 // 414 - see lib/wp-portfolio-resolver.ts) is really just a signpost to that
 // city's own real subdomain in this app - confirmed against every current
 // Sites doc. "London" is the one exception: no ldn.* site exists in this
-// network yet, so it's left pointing at its own edu-internal page rather
+// network yet, so it's left pointing at its own edu-2-internal page rather
 // than a real subdomain that would 404.
 const CITY_SITE_SLUG: Record<string, string> = {
   "courses/tokyo": "tyo",
@@ -86,11 +86,11 @@ export default async function ModernEduHomePage({ site }: { site: any }) {
 
   const allSites = await getAllSitesCached();
   const ctx = await getUrlRewriteContext();
-  const eduSite = allSites.find((s: any) => s.slug === "edu");
+  const eduSite = allSites.find((s: any) => s.slug === "edu-2");
   // "London" (courses/ldn) is the one location tile with no real ldn.* site
   // in this network yet (see the CITY_SITE_SLUG comment above) - its
-  // fallback points at edu's own real page for that slug, not a relative
-  // path on this "staging" preview, which clones edu's nav only, not its
+  // fallback points at edu-2's own real page for that slug, not a relative
+  // path on edu, which clones edu-2's nav only, not its
   // ~100 pages, and would 404 on a bare `/${slug}/`.
   const locationHref = (slug: string): string => {
     const citySlug = CITY_SITE_SLUG[slug];
@@ -103,10 +103,10 @@ export default async function ModernEduHomePage({ site }: { site: any }) {
     .filter((d) => inCategory(d, locationsCat?.id))
     .map((d) => ({ title: d.title, href: locationHref(d.slug), imageUrl: imageUrl(d) }));
 
-  // Real posts are stored on edu (site 15) regardless of which site is
+  // Real posts are stored on edu-2 (site 15) regardless of which site is
   // rendering, but render locally here (ModernBlogPostPage, routed via
   // [[...slug]] page.tsx's findStagingBlogPostCached) rather than linking
-  // out to edu's own domain - so these are same-site links, no new tab.
+  // out to edu-2's own domain - so these are same-site links, no new tab.
   const blogTopicDocs = (items.docs as any[]).filter((d) => inCategory(d, blogCat?.id));
   const blogTopics: BlogTopic[] = await Promise.all(
     blogTopicDocs.map(async (d) => ({

@@ -418,7 +418,7 @@ export default function ModernCoursePage({
 
       {pricing.enrollLink && (
         <section
-          className={`border-t border-[var(--gmpm-line)] ${site.slug === "staging" ? "py-12 md:py-16" : "py-20"}`}
+          className={`border-t border-[var(--gmpm-line)] ${site.slug === "edu" ? "py-12 md:py-16" : "py-20"}`}
         >
           <div className="max-w-[1400px] mx-auto px-6 md:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <h2 className="gmpm-display font-bold text-2xl md:text-4xl max-w-xl">
@@ -438,7 +438,7 @@ export default function ModernCoursePage({
       {/* Always immediately before the blog section, on every course page -
           explicit placement request, not just "somewhere on the page". */}
       {!hasEmbeddedComparisonTable && (
-        <ModernComparisonTable cityAbbr={getCityAbbr(site)} centered={site.slug === "staging"} />
+        <ModernComparisonTable cityAbbr={getCityAbbr(site)} centered={site.slug === "edu"} />
       )}
 
       <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} isSpanish={isSpanish} />

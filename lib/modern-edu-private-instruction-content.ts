@@ -1,4 +1,4 @@
-// edu's own real "private-instruction" page (id 1395, site 15) is a
+// edu-2's own real "private-instruction" page (id 1395, site 15) is a
 // genuinely richer shape than either the la or mia one
 // modern-private-instruction-content.ts's extractPrivateInstructionContent
 // was built for - a real "Specialist Expert Instructors" blurb, two

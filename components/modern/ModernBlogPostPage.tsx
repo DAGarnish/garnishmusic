@@ -5,10 +5,10 @@ import ModernFooter from "./ModernFooter";
 import { EMPTY_RICHTEXT, postRichTextConverters } from "./modern-post-richtext";
 import type { MenuNode } from "../menu-html";
 
-// A single real blog post, rendered on "staging" (and eventually edu
-// itself) in the modern cream/red design instead of opening out to edu's
-// legacy WP theme - see [[...slug]]/page.tsx's findStagingBlogPostCached
-// for how a post slug routes here.
+// A single real blog post, rendered on edu in the modern cream/red design
+// instead of opening out to edu-2's legacy WP theme - see
+// [[...slug]]/page.tsx's findStagingBlogPostCached for how a post slug
+// routes here.
 export default function ModernBlogPostPage({ site, post }: { site: any; post: any }) {
   const categories = Array.isArray(post.categories) ? post.categories : [];
   const categoryLabel = categories

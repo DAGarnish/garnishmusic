@@ -202,17 +202,21 @@ const MIA_ROUTES: ModernSiteRoutes = {
 
 MODERN_SITE_ROUTES.mia = MIA_ROUTES;
 
-// "staging"'s real site route config - a preview of a redesigned edu
-// homepage (see ModernEduHomePage), not a per-city clone like the previous
-// three "staging" tenants (pdx/la/mia all promoted out of this same slug in
-// turn - see MIA_ROUTES's own comment). edu is the network-wide hub, not a
-// single school, so it has no real instructors page of its own (still a
-// placeholder) - but its own real Comprehensive Programs/Express Classes/
-// Others pages are wired up below (see [[...slug]] page.tsx's own
-// coursePageSiteId/privateInstructionSiteId, which fetch these from edu -
-// site 15 - instead of staging's own id, since staging clones edu's nav
-// only, not its ~100 pages). contactSlug points at edu's own real
-// "/connect/" page (confirmed live).
+// edu's real site route config - a redesigned edu homepage (see
+// ModernEduHomePage), not a per-city clone like the previous three
+// "staging" tenants (pdx/la/mia all promoted out of that same slug in turn
+// - see MIA_ROUTES's own comment). This one was built and previewed under
+// the "staging" slug too (site id 28) before being promoted to the live
+// "edu" slug/domain, archiving the pre-cutover real edu content at "edu-2"
+// (site id 15) rather than deleting it - same rollback pattern as
+// mia-old/la-old (see scripts/promote-staging-to-edu.ts). edu is the
+// network-wide hub, not a single school, so it has no real instructors page
+// of its own (still a placeholder) - but its own real Comprehensive
+// Programs/Express Classes/Others pages are wired up below (see
+// [[...slug]] page.tsx's own coursePageSiteId/privateInstructionSiteId,
+// which fetch these from "edu-2" instead of edu's own id, since edu itself
+// only ever cloned the old edu's nav, not its ~100 pages). contactSlug
+// points at edu-2's own real "/connect/" page (confirmed live).
 const STAGING_ROUTES: ModernSiteRoutes = {
   contactSlug: "connect",
   // edu's real page (id 1395) uses the older bare-<h2>/[vc_column_text]
@@ -240,4 +244,4 @@ const STAGING_ROUTES: ModernSiteRoutes = {
   instructorSlugs: [],
 };
 
-MODERN_SITE_ROUTES.staging = STAGING_ROUTES;
+MODERN_SITE_ROUTES.edu = STAGING_ROUTES;

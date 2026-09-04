@@ -15,18 +15,19 @@ export const MODERN_SITE_SLUGS = new Set(Object.keys(MODERN_SITE_ROUTES));
 // modern-globals.css) rather than the network-wide dark/lime default - pdx
 // originated it, la and mia (site id 24, promoted from its own "staging"
 // preview clone slug once approved - see modern-site-routes.ts) both got it
-// too in a later rollout. "staging" (edu's own homepage-redesign preview -
-// see ModernEduHomePage) is on it too, at the user's request (2026-09-03) -
-// matches la/mia's cream + red/terracotta look, EDU's header mark using
-// --gmpm-accent for its "." same as every other modern site. Shared here
-// rather than left as a literal `site.slug === "pdx"` check in each
-// consumer (layout.tsx's <body> class, ModernHomePage's lime-vs-red partner
-// logo pick, ...) - that pattern is exactly how the partner logos stayed
-// lime-green on staging after the theme rollout: the theme rolled out, but
-// a second, separate "is this site cream-themed" check elsewhere didn't get
-// updated along with it.
+// too in a later rollout. edu (its own homepage-redesign preview, previewed
+// under "staging" before its own cutover - see ModernEduHomePage and
+// scripts/promote-staging-to-edu.ts) is on it too, at the user's request
+// (2026-09-03) - matches la/mia's cream + red/terracotta look, EDU's header
+// mark using --gmpm-accent for its "." same as every other modern site.
+// Shared here rather than left as a literal `site.slug === "pdx"` check in
+// each consumer (layout.tsx's <body> class, ModernHomePage's lime-vs-red
+// partner logo pick, ...) - that pattern is exactly how the partner logos
+// stayed lime-green on staging after the theme rollout: the theme rolled
+// out, but a second, separate "is this site cream-themed" check elsewhere
+// didn't get updated along with it.
 export function isCreamThemeSite(slug: string): boolean {
-  return slug === "pdx" || slug === "mia" || slug === "la" || slug === "staging";
+  return slug === "pdx" || slug === "mia" || slug === "la" || slug === "edu";
 }
 
 // The course-schedule/pricing-disclosure widget and Add-to-Cart suppression
@@ -113,6 +114,6 @@ const STAGING_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
 export function getFooterCourseLinks(slug: string | undefined | null): FooterCourseLink[] {
   if (slug === "la") return LA_FOOTER_COURSE_LINKS;
   if (slug === "mia") return MIA_FOOTER_COURSE_LINKS;
-  if (slug === "staging") return STAGING_FOOTER_COURSE_LINKS;
+  if (slug === "edu") return STAGING_FOOTER_COURSE_LINKS;
   return DEFAULT_FOOTER_COURSE_LINKS;
 }

@@ -1,6 +1,6 @@
 // Maps each "blog-topics" portfolio tile (its own page slug, e.g.
 // "blog/production") to the real post-category slugs actual blog posts are
-// tagged with on edu (site 15) - confirmed via `categories` collection dump
+// tagged with on edu-2 (site 15) - confirmed via `categories` collection dump
 // (82 real categories exist; these are the ones that line up with each
 // topic tile, several archived/aliased duplicates included, e.g. "ableton"
 // + "ableton-live" + "ableton-archives" + "tutorials-ableton" all being
@@ -32,13 +32,13 @@ export type BlogPost = {
   dateLabel?: string;
 };
 
-// Real posts are stored on edu (site 15) regardless of which site is
+// Real posts are stored on edu-2 (site 15) regardless of which site is
 // rendering (see lib/wp-blog-list-resolver.ts's own comment), but they
 // render locally through ModernBlogPostPage (see [[...slug]]/page.tsx's
-// findStagingBlogPostCached) rather than linking out to edu's own domain -
+// findStagingBlogPostCached) rather than linking out to edu-2's own domain -
 // so href here is a same-site relative path, not a cross-domain one.
 // `limit: 3` for the homepage's per-topic preview, uncapped (200
-// comfortably covers every topic - edu has 329 posts total across all 12)
+// comfortably covers every topic - edu-2 has 329 posts total across all 12)
 // for ModernBlogTopicPage's full archive.
 export async function getTopicPosts(
   payload: any,
