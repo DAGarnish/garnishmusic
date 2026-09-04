@@ -229,52 +229,80 @@ export const NY_PROGRAMS: Record<string, NYProgramContent> = {
       "Our “SongCraft Pro” program is designed to empower you with the knowledge and skills to not only write compelling songs but also produce them to a studio-quality standard. Whether you're a lyricist with a passion for melodies or a producer with a knack for crafting music, this comprehensive program is your pathway to artistic excellence.",
     ],
     sections: [],
-    curriculum: [
+    curriculum: [],
+    // Rendered as an accordion (ModernAccordionSection, under "Program
+    // modules.") rather than the static 3-column curriculum grid every
+    // other NY_PROGRAMS entry uses - user request (2026-09-04) to match
+    // "similar programs in the network" (e.g. the 360° Garnish Music
+    // Academy entry above, whose own real content is likewise a handful of
+    // long modules better suited to an accordion than a cramped grid card).
+    curriculumEyebrow: "Curriculum",
+    curriculumHeading: "Program modules.",
+    curriculumAccordion: [
       {
-        heading: "Your Inner Songwriter: Crafting Melodies and Lyrics That Resonate",
-        items: [
-          "Songwriting Foundations: song structure, common chord progressions, and different songwriting styles.",
-          "Lyric Writing: craft compelling and evocative lyrics that connect with your audience.",
-          "Melody and Harmony: create captivating melodies and harmonies that make your songs unforgettable.",
-          "Song Structure: verse-chorus, bridge, and more, for a real sense of progression.",
-          "Music Theory for Songwriters: essential concepts to experiment with different musical elements.",
-          "Inspiration and Creativity: exercises to overcome writer's block and generate fresh ideas.",
-          "Feedback and Collaboration: share your work, get constructive feedback, find collaborators.",
-        ],
+        title: "Your Inner Songwriter: Crafting Melodies and Lyrics That Resonate",
+        bodyHtml:
+          "<ul>" +
+          [
+            "Songwriting Foundations: song structure, common chord progressions, and different songwriting styles.",
+            "Lyric Writing: craft compelling and evocative lyrics that connect with your audience.",
+            "Melody and Harmony: create captivating melodies and harmonies that make your songs unforgettable.",
+            "Song Structure: verse-chorus, bridge, and more, for a real sense of progression.",
+            "Music Theory for Songwriters: essential concepts to experiment with different musical elements.",
+            "Inspiration and Creativity: exercises to overcome writer's block and generate fresh ideas.",
+            "Feedback and Collaboration: share your work, get constructive feedback, find collaborators.",
+          ]
+            .map((item) => `<li>${item}</li>`)
+            .join("") +
+          "</ul>",
       },
       {
-        heading: "Songcraft to Soundcraft: Vocal & Music Production for Songwriters",
-        items: [
-          "Songwriting and Production Synergy: produce music that complements your songwriting.",
-          "Music Production Fundamentals: hands-on with industry-standard DAWs.",
-          "Instrumentation and Sound Design: select instruments and craft unique sounds.",
-          "Arrangement and Orchestration: advanced techniques for arranging your songs.",
-          "Studio: etiquette and best practices for capturing your best performances.",
-          "Recording: studio and home recording setups, even on a budget.",
-          "Vocal Producing & Production: enhance vocal performances and process them to a professional standard.",
-          "Mixing & Mastering: clear, cohesive, radio-ready sound for your music.",
-        ],
+        title: "Songcraft to Soundcraft: Vocal & Music Production for Songwriters",
+        bodyHtml:
+          "<ul>" +
+          [
+            "Songwriting and Production Synergy: produce music that complements your songwriting.",
+            "Music Production Fundamentals: hands-on with industry-standard DAWs.",
+            "Instrumentation and Sound Design: select instruments and craft unique sounds.",
+            "Arrangement and Orchestration: advanced techniques for arranging your songs.",
+            "Studio: etiquette and best practices for capturing your best performances.",
+            "Recording: studio and home recording setups, even on a budget.",
+            "Vocal Producing & Production: enhance vocal performances and process them to a professional standard.",
+            "Mixing & Mastering: clear, cohesive, radio-ready sound for your music.",
+          ]
+            .map((item) => `<li>${item}</li>`)
+            .join("") +
+          "</ul>",
       },
       {
-        heading: "Soundtrack to Success: Setting You Up for What's Next",
-        items: [
-          "Collaboration: work with fellow songwriters and producers to refine your skills for future co-writes.",
-          "Feedback: receive constructive feedback and expert guidance on your work.",
-          "Music Marketplace: navigate copyright, publishing, labels, licensing, and distribution.",
-          "Entrepreneurship and Promotion: strategies to promote and expose your music effectively.",
-        ],
+        title: "Soundtrack to Success: Setting You Up for What's Next",
+        bodyHtml:
+          "<ul>" +
+          [
+            "Collaboration: work with fellow songwriters and producers to refine your skills for future co-writes.",
+            "Feedback: receive constructive feedback and expert guidance on your work.",
+            "Music Marketplace: navigate copyright, publishing, labels, licensing, and distribution.",
+            "Entrepreneurship and Promotion: strategies to promote and expose your music effectively.",
+          ]
+            .map((item) => `<li>${item}</li>`)
+            .join("") +
+          "</ul>",
       },
       {
-        heading: "Who Should Attend?",
-        items: [
-          "Aspiring or established songwriters, lyricists, and composers looking to produce their own music.",
-          "Aspiring or established music producers seeking to enhance their songwriting skills.",
-          "Musicians and artists aiming to have creative control over their music.",
-          "Anyone with a passion for music and a desire to take their creative ideas to the next level.",
-        ],
+        title: "Who Should Attend?",
+        bodyHtml:
+          "<ul>" +
+          [
+            "Aspiring or established songwriters, lyricists, and composers looking to produce their own music.",
+            "Aspiring or established music producers seeking to enhance their songwriting skills.",
+            "Musicians and artists aiming to have creative control over their music.",
+            "Anyone with a passion for music and a desire to take their creative ideas to the next level.",
+          ]
+            .map((item) => `<li>${item}</li>`)
+            .join("") +
+          "</ul>",
       },
     ],
-    curriculumAccordion: [],
     pricing: {
       priceLine: "120 hours - $4,499 + $100 registration (14+ days out) / $4,999 + $200 otherwise",
       enrollLink: "/contact-map",
