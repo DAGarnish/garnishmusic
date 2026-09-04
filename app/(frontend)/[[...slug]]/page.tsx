@@ -513,6 +513,18 @@ export default async function CatchAllPage({ params }: Args) {
         courseSchedule={content.courseSchedule}
         relatedPosts={[]}
         eduDomain="edu.garnishmusicproduction.com"
+        // Matches the network-wide dark/lime exception for these same
+        // three course topics elsewhere (see the modernTemplatedSlugs
+        // branch's own themeClassName comment below) - user request
+        // (2026-09-04) to put ny's own Mastering and Sound Design pages
+        // in that same look rather than staging's default cream theme.
+        themeClassName={
+          ["courses/mastering", "courses/sound-design-synthesis", "courses/electronic-sound-art"].includes(
+            slug.join("/")
+          )
+            ? "gmpm-theme-classic-dark"
+            : undefined
+        }
       />
     );
   }
