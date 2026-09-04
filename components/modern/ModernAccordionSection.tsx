@@ -37,14 +37,14 @@ export default function ModernAccordionSection({
   items,
 }: {
   eyebrow: string;
-  heading: string;
+  heading?: string;
   items: AccordionModule[];
 }) {
   if (!items.length) return null;
   return (
     <section className="max-w-[900px] mx-auto px-6 md:px-10 py-16 border-t border-[var(--gmpm-line)]">
       <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">{eyebrow}</div>
-      <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-8">{heading}</h2>
+      {heading && <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-8">{heading}</h2>}
       <div>
         {items.map((item, i) => (
           <AccordionItem key={i} item={item} />
