@@ -30,6 +30,7 @@ import { createTtlCache } from "../../../lib/ttl-cache";
 import ModernHomePage from "../../../components/modern/ModernHomePage";
 import ModernEduHomePage from "../../../components/modern/ModernEduHomePage";
 import ModernNYHomePage from "../../../components/modern/ModernNYHomePage";
+import { NY_PROGRAMS } from "../../../lib/modern-ny-programs-content";
 import ModernBlogTopicPage from "../../../components/modern/ModernBlogTopicPage";
 import ModernBlogPostPage from "../../../components/modern/ModernBlogPostPage";
 import { TOPIC_POST_CATEGORY_SLUGS } from "../../../lib/modern-edu-blog";
@@ -477,6 +478,36 @@ export default async function CatchAllPage({ params }: Args) {
       return <ModernNYHomePage site={site} />;
     }
     return <ModernHomePage site={site} />;
+  }
+  // ny's own real "Comprehensive Programs" (see NY_ROUTES and
+  // lib/modern-ny-programs-content.ts's own comment) - hand-transcribed
+  // content fed straight into the same ModernCoursePage every other
+  // modern site's real course pages already use, rather than a bespoke
+  // component, since this shape (intro/curriculum/FAQ/pricing/instructors)
+  // is exactly what that template already renders. Checked ahead of the
+  // generic modernTemplatedSlugs branch below, which would otherwise try
+  // (and fail) to find a page doc staging doesn't have.
+  if (site.slug === "staging" && NY_PROGRAMS[slug.join("/")]) {
+    const content = NY_PROGRAMS[slug.join("/")];
+    return (
+      <ModernCoursePage
+        site={site}
+        title={content.title}
+        heroImageUrl={content.heroImageUrl}
+        intro={content.intro}
+        sections={content.sections}
+        curriculum={content.curriculum}
+        curriculumAccordion={content.curriculumAccordion}
+        curriculumEyebrow={content.curriculumEyebrow}
+        curriculumHeading={content.curriculumHeading}
+        pricing={content.pricing}
+        faqs={content.faqs}
+        instructorGridItems={content.instructorGridItems}
+        testimonials={content.testimonials}
+        relatedPosts={[]}
+        eduDomain="edu.garnishmusicproduction.com"
+      />
+    );
   }
   // The homepage's own "Browse by topic" tiles (ModernEduHomePage) link
   // here - a real archive of every published post in that topic, not a
