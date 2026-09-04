@@ -132,7 +132,7 @@ export default async function ModernEduHomePage({ site }: { site: any }) {
   // "edu." - user request (2026-09-04), since this homepage header isn't
   // US-specific like the original photo's own real signage implies. The
   // real /why-us/ page itself keeps the original, unedited photo.
-  const heroImageUrl = "https://s3.us-east-2.amazonaws.com/garnishmusic-media/edu-homepage-hero-edu-v3.png";
+  const heroImageUrl = "https://s3.us-east-2.amazonaws.com/garnishmusic-media/edu-homepage-hero-edu-v4.png";
 
   return (
     <div className="gmpm-root min-h-screen">
