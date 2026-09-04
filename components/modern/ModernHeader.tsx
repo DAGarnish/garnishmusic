@@ -180,7 +180,7 @@ function TabbedNavGroup({ item }: { item: MenuNode }) {
                 type="button"
                 onMouseEnter={() => setActiveIndex(i)}
                 className={`flex items-center gap-2 text-sm text-left w-full transition-colors ${
-                  i === activeIndex ? "gmpm-mono text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
+                  i === activeIndex ? "text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
                 }`}
               >
                 <span
