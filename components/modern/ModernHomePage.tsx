@@ -257,10 +257,17 @@ export default async function ModernHomePage({ site }: { site: any }) {
           plain "About" eyebrow). Every other site's own accordionItems is
           empty, so this remains a no-op for them regardless (see
           ModernAccordionSection's own `if (!items.length) return null`). */}
-      <ModernAccordionSection eyebrow="About" items={accordionItems} />
+      <ModernAccordionSection eyebrow="About" items={accordionItems} tightBottom={site.slug === "la"} />
 
+      {/* la: tighter top padding per request (2026-09-04), paired with
+          ModernAccordionSection's own tightBottom above - other sites
+          hitting this same offerings.length>0 branch (e.g. mia) keep the
+          original spacing. */}
       {offerings.length > 0 && (
-        <section id="programs" className="max-w-[1400px] mx-auto px-6 md:px-10 pt-16 md:pt-24">
+        <section
+          id="programs"
+          className={`max-w-[1400px] mx-auto px-6 md:px-10 ${site.slug === "la" ? "pt-6 md:pt-8" : "pt-16 md:pt-24"}`}
+        >
           <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Programs</div>
           <h2 className="gmpm-display font-bold text-3xl md:text-5xl max-w-2xl mb-4">
             Structured paths from first beat to finished record.
