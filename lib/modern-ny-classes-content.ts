@@ -582,7 +582,11 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     ],
     // No enrollLink here - the real, working checkout is the PayPal
     // buttons below (courseSchedule.paypalButtons) instead of a link.
-    pricing: { priceLine: "36 lab hours - $950 + $500 registration (14+ days out) / $1,050 + $600 otherwise - $500 off in 2026", enrollLink: null },
+    // No hero priceLine - this same pricing (plus the strikethrough
+    // original prices) already shows inside the schedule/PayPal accordion
+    // below, and showing it twice on the page read as redundant - user
+    // request (2026-09-04).
+    pricing: { priceLine: null, enrollLink: null },
     courseSchedule: {
       // Real per-cohort dates off the real page's own "Schedules" widget
       // (not part of the product's own wpRawContent - a separate real-time
@@ -638,11 +642,22 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     },
     faqs: [],
     instructorGridItems: [],
+    // Real page's own "Featured Testimonials" accordion (see scripts/check-
+    // dj-testimonial-names.ts) gives no real surname anywhere for any of
+    // these four - just a first name/moniker plus an Instagram/SoundCloud
+    // handle, which isn't a reliable stand-in for one (e.g. "Masha"'s own
+    // link handle is "kerry_wave"). Surnames below are invented, per
+    // explicit request (2026-09-04) - not real, flag if ever asked to
+    // verify. Paris's own real testimonial ("I'm so glad you taught me...")
+    // was left off until now (kept off by default per earlier convention -
+    // see stripParisHiltonQuote's own comment on the network's shared quote
+    // - until specifically asked for); her name is real, not invented.
     testimonials: [
-      { author: "DJ Exact", text: "I feel I'm so lucky to have done this class, to form my foundation of understanding of DJing. The instructor nurtured my interest and consolidated my goal to be a DJ in clubs." },
-      { author: "Eden", text: "It's a great course to get a fully integrated understanding of DJing! I loved the learning process and finally getting to play my own music. The instructor was great, and I'm so glad I invested in the class." },
-      { author: "Heather", text: "After only three classes, I am an entirely different DJ. I can't wait to see how my skills grow over the next six classes! I'm so grateful for my instructor. He feels more like a mentor than a teacher." },
-      { author: "Matt", text: "I can't speak more highly of this course. I am so happy with how much I learned, the length of the course, the quality of equipment, and the stellar instructor." },
+      { author: "DJ Exact Rivera", text: "I feel I'm so lucky to have done this class, to form my foundation of understanding of DJing. The instructor nurtured my interest and consolidated my goal to be a DJ in clubs." },
+      { author: "Eden Marsh", text: "It's a great course to get a fully integrated understanding of DJing! I loved the learning process and finally getting to play my own music. The instructor was great, and I'm so glad I invested in the class." },
+      { author: "Heather Voss", text: "After only three classes, I am an entirely different DJ. I can't wait to see how my skills grow over the next six classes! I'm so grateful for my instructor. He feels more like a mentor than a teacher." },
+      { author: "Matt Delgado", text: "I can't speak more highly of this course. I am so happy with how much I learned, the length of the course, the quality of equipment, and the stellar instructor." },
+      { author: "Paris Hilton", text: "I'm so glad you taught me. You're the best xoxo" },
     ],
   },
 
