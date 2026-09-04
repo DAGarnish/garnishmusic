@@ -102,6 +102,27 @@ export const NY_INSTRUCTOR_BIOS: Record<string, NYInstructorBio> = {
     bioHtml:
       '<p>Shareef Islam (aka Azteknique and TekMaschine) was born in the Bronx, NY, and raised in Brooklyn, NY. He has worked with established artists including AZ, Big Daddy Kane, SuperStar of the ICONZ, The Bush Babees, Busta Rhymes, Rampage, Q-Tip and De La Soul, as well as boxing champion Zab "Super" Judah, Lin Que (ISIS of X-Clan), Mos Def, Onyx and Jay-Z.</p>',
   },
+  // Added for the ableton-live-djs/rekordbox pages' own dedicated 4-person
+  // DJ_INSTRUCTORS list (see modern-ny-classes-content.ts) - user request
+  // (2026-09-04) to feature real DJ specialists there instead of the
+  // network-wide CORE_INSTRUCTORS generalist roster. Real bio content
+  // hand-transcribed from each instructor's own real page (site 14 ids 484
+  // and 471 respectively).
+  "courses/chris-veras": {
+    name: "Chris Veras",
+    role: "DJ/Producer/MC, one half of Dos Flakos",
+    photoUrl: `${S3}Chris-Veras.jpeg`,
+    bioHtml: `<p>Chris Veras is a multitalented DJ/Producer/MC, one half of the dynamic duo Dos Flakos. Born and raised in The Bronx, New York, he's performed and held multiple residencies in NYC at some of the most popular and legendary venues. From sold out arenas and festivals to touring internationally, Chris DJs across various dance music genres within the Electronic, Latin, Caribbean, and underground spaces.</p>
+<p>Chris specializes in House, Club music, Latin/Caribbean music &amp; various Global Sounds. You can find his remixes as Dos Flakos on Bandcamp/Soundcloud and all original releases on most digital streaming platforms.</p>`,
+  },
+  "courses/alex-hell-n": {
+    name: "Alex Hell-n",
+    role: "DJ",
+    photoUrl: `${S3}corey-800.jpg`,
+    bioHtml: `<p>Alex Hell-n is a New York-based DJ, born and raised, known for their percussive, groove-driven sound, blending raw techno with melodic textures, hypnotic rhythms, and electronic vocals. Starting out as a dancer, their approach to DJing is rooted in movement, creating sets that are as physical as they are immersive.</p>
+<p>With a residency at Good Judy and Mother's Milk events, and performances at NYC staples like Bossa Nova Civic Club, SILO, Mood Ring, Wonderville, Rash, Newtown Radio, Equinox, and more, they bring real-world club experience and a community-focused perspective to their craft.</p>
+<p>As they join Garnish New York, Alex is excited to share their hands-on approach to DJing—focusing on foundational techniques, creative mixing, and developing a unique sound behind the decks. Their goal is to help students build confidence, understand the art of reading a crowd, and bring their own personality to every set.</p>`,
+  },
 };
 
 // The real /instructors directory listing - ny's own real page at this

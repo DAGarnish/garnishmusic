@@ -51,6 +51,20 @@ const CORE_INSTRUCTORS = CORE_INSTRUCTOR_NAMES.map((name) => {
   return { name, href: `/${slug}`, imageUrl: bio.photoUrl };
 });
 
+// ableton-live-djs/rekordbox's own 4 real DJ specialists (user request
+// 2026-09-04) rather than CORE_INSTRUCTORS' 8 generalists - real DJ-tagged
+// instructors on ny's own site (portfolioCategories "dj", confirmed via
+// scripts/find-ny-dj-instructors.ts), scoped to just these two DJ-focused
+// pages rather than swapped in network-wide.
+const DJ_INSTRUCTOR_NAMES = ["98 Dots", "Brian Thabault", "Chris Veras", "Alex Hell-n"];
+
+const DJ_INSTRUCTORS = DJ_INSTRUCTOR_NAMES.map((name) => {
+  const bioEntry = Object.entries(NY_INSTRUCTOR_BIOS).find(([, bio]) => bio.name === name);
+  if (!bioEntry) throw new Error(`No NY_INSTRUCTOR_BIOS entry for "${name}"`);
+  const [slug, bio] = bioEntry;
+  return { name, href: `/${slug}`, imageUrl: bio.photoUrl };
+});
+
 // User request (2026-09-04): check how "similar programs in the network"
 // present their own "what you'll cover" content, and match it. Checked
 // directly against every other modern-design site's own real page for
@@ -133,7 +147,7 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     // I take this course remotely?", "Is there a more advanced program if I
     // want to go further?"
     faqs: [],
-    instructorGridItems: CORE_INSTRUCTORS,
+    instructorGridItems: DJ_INSTRUCTORS,
     testimonials: [],
   },
 
@@ -479,7 +493,7 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     curriculumAccordion: [],
     pricing: { priceLine: "18 hours - $799 + $100 registration (14+ days out) / $999 + $200 otherwise", enrollLink: "/contact-map" },
     faqs: [],
-    instructorGridItems: [],
+    instructorGridItems: DJ_INSTRUCTORS,
     testimonials: [],
   },
 
