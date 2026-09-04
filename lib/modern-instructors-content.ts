@@ -46,6 +46,11 @@ export type InstructorDirectoryCard = {
   // "Credits: ..." / "Specialities: ..." lines - real per-instructor info
   // that sits between the role and the "See Bio" link on la's own page.
   info: string[];
+  // Optional first-paragraph excerpt from the instructor's own full bio
+  // page (see NY_INSTRUCTOR_DIRECTORY's own comment) - real HTML (may
+  // contain <strong>/<a>), so rendered via dangerouslySetInnerHTML rather
+  // than as plain text the way `info`'s own short credit lines are.
+  bioExcerptHtml?: string;
 };
 
 function stripTags(s: string): string {

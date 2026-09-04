@@ -77,6 +77,12 @@ export default function ModernInstructorsPage({
                 {inst.title && (
                   <p className="text-[var(--gmpm-text-dim)] mb-4">{inst.title}</p>
                 )}
+                {inst.bioExcerptHtml && (
+                  <p
+                    className="text-sm text-[var(--gmpm-text-dim)] leading-relaxed max-w-2xl mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
+                    dangerouslySetInnerHTML={{ __html: inst.bioExcerptHtml }}
+                  />
+                )}
                 {inst.info.length > 0 && (
                   <div className="space-y-2 mb-6 max-w-2xl">
                     {inst.info.map((line, j) => (

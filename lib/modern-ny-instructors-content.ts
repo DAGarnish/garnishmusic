@@ -109,7 +109,9 @@ export const NY_INSTRUCTOR_BIOS: Record<string, NYInstructorBio> = {
 // so this directory is built from the same 11 real bio pages instead,
 // matching the "real, hand-maintained directory" shape la's own real
 // instructors page already uses (see ModernInstructorsPage's `directory`
-// prop).
+// prop). Each card's bioExcerptHtml is that same instructor's own full
+// bio's first paragraph - user request (2026-09-04) to preview more than
+// just name/role/photo before clicking through to the full bio.
 export const NY_INSTRUCTOR_DIRECTORY: InstructorDirectoryCard[] = Object.entries(NY_INSTRUCTOR_BIOS).map(
   ([slug, bio]) => ({
     name: bio.name,
@@ -117,5 +119,6 @@ export const NY_INSTRUCTOR_DIRECTORY: InstructorDirectoryCard[] = Object.entries
     photoUrl: bio.photoUrl,
     href: `/${slug}`,
     info: [],
+    bioExcerptHtml: bio.bioHtml.match(/<p>[\s\S]*?<\/p>/)?.[0],
   })
 );
