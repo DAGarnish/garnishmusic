@@ -22,7 +22,20 @@ export default function ModernPrivateInstructionPage({
   content: PrivateInstructionContent;
   faqs: Faq[];
 }) {
-  const { pricing, location } = splitPrivateInstructionPricing(content.pricingItems);
+  // sf's own real page carries its pricing as two already-titled
+  // [mkd_icon_with_text] cards (see PrivateInstructionContent's own
+  // comment) - used as-is, with real site-specific titles, in preference
+  // to the flat pricingItems heuristic split below (mia/pdx/hou's own
+  // shape, which has no real block titles of its own to draw on).
+  const { pricing, location } =
+    content.pricingBlocks.length > 0
+      ? {
+          pricing: content.pricingBlocks[0]?.items ?? [],
+          location: content.pricingBlocks[1]?.items ?? [],
+        }
+      : splitPrivateInstructionPricing(content.pricingItems);
+  const pricingTitle = content.pricingBlocks[0]?.title || "Pricing";
+  const locationTitle = content.pricingBlocks[1]?.title || "Location & Studio Costs";
   return (
     <div className="gmpm-root min-h-screen">
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} siteSlug={site.slug} />
@@ -55,8 +68,8 @@ export default function ModernPrivateInstructionPage({
         <section className="max-w-[1100px] mx-auto px-6 md:px-10 py-16">
           <ModernPricingLocationBlocks
             blocks={[
-              { icon: "pricing", title: "Pricing", items: pricing },
-              { icon: "location", title: "Location & Studio Costs", items: location },
+              { icon: "pricing", title: pricingTitle, items: pricing },
+              { icon: "location", title: locationTitle, items: location },
             ]}
           />
           <Link

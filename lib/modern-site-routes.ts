@@ -271,3 +271,58 @@ const NY_ROUTES: ModernSiteRoutes = {
 };
 
 MODERN_SITE_ROUTES.ny = NY_ROUTES;
+
+// sf's real site route config - previewed under the "staging" slug (site
+// id freed up by ny's own promotion above), same cycle every previous
+// tenant of that slug went through. Unlike ny's own rebuild, sf's real
+// wpRawContent fits the network's existing generic extractors well (its
+// homepage uses the same real [mkd_elements_holder] offering-card shape
+// la's own homepage does - see ModernHomePage's own extractHomepageOfferings
+// comment), so this one goes back to the "extract real content, leave the
+// shortcodes behind" default every site except ny/edu uses, rather than
+// hand-transcribing fresh data files.
+const SF_ROUTES: ModernSiteRoutes = {
+  contactSlug: "contact-map",
+  // sf's real page lives at "courses/private-instruction" (nested, unlike
+  // pdx/hou/mia's flat "private-instruction") - confirmed via its own real
+  // nav link under "DJ & More".
+  privateInstructionSlug: "courses/private-instruction",
+  instructorsSlug: "instructors",
+  // sf's real "Comprehensive Programs" pages - none of these use a
+  // "courses/*" path, so collectNavCourseSlugs (which only auto-picks up
+  // /courses/* nav links) doesn't find them on its own. "ableton-music-
+  // producer-program" (no "| San Francisco" title suffix, not linked from
+  // sf's own real nav) is an older orphaned duplicate of
+  // "ableton-producer-program" - confirmed by content diff - deliberately
+  // left off here so it doesn't get a second, redundant modern page.
+  programSlugs: ["emp-electronic-music-producer", "ableton-producer-program", "logic-producer-program"],
+  // sf's own real 17-person roster (site id 5, slug prefix
+  // "instructor-portfolio/", not "courses/" like every other site so far) -
+  // confirmed against every real instructor-portfolio/* page (portfolioCategories
+  // exists on each). "instructor-portfolio/ibiza-dj-bootcamp" and
+  // "instructor-portfolio/songwriting" are real pages under this same path
+  // prefix but aren't people - left off this list, same principle as la's
+  // own comment about not resurfacing no-longer-featured pages.
+  instructorSlugs: [
+    "instructor-portfolio/alex-scammon-is-the-co-founder-of-soul-graffiti-productions",
+    "instructor-portfolio/ben-wiley-logic-pro",
+    "instructor-portfolio/cello-joe",
+    "instructor-portfolio/danny-x",
+    "instructor-portfolio/dave-garnish",
+    "instructor-portfolio/isaac-cotec",
+    "instructor-portfolio/justin-ancheta",
+    "instructor-portfolio/kevin-njikam",
+    "instructor-portfolio/kristian-sharpe",
+    "instructor-portfolio/kyle-boydstun-logicpro-teacher",
+    "instructor-portfolio/lorenzo-gordon-low-lite",
+    "instructor-portfolio/mike-cochran",
+    "instructor-portfolio/moldover",
+    "instructor-portfolio/nathan-bauld-engineer",
+    "instructor-portfolio/oz-fritz",
+    "instructor-portfolio/roan-gibson-protools-logic",
+    "instructor-portfolio/sam-ward",
+    "instructor-portfolio/will-magid",
+  ],
+};
+
+MODERN_SITE_ROUTES.staging = SF_ROUTES;

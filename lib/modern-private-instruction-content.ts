@@ -22,6 +22,16 @@ export type PrivateInstructionContent = {
   intro: string | null;
   pricingItems: string[];
   onlineNote: string | null;
+  // sf's own real page (like edu's) uses two [mkd_icon_with_text text="..."
+  // title="..."] cards instead of a flat <li> list - the same real shape
+  // extractEduPrivateInstructionContent's own pricingBlocks already parses,
+  // just without that page's much richer surrounding sections (no "Who Is
+  // This For"/closing pitch here). Preferred over pricingItems/the
+  // heuristic pricing-vs-location split below when present, since it
+  // carries the site's own real card titles ("Private Instruction",
+  // "Locations in San Francisco and Oakland") rather than generic
+  // "Pricing"/"Location & Studio Costs" labels.
+  pricingBlocks: { title: string; items: string[] }[];
 };
 
 export function extractPrivateInstructionContent(wpRawContent: string): PrivateInstructionContent {
@@ -35,11 +45,19 @@ export function extractPrivateInstructionContent(wpRawContent: string): PrivateI
   // marker at all - its intro is just the first [vc_column_text]'s own bare
   // <span> paragraph, right at the top of the page.
   const miaIntroMatch = raw.match(/\[vc_column_text[^\]]*\]\s*<span[^>]*>([\s\S]*?)<\/span>\s*\[\/vc_column_text\]/i);
+  // sf's own real page has neither marker - its intro is plain text (with
+  // real inline <a> links, e.g. to its own course pages) sitting directly
+  // inside the page's very first [vc_column_text ...] block, no <span>
+  // wrapper and no preceding <h1> at all (its own [mkd_section_title]
+  // already carries the page's title instead).
+  const sfIntroMatch = raw.match(/\[vc_column_text[^\]]*\]([\s\S]*?)\[\/vc_column_text\]/i);
   const intro = introMatch
     ? decodeEntities(introMatch[1].replace(/<[^>]+>/g, "")).trim()
     : miaIntroMatch
       ? decodeEntities(miaIntroMatch[1].replace(/<[^>]+>/g, "")).trim()
-      : null;
+      : sfIntroMatch
+        ? decodeEntities(sfIntroMatch[1].replace(/<[^>]+>/g, "")).trim() || null
+        : null;
 
   const pricingItems = [...raw.matchAll(/<li[^>]*><strong>([^<]*)<\/strong>\s*([\s\S]*?)<\/li>/gi)].map((m) =>
     decodeEntities(`${m[1]} ${m[2].replace(/<[^>]+>/g, "")}`.replace(/\s+/g, " ")).trim()
@@ -59,7 +77,22 @@ export function extractPrivateInstructionContent(wpRawContent: string): PrivateI
   const onlineMatch = raw.match(/<strong>Online:\s*<\/strong>\s*([^\n<]*)/i);
   const onlineNote = onlineMatch ? decodeEntities(onlineMatch[1]).trim() : null;
 
-  return { intro, pricingItems: pricingItems.length > 0 ? pricingItems : miaPricingItems, onlineNote };
+  const pricingBlocks = [...raw.matchAll(/\[mkd_icon_with_text[^\]]*\btext="([^"]*)"[^\]]*\btitle="([^"]*)"\]/gi)].map(
+    (m) => ({
+      title: decodeEntities(m[2]),
+      items: m[1]
+        .split(/\n/)
+        .map((line) => decodeEntities(line.replace(/^•\s*/, "")).trim())
+        .filter(Boolean),
+    })
+  );
+
+  return {
+    intro,
+    pricingItems: pricingItems.length > 0 ? pricingItems : miaPricingItems,
+    onlineNote,
+    pricingBlocks,
+  };
 }
 
 // Splits the flat pricingItems list into "what it costs" vs "what it costs

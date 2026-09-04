@@ -1424,13 +1424,39 @@ export function extractCourseIntro(wpRawContent: string): string[] {
   const raw = wpRawContent || "";
 
   let oldShape: string[] = [];
-  const columnMatch = raw.match(/\[vc_column_text\]([\s\S]*?)(?:<h2|\[\/vc_column_text\])/i);
-  if (columnMatch) {
-    const afterH1 = columnMatch[1].replace(/<h1[^>]*>[\s\S]*?<\/h1>/i, "");
-    oldShape = afterH1
+  // sf's own program pages use a handful of real [vc_column_text] variants
+  // before reaching their real intro prose: a *decorative* bare
+  // [vc_column_text][/vc_column_text] (empty - just wraps a
+  // [vc_empty_space]), then the real content in a [vc_column_text css=""]
+  // block (ableton-producer-program) or [vc_column_text css=""] again but
+  // logic-producer-program's real prose sits there too - while a LATER
+  // bare [vc_column_text] further down the page is the FAQ row's own
+  // heading-only block, immediately followed by more bare
+  // [vc_column_text]s nested *inside* the FAQ's own [mkd_accordion_tab]s.
+  // The original single first-bare-match regex grabbed the empty leading
+  // block and stopped (no intro at all); naively walking every *bare*
+  // match and taking the first non-empty one overshoots straight past the
+  // real (attributed) intro block into the FAQ accordion's own nested
+  // markup instead, producing literal "[mkd_accordion...]" shortcode text
+  // as the "intro". Matching *any* [vc_column_text ...] (bare or
+  // attributed) and rejecting a candidate whose raw text still contains an
+  // unstripped "[shortcode" opening bracket (real prose never does; a
+  // block whose slice ran into a nested shortcode always does) fixes both:
+  // the real intro block is reached regardless of its own attributes, and
+  // the FAQ accordion's own contaminated blocks are skipped rather than
+  // accepted. Every other site's own already-working single-match case is
+  // unchanged, since their first real block already passes this check.
+  for (const m of raw.matchAll(/\[vc_column_text[^\]]*\]([\s\S]*?)(?:<h2|\[\/vc_column_text\])/gi)) {
+    if (/\[[a-z_]+[\s\]]/i.test(m[1])) continue;
+    const withoutHeading = m[1].replace(/<h[1-4][^>]*>[\s\S]*?<\/h[1-4]>/gi, "");
+    const candidate = withoutHeading
       .split(/\n\s*\n/)
       .map((line) => decodeEntities(line.replace(/<[^>]+>/g, "").trim()))
       .filter((line) => line.length > 3 && !/^\d{1,4}$/.test(line));
+    if (candidate.length > 0) {
+      oldShape = candidate;
+      break;
+    }
   }
 
   // mia's own program pages (Ableton/Logic/Electronic Music Academy

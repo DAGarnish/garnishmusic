@@ -763,6 +763,16 @@ export default async function CatchAllPage({ params }: Args) {
     ...collectNavCourseSlugs(site.mainMenu),
     ...(modernRoutes?.programSlugs ?? []),
   ]);
+  // sf's own real private-instruction page lives at "courses/private-
+  // instruction" (nested, unlike every other site's flat "private-
+  // instruction"/"private-tuition"), so collectNavCourseSlugs' own
+  // "/courses/*" nav walk swept it into this set unconditionally - the
+  // generic course pipeline below ran before the dedicated
+  // privateInstructionSlug branch further down ever got a chance to,
+  // silently losing its own real pricing/location-cost cards in favor of a
+  // FAQ/curriculum-shaped render. Excluding it here, regardless of prefix,
+  // keeps every site's own real content on whichever path actually fits it.
+  if (modernRoutes?.privateInstructionSlug) modernTemplatedSlugs.delete(modernRoutes.privateInstructionSlug);
   if (modernRoutes && modernTemplatedSlugs.has(slug.join("/"))) {
     const payload = await getPayloadClient();
     // edu has no page docs of its own for these slugs (it clones edu-2's
