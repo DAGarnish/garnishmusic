@@ -56,14 +56,26 @@ const CORE_INSTRUCTORS = CORE_INSTRUCTOR_NAMES.map((name) => {
 // instructors on ny's own site (portfolioCategories "dj", confirmed via
 // scripts/find-ny-dj-instructors.ts), scoped to just these two DJ-focused
 // pages rather than swapped in network-wide.
-const DJ_INSTRUCTOR_NAMES = ["98 Dots", "Brian Thabault", "Chris Veras", "Alex Hell-n"];
+function instructorsByName(names: string[]) {
+  return names.map((name) => {
+    const bioEntry = Object.entries(NY_INSTRUCTOR_BIOS).find(([, bio]) => bio.name === name);
+    if (!bioEntry) throw new Error(`No NY_INSTRUCTOR_BIOS entry for "${name}"`);
+    const [slug, bio] = bioEntry;
+    return { name, href: `/${slug}`, imageUrl: bio.photoUrl };
+  });
+}
 
-const DJ_INSTRUCTORS = DJ_INSTRUCTOR_NAMES.map((name) => {
-  const bioEntry = Object.entries(NY_INSTRUCTOR_BIOS).find(([, bio]) => bio.name === name);
-  if (!bioEntry) throw new Error(`No NY_INSTRUCTOR_BIOS entry for "${name}"`);
-  const [slug, bio] = bioEntry;
-  return { name, href: `/${slug}`, imageUrl: bio.photoUrl };
-});
+const DJ_INSTRUCTORS = instructorsByName(["98 Dots", "Brian Thabault", "Chris Veras", "Alex Hell-n"]);
+
+// ableton-live-djs's own lineup swaps Chris Veras for Isobel Ward (user
+// request 2026-09-04, scoped to just this page - rekordbox keeps the
+// original 4 above).
+const ABLETON_DJ_INSTRUCTORS = instructorsByName(["98 Dots", "Brian Thabault", "Isobel Ward", "Alex Hell-n"]);
+
+// product/electronic-dj-class's own lineup swaps Chris Veras for Bossy
+// Boots instead (user request 2026-09-04) - this page previously had no
+// "Meet your instructors" section at all (instructorGridItems: []).
+const DJ_CLASS_PRODUCT_INSTRUCTORS = instructorsByName(["98 Dots", "Brian Thabault", "Bossy Boots", "Alex Hell-n"]);
 
 // User request (2026-09-04): check how "similar programs in the network"
 // present their own "what you'll cover" content, and match it. Checked
@@ -147,7 +159,7 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     // I take this course remotely?", "Is there a more advanced program if I
     // want to go further?"
     faqs: [],
-    instructorGridItems: DJ_INSTRUCTORS,
+    instructorGridItems: ABLETON_DJ_INSTRUCTORS,
     testimonials: [],
   },
 
@@ -658,7 +670,7 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
       paypalButtons: NY_DJ_CLASS_PAYPAL_BUTTONS,
     },
     faqs: [],
-    instructorGridItems: [],
+    instructorGridItems: DJ_CLASS_PRODUCT_INSTRUCTORS,
     // Real page's own "Featured Testimonials" accordion (see scripts/check-
     // dj-testimonial-names.ts) gives no real surname anywhere for any of
     // these four - just a first name/moniker plus an Instagram/SoundCloud
