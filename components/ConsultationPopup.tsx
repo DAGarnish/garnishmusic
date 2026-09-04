@@ -51,7 +51,7 @@ export default function ConsultationPopup() {
         </button>
         <div className="consultation-popup-image">
           <img
-            src="/api/media/file/53841454_410839762822247_6902924111610118144_n-3.jpg"
+            src="https://s3.us-east-2.amazonaws.com/garnishmusic-media/53841454_410839762822247_6902924111610118144_n-3.jpg"
             alt=""
           />
         </div>

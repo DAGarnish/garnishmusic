@@ -64,11 +64,29 @@ export default buildConfig({
   plugins: [
     s3Storage({
       collections: {
-        media: true,
+        // Without this, every media doc's `url` field (and each of its
+        // `sizes.*.url`) stays Payload's own local-upload path,
+        // "/api/media/file/<filename>" - which next.config.ts's own
+        // redirects() then 307s straight to this same S3 bucket, since
+        // Payload's actual (access-controlled) file route is never reached.
+        // That's a needless extra round trip on every single image on every
+        // page (confirmed via Pingdom: 37 redirects, one per image).
+        // Media's own read access is already public (`access.read: () =>
+        // true`), so there's no real access control being bypassed here -
+        // this just makes the field resolve straight to the real S3 URL
+        // instead of bouncing through the redirect first.
+        media: { disablePayloadAccessControl: true },
       },
       bucket: process.env.S3_BUCKET || "",
       config: {
         region: process.env.S3_REGION,
+        // Needed for generateURL (used by disablePayloadAccessControl above)
+        // to build a real URL - it has no other way to derive the S3
+        // endpoint from just a region. Path-style (bucket in the path, not
+        // the host) rather than virtual-hosted-style since generateURL's own
+        // template always inserts "/<bucket>/" itself - confirmed both
+        // styles serve identical content from this bucket.
+        endpoint: `https://s3.${process.env.S3_REGION}.amazonaws.com`,
         credentials: {
           accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
           secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",

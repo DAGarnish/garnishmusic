@@ -103,7 +103,7 @@ function ImageWithTextBlock({ block }: { block: any }) {
       {block.image && (
         <div className="sm:w-1/3 flex-shrink-0">
           <img
-            src={`/api/media/file/${block.image}`}
+            src={`https://s3.us-east-2.amazonaws.com/garnishmusic-media/${block.image}`}
             alt={block.title || ''}
             className="w-full rounded-lg object-cover"
           />

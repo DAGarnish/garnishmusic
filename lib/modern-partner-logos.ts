@@ -5,22 +5,26 @@
 // renderer uses untouched). Static rather than queried at request time
 // since these are fixed, deliberately-generated assets, not editable CMS
 // content - re-run that script and update this list if a partner is
-// added/changed.
+// added/changed. URLs point straight at S3 rather than Payload's own
+// "/api/media/file/<filename>" path - that path only ever 307-redirects
+// here anyway (see next.config.ts's own redirects()), so linking directly
+// skips a wasted round trip on every one of these logos, on every modern
+// site's homepage/footer.
 export type PartnerLogo = { name: string; link: string; url: string };
 
 export const PARTNER_LOGOS_LIME: PartnerLogo[] = [
-  { name: "Ableton", link: "https://www.ableton.com/", url: "/api/media/file/partner-lime-ableton.png" },
-  { name: "iZotope", link: "https://izotope.com/", url: "/api/media/file/partner-lime-izotope.png" },
-  { name: "Beatport", link: "https://www.beatport.com/", url: "/api/media/file/partner-lime-beatport.png" },
-  { name: "Arturia", link: "https://www.arturia.com/", url: "/api/media/file/partner-lime-arturia.png" },
-  { name: "Pioneer DJ", link: "https://www.pioneerdj.com/en-gb/", url: "/api/media/file/partner-lime-pioneer-dj.png" },
-  { name: "AlphaTheta", link: "https://alphatheta.com/", url: "/api/media/file/partner-lime-alphatheta.png" },
-  { name: "Soundtoys", link: "https://www.soundtoys.com/", url: "/api/media/file/partner-lime-soundtoys.png" },
-  { name: "Antares (Auto-Tune)", link: "https://www.antarestech.com/", url: "/api/media/file/partner-lime-antares-auto-tune-.png" },
-  { name: "Image-Line (FL Studio)", link: "https://www.image-line.com/", url: "/api/media/file/partner-lime-image-line-fl-studio-.png" },
-  { name: "Pitch Innovations", link: "https://www.pitchinnovations.com/", url: "/api/media/file/partner-lime-pitch-innovations.png" },
-  { name: "Native Instruments", link: "https://www.native-instruments.com/en/", url: "/api/media/file/partner-lime-native-instruments.png" },
-  { name: "Apple Music", link: "https://music.apple.com/us/new", url: "/api/media/file/partner-lime-apple-music.png" },
+  { name: "Ableton", link: "https://www.ableton.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-ableton.png" },
+  { name: "iZotope", link: "https://izotope.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-izotope.png" },
+  { name: "Beatport", link: "https://www.beatport.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-beatport.png" },
+  { name: "Arturia", link: "https://www.arturia.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-arturia.png" },
+  { name: "Pioneer DJ", link: "https://www.pioneerdj.com/en-gb/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-pioneer-dj.png" },
+  { name: "AlphaTheta", link: "https://alphatheta.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-alphatheta.png" },
+  { name: "Soundtoys", link: "https://www.soundtoys.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-soundtoys.png" },
+  { name: "Antares (Auto-Tune)", link: "https://www.antarestech.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-antares-auto-tune-.png" },
+  { name: "Image-Line (FL Studio)", link: "https://www.image-line.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-image-line-fl-studio-.png" },
+  { name: "Pitch Innovations", link: "https://www.pitchinnovations.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-pitch-innovations.png" },
+  { name: "Native Instruments", link: "https://www.native-instruments.com/en/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-native-instruments.png" },
+  { name: "Apple Music", link: "https://music.apple.com/us/new", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-lime-apple-music.png" },
 ];
 
 // Same logos, recolored to the cream/terracotta theme's accent (see
@@ -29,16 +33,16 @@ export const PARTNER_LOGOS_LIME: PartnerLogo[] = [
 // isCreamThemeSite (see ModernHomePage and lib/modern-sites.ts) - hou keeps
 // PARTNER_LOGOS_LIME, since it's still on the dark/lime default.
 export const PARTNER_LOGOS_RED: PartnerLogo[] = [
-  { name: "Ableton", link: "https://www.ableton.com/", url: "/api/media/file/partner-red-ableton.png" },
-  { name: "iZotope", link: "https://izotope.com/", url: "/api/media/file/partner-red-izotope.png" },
-  { name: "Beatport", link: "https://www.beatport.com/", url: "/api/media/file/partner-red-beatport.png" },
-  { name: "Arturia", link: "https://www.arturia.com/", url: "/api/media/file/partner-red-arturia.png" },
-  { name: "Pioneer DJ", link: "https://www.pioneerdj.com/en-gb/", url: "/api/media/file/partner-red-pioneer-dj.png" },
-  { name: "AlphaTheta", link: "https://alphatheta.com/", url: "/api/media/file/partner-red-alphatheta.png" },
-  { name: "Soundtoys", link: "https://www.soundtoys.com/", url: "/api/media/file/partner-red-soundtoys.png" },
-  { name: "Antares (Auto-Tune)", link: "https://www.antarestech.com/", url: "/api/media/file/partner-red-antares-auto-tune-.png" },
-  { name: "Image-Line (FL Studio)", link: "https://www.image-line.com/", url: "/api/media/file/partner-red-image-line-fl-studio-.png" },
-  { name: "Pitch Innovations", link: "https://www.pitchinnovations.com/", url: "/api/media/file/partner-red-pitch-innovations.png" },
-  { name: "Native Instruments", link: "https://www.native-instruments.com/en/", url: "/api/media/file/partner-red-native-instruments.png" },
-  { name: "Apple Music", link: "https://music.apple.com/us/new", url: "/api/media/file/partner-red-apple-music.png" },
+  { name: "Ableton", link: "https://www.ableton.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-ableton.png" },
+  { name: "iZotope", link: "https://izotope.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-izotope.png" },
+  { name: "Beatport", link: "https://www.beatport.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-beatport.png" },
+  { name: "Arturia", link: "https://www.arturia.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-arturia.png" },
+  { name: "Pioneer DJ", link: "https://www.pioneerdj.com/en-gb/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-pioneer-dj.png" },
+  { name: "AlphaTheta", link: "https://alphatheta.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-alphatheta.png" },
+  { name: "Soundtoys", link: "https://www.soundtoys.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-soundtoys.png" },
+  { name: "Antares (Auto-Tune)", link: "https://www.antarestech.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-antares-auto-tune-.png" },
+  { name: "Image-Line (FL Studio)", link: "https://www.image-line.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-image-line-fl-studio-.png" },
+  { name: "Pitch Innovations", link: "https://www.pitchinnovations.com/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-pitch-innovations.png" },
+  { name: "Native Instruments", link: "https://www.native-instruments.com/en/", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-native-instruments.png" },
+  { name: "Apple Music", link: "https://music.apple.com/us/new", url: "https://s3.us-east-2.amazonaws.com/garnishmusic-media/partner-red-apple-music.png" },
 ];
