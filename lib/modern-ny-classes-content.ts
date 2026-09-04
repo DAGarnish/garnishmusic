@@ -561,40 +561,24 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     // the top" - user request (2026-09-04).
     centerVideoBesideIntro: true,
     curriculum: [],
-    // Matches the real accordion shape la's own real courses/dj-course page
-    // uses for this identical curriculum (confirmed via
-    // scripts/check-la-dj-accordion.ts: same 9 real module titles, just
-    // slightly different wording) - user request (2026-09-04) to put this
-    // in an accordion "like all other subdomains" rather than the static
-    // grid every other NY_CLASSES entry without a real network accordion
-    // precedent uses.
-    curriculumAccordion: [
-      {
-        title: "Beats & Pieces",
-        bodyHtml:
-          "<ul><li>Setting up equipment, and getting ready to go</li><li>Mixing essentials</li><li>Bars and beats</li><li>Beat matching introduction</li></ul>",
-      },
-      { title: "FX", bodyHtml: "<ul><li>Common FX</li><li>Filtering</li><li>EQ</li><li>Dos and don'ts: FX during the mix</li></ul>" },
-      { title: "Hardware and Software", bodyHtml: "<ul><li>CDJ Nexus</li><li>Rekordbox</li><li>Mixed In Key</li></ul>" },
-      {
-        title: "Your Set",
-        bodyHtml: "<ul><li>Refining your set</li><li>How to mix acapellas</li><li>Gauging the crowd and having a backup plan</li></ul>",
-      },
-      {
-        title: "Advanced Mixing & Digital Tricks",
-        bodyHtml:
-          "<ul><li>Triggering and sampling</li><li>Delay and reverb in the mix</li><li>Impact mixing with FX and levels</li><li>Body language</li></ul>",
-      },
-      {
-        title: "Advanced Set Building & Improvisation",
-        bodyHtml: "<ul><li>Out-of-the-box song selection</li><li>Changing tempo</li><li>Music programming</li></ul>",
-      },
-      { title: "Preparing for Your Show", bodyHtml: "<ul><li>Recording your set</li><li>Getting the word out</li></ul>" },
-      {
-        title: "What Next?",
-        bodyHtml:
-          "<ul><li>Keeping the momentum and booking more events</li><li>EPK tips</li><li>Developing your sound and style</li></ul>",
-      },
+    curriculumAccordion: [],
+    // ONE accordion with every module's own sub-heading + bullets inside
+    // (ModernCurriculumAccordion, via whatYouWillLearn) rather than one
+    // accordion row per module - user request (2026-09-04) to match the
+    // real network's own treatment for this kind of short-bullet-item
+    // module breakdown (mia's own DAW course pages, e.g. ableton-live-
+    // course). Real module titles confirmed against la's own real
+    // courses/dj-course page (scripts/check-la-dj-accordion.ts: same 9 real
+    // titles, just slightly different wording).
+    whatYouWillLearn: [
+      { heading: "Beats & Pieces", items: ["Setting up equipment, and getting ready to go", "Mixing essentials", "Bars and beats", "Beat matching introduction"] },
+      { heading: "FX", items: ["Common FX", "Filtering", "EQ", "Dos and don'ts: FX during the mix"] },
+      { heading: "Hardware and Software", items: ["CDJ Nexus", "Rekordbox", "Mixed In Key"] },
+      { heading: "Your Set", items: ["Refining your set", "How to mix acapellas", "Gauging the crowd and having a backup plan"] },
+      { heading: "Advanced Mixing & Digital Tricks", items: ["Triggering and sampling", "Delay and reverb in the mix", "Impact mixing with FX and levels", "Body language"] },
+      { heading: "Advanced Set Building & Improvisation", items: ["Out-of-the-box song selection", "Changing tempo", "Music programming"] },
+      { heading: "Preparing for Your Show", items: ["Recording your set", "Getting the word out"] },
+      { heading: "What Next?", items: ["Keeping the momentum and booking more events", "EPK tips", "Developing your sound and style"] },
     ],
     // No enrollLink here - the real, working checkout is the PayPal
     // buttons below (courseSchedule.paypalButtons) instead of a link.

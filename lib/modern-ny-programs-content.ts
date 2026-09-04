@@ -91,6 +91,14 @@ export type NYProgramContent = {
   // Undefined for every other NY entry.
   videoEmbeds?: import("./modern-course-content").VideoEmbed[];
   centerVideoBesideIntro?: boolean;
+  // Real modules made of just a few short bullet items each (as opposed to
+  // curriculumAccordion above, meant for genuinely long-form modules like
+  // the 360 Academy's own) - rendered as ONE accordion (ModernCurriculumAccordion)
+  // with every module's own sub-heading + bullets inside, matching the real
+  // shape mia's own DAW course pages (e.g. ableton-live-course) already use
+  // for this exact kind of short-item module breakdown, instead of one
+  // accordion row per module.
+  whatYouWillLearn?: CurriculumModule[];
 };
 
 export const NY_PROGRAMS: Record<string, NYProgramContent> = {
