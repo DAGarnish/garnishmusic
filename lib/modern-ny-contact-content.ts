@@ -3,7 +3,9 @@ import type { ContactDetails } from "./modern-contact-content";
 // ny's two real studio locations - hand-transcribed directly off
 // ny.garnishmusicproduction.com's own real /contact-map/ and /brooklyn/
 // pages (confirmed live, 2026-09-04), including each page's own real
-// Google Maps embed src.
+// Google Maps embed src. Both are now rendered together on staging's single
+// /contact-map/ page (Manhattan first, then Brooklyn) - see the
+// site.slug === "staging" contact-map branch in [[...slug]]/page.tsx.
 export const NY_CONTACTS: Record<string, ContactDetails> = {
   "contact-map": {
     address: "421 7th Ave, New York, NY 10001 (Visits by appointment only - direct access from inside Penn Station)",

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { cache } from "react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
@@ -534,12 +534,23 @@ export default async function CatchAllPage({ params }: Args) {
       />
     );
   }
-  // ny's own two real studio locations (see modern-ny-contact-content.ts's
-  // own comment) - checked ahead of the generic modernRoutes.contactSlug
-  // branch below, which only ever matches one contactSlug value (ny's own
-  // real nav has two separate real contact pages, Manhattan and Brooklyn).
-  if (site.slug === "staging" && NY_CONTACTS[slug.join("/")]) {
-    return <ModernContactPage site={site} contact={NY_CONTACTS[slug.join("/")]} />;
+  // ny's two real studio locations, merged onto one page at /contact-map -
+  // Manhattan first, then Brooklyn (see modern-ny-contact-content.ts's own
+  // comment). /brooklyn used to be its own separate page; it now redirects
+  // here since the nav only links to the combined page.
+  if (site.slug === "staging" && slug.join("/") === "brooklyn") {
+    redirect("/contact-map");
+  }
+  if (site.slug === "staging" && slug.join("/") === "contact-map") {
+    return (
+      <ModernContactPage
+        site={site}
+        contact={NY_CONTACTS["contact-map"]}
+        contactLabel="Manhattan"
+        secondContact={NY_CONTACTS.brooklyn}
+        secondContactLabel="Brooklyn"
+      />
+    );
   }
   // The homepage's own "Browse by topic" tiles (ModernEduHomePage) link
   // here - a real archive of every published post in that topic, not a
