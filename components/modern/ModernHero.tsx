@@ -6,15 +6,27 @@ export default function ModernHero({
   stats,
   cityName,
   contactHref = "/contact-map",
+  imageMaxHeightClassName,
 }: {
   heroImageUrl?: string;
   stats: string[];
   cityName: string;
   contactHref?: string;
+  // This section's own content (stats grid included) makes it much taller
+  // than edu's own shorter header - object-cover on a full-height image
+  // inside that much taller box scales the image up more and crops tighter
+  // than the same photo gets on edu, reading as "zoomed in" even though
+  // it's the exact same file (confirmed on ny, which reuses edu's own
+  // header photo - user request 2026-09-04). Capping the image's own
+  // height here (rather than letting it stretch to the full, taller
+  // section) keeps its crop close to how edu's shorter header shows it;
+  // undefined elsewhere keeps every other caller's existing full-height
+  // treatment unchanged.
+  imageMaxHeightClassName?: string;
 }) {
   return (
     <section className="relative overflow-hidden gmpm-grid-bg">
-      <div className="absolute inset-0">
+      <div className={`absolute inset-x-0 top-0 ${imageMaxHeightClassName || "inset-y-0"}`}>
         {heroImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-60" />
