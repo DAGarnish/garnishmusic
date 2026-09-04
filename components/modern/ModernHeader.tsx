@@ -149,7 +149,10 @@ function NavGroup({ item }: { item: MenuNode }) {
 // match, so they keep NavGroup's plain single-column list. Confirmed
 // against every site's own real menu (scripts/check-nav-shapes.ts).
 function isTabbedGroupShape(item: MenuNode): boolean {
-  return item.children.length > 0 && item.children.every((c) => c.children && c.children.length > 0);
+  return (
+    item.children.length > 0 &&
+    item.children.every((c) => (c.children && c.children.length > 0) || (c.url && c.url !== "#"))
+  );
 }
 
 // Two (About) or several (Programs) small tabs on the left - the first one
@@ -174,24 +177,42 @@ function TabbedNavGroup({ item }: { item: MenuNode }) {
       <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity absolute left-0 top-full pt-3 z-50">
         <div className="w-[min(90vw,520px)] max-h-[70vh] overflow-y-auto bg-[var(--gmpm-bg-raised)] border border-[var(--gmpm-line)] p-6 flex gap-x-8 shadow-2xl">
           <div className="w-48 shrink-0 space-y-4">
-            {groups.map((g, i) => (
-              <button
-                key={i}
-                type="button"
-                onMouseEnter={() => setActiveIndex(i)}
-                className={`flex items-center gap-2 text-sm text-left w-full transition-colors ${
-                  i === activeIndex ? "text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
-                }`}
-              >
+            {groups.map((g, i) => {
+              const isLeaf = !g.children || g.children.length === 0;
+              const className = `flex items-center gap-2 text-sm text-left w-full transition-colors ${
+                i === activeIndex ? "text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
+              }`;
+              const dot = (
                 <span
                   className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
                     i === activeIndex ? "bg-[var(--gmpm-accent)]" : "bg-transparent"
                   }`}
                   aria-hidden="true"
                 />
-                {g.label}
-              </button>
-            ))}
+              );
+              // A category with no sub-items of its own (e.g. staging's
+              // "Private Instruction", promoted from a DJ & More leaf link to
+              // its own top-level category - user request 2026-09-04) is a
+              // real link, not just a hover-to-reveal tab - isTabbedGroupShape
+              // above already allows this shape through.
+              return isLeaf ? (
+                <Link
+                  key={i}
+                  href={g.url}
+                  target={g.newTab ? "_blank" : undefined}
+                  onMouseEnter={() => setActiveIndex(i)}
+                  className={className}
+                >
+                  {dot}
+                  {g.label}
+                </Link>
+              ) : (
+                <button key={i} type="button" onMouseEnter={() => setActiveIndex(i)} className={className}>
+                  {dot}
+                  {g.label}
+                </button>
+              );
+            })}
           </div>
           <ul className="flex-1 space-y-2.5">
             {active.children.map((leaf, i) => (
