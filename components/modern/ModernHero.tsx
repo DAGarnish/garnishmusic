@@ -22,7 +22,11 @@ export default function ModernHero({
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--gmpm-bg)] via-[var(--gmpm-bg)]/55 to-[var(--gmpm-bg)]/10" />
       </div>
 
-      <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 pt-28 pb-20 md:pt-40 md:pb-28">
+      <div
+        className={`relative max-w-[1400px] mx-auto px-6 md:px-10 pt-28 md:pt-40 ${
+          stats.length ? "pb-20 md:pb-28" : "pb-12 md:pb-16"
+        }`}
+      >
         <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
           <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
           {cityName} — Music Production &amp; DJ School
@@ -39,7 +43,7 @@ export default function ModernHero({
           working producers as instructors, ten years of critically acclaimed courses.
         </p>
 
-        <div className="mt-10 flex flex-wrap items-center gap-4">
+        <div className={`flex flex-wrap items-center gap-4 ${stats.length ? "mt-10" : "mt-10 mb-4"}`}>
           <Link
             href={contactHref}
             className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
@@ -54,16 +58,20 @@ export default function ModernHero({
           </Link>
         </div>
 
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--gmpm-line)] border border-[var(--gmpm-line)]">
-          {stats.map((s, i) => (
-            <div key={i} className="bg-[var(--gmpm-bg)] p-5">
-              <div className="gmpm-mono text-[10px] text-[var(--gmpm-text-dim)] mb-1">
-                {String(i + 1).padStart(2, "0")}
+        {/* Empty stats (mia - see ModernHomePage's own comment) skips this
+            bar entirely rather than rendering an empty bordered grid. */}
+        {stats.length > 0 && (
+          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--gmpm-line)] border border-[var(--gmpm-line)]">
+            {stats.map((s, i) => (
+              <div key={i} className="bg-[var(--gmpm-bg)] p-5">
+                <div className="gmpm-mono text-[10px] text-[var(--gmpm-text-dim)] mb-1">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <div className="text-sm">{s}</div>
               </div>
-              <div className="text-sm">{s}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

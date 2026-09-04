@@ -1,4 +1,5 @@
 import "../../app/modern-globals.css";
+import Link from "next/link";
 import { getPayloadClient } from "../../lib/get-payload";
 import { extractProgramCards } from "../../lib/modern-homepage-content";
 import {
@@ -197,9 +198,47 @@ export default async function ModernHomePage({ site }: { site: any }) {
       <ModernHero
         heroImageUrl={heroImage}
         cityName={cityName}
-        stats={stats.length ? stats : ["10 years running", "Small class sizes", "Working producers as tutors", `${cityName} studio`]}
+        // mia: the numbered stats bar is replaced by the real "Why Choose
+        // Garnish?" comparison graphic below instead (see that section's own
+        // comment) - passing no stats here skips the bar entirely (see
+        // ModernHero's own empty-stats handling) rather than showing both.
+        stats={
+          site.slug === "mia"
+            ? []
+            : stats.length
+              ? stats
+              : ["10 years running", "Small class sizes", "Working producers as tutors", `${cityName} studio`]
+        }
         contactHref={contactSlug ? `/${contactSlug}` : undefined}
       />
+
+      {/* mia's own real "Why Choose Garnish?" comparison - the same
+          compare-graphic-cream.png asset la's own "Why choose us?" accordion
+          already uses (id 4248, real content: Cost/Instructors/Community
+          Events/Facility/Schedule, Garnish vs Other Schools) - added as a
+          standalone section here rather than inside an accordion tab, in
+          place of the numbered stats bar ModernHero would otherwise show.
+          Scoped to mia only per request (2026-09-04). */}
+      {site.slug === "mia" && (
+        <section className="max-w-[1000px] mx-auto px-6 md:px-10 py-12 md:py-16">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://s3.us-east-2.amazonaws.com/garnishmusic-media/compare-graphic-cream-1600x793.png"
+            alt="Why choose Garnish? Cost $2,000-$13,500 vs $40,000+, Billboard Chart Toppers vs Music Teacher, Regular Monthly Events vs Varies, Active Music Studio vs Classroom, Flexible vs Rigid schedule"
+            className="w-full h-auto gmpm-corner"
+          />
+          {contactSlug && (
+            <div className="flex justify-center mt-6">
+              <Link
+                href={`/${contactSlug}`}
+                className="gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+              >
+                Join now
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
 
       {heroVideo && (
         <section className="w-full">
