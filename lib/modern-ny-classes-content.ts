@@ -529,29 +529,73 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
   "product/electronic-dj-class": {
     title: "Electronic Music DJ Program",
     heroImageUrl: `${S3}dj-class-newyork-scaled.jpg`,
-    intro: [
-      "Ever been curious about the magic DJs work from the booth? Now's your chance to dive into the action! Join our Professional Electronic Music DJ Program, which we've been perfecting in Brooklyn and Manhattan since 2016. Our inclusive 36-hour program is fully comprehensive, mastering industry-standard Pioneer Nexus equipment like a pro - on completion, you'll be ready to confidently step up to the decks at open-deck events across the city.",
-      "Perfect for both beginners and those who've dabbled at home, eager to master real-world techniques on the latest professional equipment. Taught by our superior roster of professional electronic music touring DJs, the course offers a truly personal experience, with a class size limited to just four students.",
-      "Successful students will be invited to join our Ibiza Bootcamp, for further training in Barcelona, and a performance in Ibiza.",
-      "In-person classes provide the personal attention and feedback necessary for a high-quality learning experience - private instruction is also available online.",
-      // Real hrefs off the real page's own raw content (scripts/check-dj-
-      // class-quote-links.ts) - each quote is its own paragraph there too,
-      // not run together as one sentence.
-      '“I needed to brush up on some production software, so I called Garnish, as they have the best instructors” – <a href="https://jamiejones.com/" target="_blank" rel="noopener">Jamie Jones</a>',
-      '“Garnish is taking \'spin\' classes to new heights” – <a href="https://www.billboard.com/music/music-news/not-all-dj-schools-are-created-equally-how-paris-hiltons-guru-is-taking-6084609/" target="_blank" rel="noopener">Billboard</a>',
+    intro: [],
+    // Moved from `intro` into a single section paired with the real intro
+    // video below - same real "text left/video right" treatment mia's own
+    // electronic-dj-course already uses for this exact video (see
+    // ModernCoursePage's own showsVideoBesideIntro comment) - user request
+    // (2026-09-04) to bring this real video over and place it beside the
+    // intro text instead of leaving it out.
+    sections: [
+      {
+        heading: "Electronic Music DJ Program",
+        bodyHtml:
+          "<p>Ever been curious about the magic DJs work from the booth? Now's your chance to dive into the action! Join our Professional Electronic Music DJ Program, which we've been perfecting in Brooklyn and Manhattan since 2016. Our inclusive 36-hour program is fully comprehensive, mastering industry-standard Pioneer Nexus equipment like a pro - on completion, you'll be ready to confidently step up to the decks at open-deck events across the city.</p>" +
+          "<p>Perfect for both beginners and those who've dabbled at home, eager to master real-world techniques on the latest professional equipment. Taught by our superior roster of professional electronic music touring DJs, the course offers a truly personal experience, with a class size limited to just four students.</p>" +
+          "<p>Successful students will be invited to join our Ibiza Bootcamp, for further training in Barcelona, and a performance in Ibiza.</p>" +
+          "<p>In-person classes provide the personal attention and feedback necessary for a high-quality learning experience - private instruction is also available online.</p>" +
+          // Real hrefs off the real page's own raw content (scripts/check-
+          // dj-class-quote-links.ts) - each quote is its own paragraph
+          // there too, not run together as one sentence.
+          '<p>“I needed to brush up on some production software, so I called Garnish, as they have the best instructors” – <a href="https://jamiejones.com/" target="_blank" rel="noopener">Jamie Jones</a></p>' +
+          '<p>“Garnish is taking \'spin\' classes to new heights” – <a href="https://www.billboard.com/music/music-news/not-all-dj-schools-are-created-equally-how-paris-hiltons-guru-is-taking-6084609/" target="_blank" rel="noopener">Billboard</a></p>',
+      },
     ],
-    sections: [],
-    curriculum: [
-      { heading: "Beats & Pieces", items: ["Setting up equipment, and getting ready to go", "Mixing essentials", "Bars and beats", "Beat matching introduction"] },
-      { heading: "FX", items: ["Common FX", "Filtering", "EQ", "Dos and don'ts: FX during the mix"] },
-      { heading: "Hardware and Software", items: ["CDJ Nexus", "Rekordbox", "Mixed In Key"] },
-      { heading: "Your Set", items: ["Refining your set", "How to mix acapellas", "Gauging the crowd and having a backup plan"] },
-      { heading: "Advanced Mixing & Digital Tricks", items: ["Triggering and sampling", "Delay and reverb in the mix", "Impact mixing with FX and levels", "Body language"] },
-      { heading: "Advanced Set Building & Improvisation", items: ["Out-of-the-box song selection", "Changing tempo", "Music programming"] },
-      { heading: "Preparing for Your Show", items: ["Recording your set", "Getting the word out"] },
-      { heading: "What Next?", items: ["Keeping the momentum and booking more events", "EPK tips", "Developing your sound and style"] },
+    // Real vertical Short off the real page (youtube.com/shorts/7HkL1C9aUyc,
+    // el_aspect="916" in its own raw content).
+    videoEmbeds: [{ embedUrl: "https://www.youtube.com/embed/7HkL1C9aUyc", title: "", vertical: true }],
+    // The 6-paragraph text column above is much taller than mia's own
+    // shorter intro paired with this same video - top-aligning left the
+    // video flush at the top with a tall dead gap below it. Centered
+    // against the text column's own height instead, so it isn't "right at
+    // the top" - user request (2026-09-04).
+    centerVideoBesideIntro: true,
+    curriculum: [],
+    // Matches the real accordion shape la's own real courses/dj-course page
+    // uses for this identical curriculum (confirmed via
+    // scripts/check-la-dj-accordion.ts: same 9 real module titles, just
+    // slightly different wording) - user request (2026-09-04) to put this
+    // in an accordion "like all other subdomains" rather than the static
+    // grid every other NY_CLASSES entry without a real network accordion
+    // precedent uses.
+    curriculumAccordion: [
+      {
+        title: "Beats & Pieces",
+        bodyHtml:
+          "<ul><li>Setting up equipment, and getting ready to go</li><li>Mixing essentials</li><li>Bars and beats</li><li>Beat matching introduction</li></ul>",
+      },
+      { title: "FX", bodyHtml: "<ul><li>Common FX</li><li>Filtering</li><li>EQ</li><li>Dos and don'ts: FX during the mix</li></ul>" },
+      { title: "Hardware and Software", bodyHtml: "<ul><li>CDJ Nexus</li><li>Rekordbox</li><li>Mixed In Key</li></ul>" },
+      {
+        title: "Your Set",
+        bodyHtml: "<ul><li>Refining your set</li><li>How to mix acapellas</li><li>Gauging the crowd and having a backup plan</li></ul>",
+      },
+      {
+        title: "Advanced Mixing & Digital Tricks",
+        bodyHtml:
+          "<ul><li>Triggering and sampling</li><li>Delay and reverb in the mix</li><li>Impact mixing with FX and levels</li><li>Body language</li></ul>",
+      },
+      {
+        title: "Advanced Set Building & Improvisation",
+        bodyHtml: "<ul><li>Out-of-the-box song selection</li><li>Changing tempo</li><li>Music programming</li></ul>",
+      },
+      { title: "Preparing for Your Show", bodyHtml: "<ul><li>Recording your set</li><li>Getting the word out</li></ul>" },
+      {
+        title: "What Next?",
+        bodyHtml:
+          "<ul><li>Keeping the momentum and booking more events</li><li>EPK tips</li><li>Developing your sound and style</li></ul>",
+      },
     ],
-    curriculumAccordion: [],
     // No enrollLink here - the real, working checkout is the PayPal
     // buttons below (courseSchedule.paypalButtons) instead of a link.
     pricing: { priceLine: "36 lab hours - $950 + $500 registration (14+ days out) / $1,050 + $600 otherwise - $500 off in 2026", enrollLink: null },
@@ -589,6 +633,16 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
         { html: "<p>K) 5/29 – 7/24 (skipping Juneteenth) | Saturdays | 2.15p – 6.15p | 9 Classes in Manhattan</p>", isNextCohort: false },
         { html: "<p>L) 6/21 – 7/28 | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
         { html: "<p>M) 6/22 – 7/29 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        // Real pricing off the same real "Schedules" widget, shown right
+        // after the cohort list there too - re-added (2026-09-04) after an
+        // earlier pass left it out as "already shown in the hero", which
+        // turned out to read as missing entirely once the schedule became
+        // its own real, detailed section.
+        { html: "<p><strong>36 Lab Hours | $500 off in 2026!</strong></p>", isNextCohort: false },
+        {
+          html: '<p><del>$1450</del> $950 + $500 Registration if booked 14 days before start or <del>$1550</del> $1050 + $600 Registration</p>',
+          isNextCohort: false,
+        },
         {
           html: "<p>For one-to-one lessons, including Open Format DJ lessons, see <a href=\"/private-instruction\">DJ Private Instruction</a>, and connect with a specialist on that page.</p>",
           isNextCohort: false,

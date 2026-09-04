@@ -85,6 +85,12 @@ export type NYProgramContent = {
     scheduleBlocks?: ScheduleBlock[];
     paypalButtons?: import("../components/PayPalHostedButtons").PayPalButton[];
   };
+  // DJ Class's own real vertical Short, paired beside its intro section -
+  // same real feature mia's own electronic-dj-course already uses for this
+  // exact video (see ModernCoursePage's own showsVideoBesideIntro comment).
+  // Undefined for every other NY entry.
+  videoEmbeds?: import("./modern-course-content").VideoEmbed[];
+  centerVideoBesideIntro?: boolean;
 };
 
 export const NY_PROGRAMS: Record<string, NYProgramContent> = {

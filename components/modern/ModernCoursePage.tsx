@@ -53,6 +53,7 @@ export default function ModernCoursePage({
   isSpanish = false,
   hideStudentStories = false,
   hideVideo = false,
+  centerVideoBesideIntro = false,
 }: {
   site: any;
   title: string;
@@ -118,6 +119,14 @@ export default function ModernCoursePage({
   // hideStudentStories above, which only suppresses one of the two spots a
   // video can render in.
   hideVideo?: boolean;
+  // ny's own DJ Class video sits beside a much longer intro (6 paragraphs,
+  // including two press quotes) than mia's own equivalent "beside intro"
+  // video does - with the grid's default top alignment, its own vertical
+  // Short ends flush with the top of that much taller text column, leaving
+  // a tall dead gap below it. User request (2026-09-04) to center it
+  // against the text column's height instead - opt-in so mia's own shorter-
+  // intro pairing (already top-aligned correctly) is untouched.
+  centerVideoBesideIntro?: boolean;
 }) {
   // See the "Student stories" section below for what this gates.
   const showsInstructorsInSections = sections.some((s) => /instructors|collaborators/i.test(s.heading));
@@ -223,7 +232,9 @@ export default function ModernCoursePage({
         i === 0 && showsVideoBesideIntro ? (
           <section
             key={i}
-            className="max-w-[1400px] mx-auto px-6 md:px-10 py-12 border-t border-[var(--gmpm-line)] grid md:grid-cols-3 gap-10 items-start"
+            className={`max-w-[1400px] mx-auto px-6 md:px-10 py-12 border-t border-[var(--gmpm-line)] grid md:grid-cols-3 gap-10 ${
+              centerVideoBesideIntro ? "items-center" : "items-start"
+            }`}
           >
             <div className="md:col-span-2">
               <h2 className="gmpm-display font-bold text-2xl md:text-3xl mb-6">{s.heading}</h2>

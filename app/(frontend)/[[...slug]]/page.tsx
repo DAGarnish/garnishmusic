@@ -512,6 +512,8 @@ export default async function CatchAllPage({ params }: Args) {
         instructorGridItems={content.instructorGridItems}
         testimonials={content.testimonials}
         courseSchedule={content.courseSchedule}
+        videoEmbeds={content.videoEmbeds}
+        centerVideoBesideIntro={content.centerVideoBesideIntro}
         relatedPosts={[]}
         eduDomain="edu.garnishmusicproduction.com"
         // Matches the network-wide dark/lime exception for these same
