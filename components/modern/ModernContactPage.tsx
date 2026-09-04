@@ -64,6 +64,7 @@ export default function ModernContactPage({
   contactLabel,
   secondContact,
   secondContactLabel,
+  heroLocationsLabel,
 }: {
   site: any;
   contact: ContactDetails;
@@ -74,6 +75,10 @@ export default function ModernContactPage({
   contactLabel?: string;
   secondContact?: ContactDetails;
   secondContactLabel?: string;
+  // Optional short line shown above the "Let's talk music." heading (e.g.
+  // "NYC Locations in Brooklyn & Manhattan") - only used by multi-location
+  // pages; unset for every single-location caller, unchanged.
+  heroLocationsLabel?: string;
 }) {
   return (
     <div className="gmpm-root min-h-screen">
@@ -85,6 +90,9 @@ export default function ModernContactPage({
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
             Get in touch
           </div>
+          {heroLocationsLabel && (
+            <div className="text-lg text-[var(--gmpm-text-dim)] mb-2">{heroLocationsLabel}</div>
+          )}
           <ModernTypewriterHeading
             text="Let's talk music."
             highlight="music"

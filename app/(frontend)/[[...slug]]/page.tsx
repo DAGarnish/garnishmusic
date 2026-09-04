@@ -547,6 +547,7 @@ export default async function CatchAllPage({ params }: Args) {
         site={site}
         contact={NY_CONTACTS["contact-map"]}
         contactLabel="Manhattan"
+        heroLocationsLabel="NYC Locations in Manhattan & Brooklyn"
         secondContact={NY_CONTACTS.brooklyn}
         secondContactLabel="Brooklyn"
       />
