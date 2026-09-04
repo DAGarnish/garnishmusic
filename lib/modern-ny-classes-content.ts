@@ -39,6 +39,34 @@ const CORE_INSTRUCTORS = CORE_INSTRUCTOR_NAMES.map((name) => ({
   href: `/courses/${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
 }));
 
+// User request (2026-09-04): check how "similar programs in the network"
+// present their own "what you'll cover" content, and match it. Checked
+// directly against every other modern-design site's own real page for
+// these exact same courses (scripts/check-ny-curriculum-shapes.ts,
+// scripts/debug-more-pages.ts) - none of them use ModernCoursePage's static
+// 3-column curriculum grid (`curriculum`) OR a "Program modules." accordion
+// (`curriculumAccordion` - that treatment is real only for the 360°
+// Academy/SongCraft Pro shape of long-form modules, see
+// modern-ny-programs-content.ts's own comment). Every one of pdx/hou/mia's
+// real equivalent pages (composition, rhythm-section-programming, vocal-
+// production, rekordbox, ableton-live-djs) instead folds its modules into a
+// single arrow-bulleted list inside one `sections` entry - this reproduces
+// that exact markup (same classes as the real extracted HTML) from NY's own
+// already-written {heading, items} module data, so it renders identically
+// without inventing new content.
+function curriculumModulesToArrowListHtml(modules: { heading: string; items: string[] }[]): string {
+  const lis = modules.flatMap((m) =>
+    m.items.map((item, j) => {
+      // Empty heading (used when a module's own heading is already shown
+      // as the section's own <h2>, e.g. ableton-live-djs' first module
+      // below) - no redundant "Heading: " prefix in that case.
+      const prefix = j === 0 && m.heading ? `${m.heading}: ` : "";
+      return `<li class="flex gap-2"><span class="text-[var(--gmpm-accent)]">→</span><span>${prefix}${item}</span></li>`;
+    })
+  );
+  return `<ul class="space-y-2 my-4">${lis.join("")}</ul>`;
+}
+
 export const NY_CLASSES: Record<string, NYProgramContent> = {
   "courses/ableton": {
     title: "Produce Your First Song in Ableton",
@@ -66,25 +94,21 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     intro: [
       "For DJs stepping toward production without needing deep beat-making, theory, or sound-design experience yet - build seamless mixes, edits, and recordings, and refine your sound, in-person in New York or LIVE online.",
     ],
-    sections: [],
-    curriculum: [
+    sections: [
       {
         heading: "Introduction to Ableton Live for DJs",
-        items: ["Interface overview", "Setting up your DJ rig in Ableton Live"],
-      },
-      {
-        heading: "Performance Enhancement",
-        items: ["Warping for perfect sync", "Working live instruments and vocals into your set", "Real-time manipulation techniques"],
-      },
-      {
-        heading: "Remixing and Mashups",
-        items: ["Sampling and manipulating tracks live"],
-      },
-      {
-        heading: "Final Project",
-        items: ["A personalized, polished DJ set with instructor feedback"],
+        bodyHtml: curriculumModulesToArrowListHtml([
+          { heading: "", items: ["Interface overview", "Setting up your DJ rig in Ableton Live"] },
+          {
+            heading: "Performance Enhancement",
+            items: ["Warping for perfect sync", "Working live instruments and vocals into your set", "Real-time manipulation techniques"],
+          },
+          { heading: "Remixing and Mashups", items: ["Sampling and manipulating tracks live"] },
+          { heading: "Final Project", items: ["A personalized, polished DJ set with instructor feedback"] },
+        ]),
       },
     ],
+    curriculum: [],
     curriculumAccordion: [],
     pricing: { priceLine: null, enrollLink: "/contact-map" },
     // Real FAQ questions confirmed live on this page, but the answers
@@ -245,15 +269,20 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     intro: [
       "It's all very well knowing how to make a synth sound great, but most musicians would argue the notes you send it are much more important. It's not a competition, but you should really have a good idea of both if you wish to take giant leaps toward producing the music you love, in-person in New York or Live Online.",
     ],
-    sections: [],
-    curriculum: [
-      { heading: "Music Theory Insights", items: ["Understand the language of music - the foundations that shape melodies, harmonies, and rhythms, turning theory into a tool for creative expression."] },
-      { heading: "Arranging Mastery", items: ["Assemble musical elements into arrangements that flow seamlessly and enhance the emotional impact of your compositions."] },
-      { heading: "Chords Explored", items: ["Dive into major and minor chords and the nuances different chords bring to your compositions."] },
-      { heading: "Crafting Leads", items: ["Hone memorable melodies - the balance between simplicity and complexity."] },
-      { heading: "Keys Demystified", items: ["Choose the right key to convey the desired emotion in your music."] },
-      { heading: "Structure Essentials", items: ["Verses, choruses, and bridges - the building blocks of a cohesive musical narrative."] },
+    sections: [
+      {
+        heading: "Music Composition",
+        bodyHtml: curriculumModulesToArrowListHtml([
+          { heading: "Music Theory Insights", items: ["Understand the language of music - the foundations that shape melodies, harmonies, and rhythms, turning theory into a tool for creative expression."] },
+          { heading: "Arranging Mastery", items: ["Assemble musical elements into arrangements that flow seamlessly and enhance the emotional impact of your compositions."] },
+          { heading: "Chords Explored", items: ["Dive into major and minor chords and the nuances different chords bring to your compositions."] },
+          { heading: "Crafting Leads", items: ["Hone memorable melodies - the balance between simplicity and complexity."] },
+          { heading: "Keys Demystified", items: ["Choose the right key to convey the desired emotion in your music."] },
+          { heading: "Structure Essentials", items: ["Verses, choruses, and bridges - the building blocks of a cohesive musical narrative."] },
+        ]),
+      },
     ],
+    curriculum: [],
     curriculumAccordion: [],
     pricing: { priceLine: "18 hours - $799 + $100 registration (14+ days out) / $999 + $200 otherwise", enrollLink: "/contact-map" },
     faqs: [],
@@ -299,13 +328,18 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     intro: [
       "Think like a drummer or a strummer: program beats, riffs, and fills that sound like real instruments. In-person in New York and Live Online.",
     ],
-    sections: [],
-    curriculum: [
-      { heading: "Drumming Insights", items: ["Craft realistic drum patterns and fills that groove with authenticity."] },
-      { heading: "Guitar and Bass", items: ["Infuse your guitar and bass parts with musicality and layers that enrich the overall sound."] },
-      { heading: "Session Musician Secrets", items: ["Learn how top session musicians approach their instruments, and bring that finesse to your production."] },
-      { heading: "Rhythm Section Mastery", items: ["Master the essential building blocks that bind your music together."] },
+    sections: [
+      {
+        heading: "Rhythm Section Programming",
+        bodyHtml: curriculumModulesToArrowListHtml([
+          { heading: "Drumming Insights", items: ["Craft realistic drum patterns and fills that groove with authenticity."] },
+          { heading: "Guitar and Bass", items: ["Infuse your guitar and bass parts with musicality and layers that enrich the overall sound."] },
+          { heading: "Session Musician Secrets", items: ["Learn how top session musicians approach their instruments, and bring that finesse to your production."] },
+          { heading: "Rhythm Section Mastery", items: ["Master the essential building blocks that bind your music together."] },
+        ]),
+      },
     ],
+    curriculum: [],
     curriculumAccordion: [],
     pricing: { priceLine: "18 hours - $799 + $100 registration (14+ days out) / $999 + $200 otherwise", enrollLink: "/contact-map" },
     faqs: [],
@@ -320,14 +354,19 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
       "Record, produce, and mix a quality vocal - mic technique, editing mastery, tuning & mixing vocals, and a virtual studio visit with a vocalist at work. In-person in New York and Live Online.",
       "Even though music producers aren't expected to be singers too, the more you understand about vocal production and recording - including how to motivate, coach, and produce your artists - the better the final product. Singing isn't mandatory during these sessions - feel free to just listen.",
     ],
-    sections: [],
-    curriculum: [
-      { heading: "Vocal Instrumentation", items: ["Shape and enhance vocal tones, turning the voice into a dynamic instrument."] },
-      { heading: "Signal Chain", items: ["Optimize your setup for clarity, capturing every nuance of the performance."] },
-      { heading: "Performance Prowess", items: ["Techniques for an engaging vocal performance."] },
-      { heading: "Harmony", items: ["Craft backing vocals and harmonies that add depth and dimension."] },
-      { heading: "Mixing Vocal Considerations", items: ["EQ, compression, and effects tailored specifically for vocals."] },
+    sections: [
+      {
+        heading: "Vocal Production Course",
+        bodyHtml: curriculumModulesToArrowListHtml([
+          { heading: "Vocal Instrumentation", items: ["Shape and enhance vocal tones, turning the voice into a dynamic instrument."] },
+          { heading: "Signal Chain", items: ["Optimize your setup for clarity, capturing every nuance of the performance."] },
+          { heading: "Performance Prowess", items: ["Techniques for an engaging vocal performance."] },
+          { heading: "Harmony", items: ["Craft backing vocals and harmonies that add depth and dimension."] },
+          { heading: "Mixing Vocal Considerations", items: ["EQ, compression, and effects tailored specifically for vocals."] },
+        ]),
+      },
     ],
+    curriculum: [],
     curriculumAccordion: [],
     pricing: { priceLine: "18 hours - $799 + $100 registration (14+ days out) / $999 + $200 otherwise", enrollLink: "/contact-map" },
     faqs: [],
@@ -363,13 +402,39 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
       "Unlock a discount system too: 10% off the second camp, 20% off the third, and 30% off the fourth. All camps run Mon-Fri, two weeks, 10am-2pm ET, $1,999 each.",
     ],
     sections: [],
-    curriculum: [
-      { heading: "Songwriting Summer Camp (7/6-7/17)", items: ["Unlocking Your Inner Hit Songwriter: Crafting Melodies and Lyrics That Resonate", "Songcraft to Soundcraft: Vocal & Music Production for Songwriters", "Soundtrack to Success: Setting You Up for What's Next"] },
-      { heading: "Music Production Summer Camp (7/20-7/31)", items: ["Get to grips with music production software", "Soundcraft: Vocal & Music Production", "The Art of Mixing & Mastering", "Soundtrack to Success: Setting You Up for What's Next"] },
-      { heading: "DJ Summer Camp (8/3-8/14)", items: ["Pioneer Nexus Hardware & Rekordbox Software", "Set Building", "Mixing", "FX and electronic music arrangement"] },
-      { heading: "Electronic Music Summer Camp (8/17-8/28)", items: ["Full electronic music production curriculum"] },
+    curriculum: [],
+    // la's own real page (site 22) has a genuinely different shape from the
+    // single-arrow-list pattern used by composition/rhythm-section-
+    // programming/vocal-production/rekordbox/ableton-live-djs above (see
+    // curriculumModulesToArrowListHtml's own comment) - multiple long
+    // sections, not one flat list, and its actual camp structure doesn't
+    // match ny's own four parallel week-long tracks anyway. ny's own four
+    // tracks read closer to the 360° Academy/SongCraft Pro shape (several
+    // substantial, differently-dated programs) than a short bullet list, so
+    // this uses the same accordion treatment as those instead.
+    curriculumEyebrow: "Camps",
+    curriculumHeading: "Choose your camp.",
+    curriculumAccordion: [
+      {
+        title: "Songwriting Summer Camp (7/6-7/17)",
+        bodyHtml:
+          "<ul><li>Unlocking Your Inner Hit Songwriter: Crafting Melodies and Lyrics That Resonate</li><li>Songcraft to Soundcraft: Vocal & Music Production for Songwriters</li><li>Soundtrack to Success: Setting You Up for What's Next</li></ul>",
+      },
+      {
+        title: "Music Production Summer Camp (7/20-7/31)",
+        bodyHtml:
+          "<ul><li>Get to grips with music production software</li><li>Soundcraft: Vocal & Music Production</li><li>The Art of Mixing & Mastering</li><li>Soundtrack to Success: Setting You Up for What's Next</li></ul>",
+      },
+      {
+        title: "DJ Summer Camp (8/3-8/14)",
+        bodyHtml:
+          "<ul><li>Pioneer Nexus Hardware & Rekordbox Software</li><li>Set Building</li><li>Mixing</li><li>FX and electronic music arrangement</li></ul>",
+      },
+      {
+        title: "Electronic Music Summer Camp (8/17-8/28)",
+        bodyHtml: "<p>Full electronic music production curriculum.</p>",
+      },
     ],
-    curriculumAccordion: [],
     pricing: { priceLine: "$1,999 per camp - 10% off the 2nd, 20% off the 3rd, 30% off the 4th", enrollLink: "/contact-map" },
     faqs: [],
     instructorGridItems: [],
@@ -384,16 +449,21 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     intro: [
       "DJ at your full potential with our specialist course on Pioneer's Rekordbox software - written for the more experienced DJ aiming to enhance their performance, designed to make the switch with the minimum of fuss. In-person in New York, or Live Online at most Garnish locations.",
     ],
-    sections: [],
-    curriculum: [
-      { heading: "Introduction to Rekordbox", items: ["Software overview and setup"] },
-      { heading: "Music Analysis and Preparation", items: ["Preparing your library for performance"] },
-      { heading: "Performance Mode", items: ["Live performance features"] },
-      { heading: "Advanced Mixing Techniques", items: ["Harmonic mixing and key syncing", "Effects and samplers"] },
-      { heading: "Integration with Pioneer DJ Hardware", items: ["Connecting Rekordbox to real Pioneer gear"] },
-      { heading: "Recording and Exporting Sets", items: ["Capturing and sharing your sets"] },
-      { heading: "Troubleshooting and Optimization", items: ["Keeping your setup running smoothly"] },
+    sections: [
+      {
+        heading: "Mastering Pioneer's Rekordbox Software",
+        bodyHtml: curriculumModulesToArrowListHtml([
+          { heading: "Introduction to Rekordbox", items: ["Software overview and setup"] },
+          { heading: "Music Analysis and Preparation", items: ["Preparing your library for performance"] },
+          { heading: "Performance Mode", items: ["Live performance features"] },
+          { heading: "Advanced Mixing Techniques", items: ["Harmonic mixing and key syncing", "Effects and samplers"] },
+          { heading: "Integration with Pioneer DJ Hardware", items: ["Connecting Rekordbox to real Pioneer gear"] },
+          { heading: "Recording and Exporting Sets", items: ["Capturing and sharing your sets"] },
+          { heading: "Troubleshooting and Optimization", items: ["Keeping your setup running smoothly"] },
+        ]),
+      },
     ],
+    curriculum: [],
     curriculumAccordion: [],
     pricing: { priceLine: "18 hours - $799 + $100 registration (14+ days out) / $999 + $200 otherwise", enrollLink: "/contact-map" },
     faqs: [],
