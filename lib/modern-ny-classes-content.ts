@@ -1,4 +1,15 @@
 import type { NYProgramContent } from "./modern-ny-programs-content";
+import type { PayPalButton } from "../components/PayPalHostedButtons";
+
+// Same real, already-working hosted-button ids page.tsx's own
+// NY_DJ_CLASS_PAYPAL_BUTTONS uses for this exact product on the legacy
+// rendering path (see its own comment there for why NY got its own ids
+// separate from mia's) - redeclared here rather than importing from
+// page.tsx, which isn't meant to be imported from elsewhere.
+const NY_DJ_CLASS_PAYPAL_BUTTONS: PayPalButton[] = [
+  { id: "DVBYCLCZLAZ34", title: "DJ Class Early Bird Registration" },
+  { id: "6E64BWEW8RLQN", title: "DJ Class Regular Registration" },
+];
 
 // ny's real "Express Classes" (shorter, single courses) plus a handful of
 // real "DJ & More" pages that share the identical shape - every value below
@@ -421,5 +432,55 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     faqs: [],
     instructorGridItems: [],
     testimonials: [],
+  },
+
+  // ny's real DJ Class product (Payload "products" collection, not
+  // "pages" - the one page in this whole rebuild that's an actual
+  // e-commerce purchase, not just informational). Every value below is
+  // the product's own real, already-migrated data (site 14, product id
+  // 160, slug "product/electronic-dj-class") - not scraped from the live
+  // page - queried directly via scripts/dump-ny-dj-class-product.ts. The
+  // PayPal buttons are real and already wired up for this exact product in
+  // page.tsx's own NY_DJ_CLASS_PAYPAL_BUTTONS (used by the legacy
+  // rendering path too) - reused here rather than duplicated, so there's
+  // only one real set of button ids for this product network-wide.
+  "product/electronic-dj-class": {
+    title: "Electronic Music DJ Program",
+    heroImageUrl: `${S3}dj-class-newyork-scaled.jpg`,
+    intro: [
+      "Ever been curious about the magic DJs work from the booth? Now's your chance to dive into the action! Join our Professional Electronic Music DJ Program, which we've been perfecting in Brooklyn and Manhattan since 2016. Our inclusive 36-hour program is fully comprehensive, mastering industry-standard Pioneer Nexus equipment like a pro - on completion, you'll be ready to confidently step up to the decks at open-deck events across the city.",
+      "Perfect for both beginners and those who've dabbled at home, eager to master real-world techniques on the latest professional equipment. Taught by our superior roster of professional electronic music touring DJs, the course offers a truly personal experience, with a class size limited to just four students.",
+      "Successful students will be invited to join our Ibiza Bootcamp, for further training in Barcelona, and a performance in Ibiza.",
+      "In-person classes provide the personal attention and feedback necessary for a high-quality learning experience - private instruction is also available online.",
+      "“I needed to brush up on some production software, so I called Garnish, as they have the best instructors” - Jamie Jones. “Garnish is taking 'spin' classes to new heights” - Billboard.",
+    ],
+    sections: [],
+    curriculum: [
+      { heading: "Beats & Pieces", items: ["Setting up equipment, and getting ready to go", "Mixing essentials", "Bars and beats", "Beat matching introduction"] },
+      { heading: "FX", items: ["Common FX", "Filtering", "EQ", "Dos and don'ts: FX during the mix"] },
+      { heading: "Hardware and Software", items: ["CDJ Nexus", "Rekordbox", "Mixed In Key"] },
+      { heading: "Your Set", items: ["Refining your set", "How to mix acapellas", "Gauging the crowd and having a backup plan"] },
+      { heading: "Advanced Mixing & Digital Tricks", items: ["Triggering and sampling", "Delay and reverb in the mix", "Impact mixing with FX and levels", "Body language"] },
+      { heading: "Advanced Set Building & Improvisation", items: ["Out-of-the-box song selection", "Changing tempo", "Music programming"] },
+      { heading: "Preparing for Your Show", items: ["Recording your set", "Getting the word out"] },
+      { heading: "What Next?", items: ["Keeping the momentum and booking more events", "EPK tips", "Developing your sound and style"] },
+    ],
+    curriculumAccordion: [],
+    // No enrollLink here - the real, working checkout is the PayPal
+    // buttons below (courseSchedule.paypalButtons) instead of a link.
+    pricing: { priceLine: "36 lab hours - $950 + $500 registration (14+ days out) / $1,050 + $600 otherwise - $500 off in 2026", enrollLink: null },
+    courseSchedule: {
+      bodyHtml:
+        "<p>New cohorts run year-round in both Manhattan and Brooklyn, typically 9-12 sessions over 2 months, weekday evenings or weekend afternoons. For one-to-one lessons, including Open Format DJ lessons, see <a href=\"/private-instruction\">DJ Private Instruction</a>.</p>",
+      paypalButtons: NY_DJ_CLASS_PAYPAL_BUTTONS,
+    },
+    faqs: [],
+    instructorGridItems: [],
+    testimonials: [
+      { author: "DJ Exact", text: "I feel I'm so lucky to have done this class, to form my foundation of understanding of DJing. The instructor nurtured my interest and consolidated my goal to be a DJ in clubs." },
+      { author: "Eden", text: "It's a great course to get a fully integrated understanding of DJing! I loved the learning process and finally getting to play my own music. The instructor was great, and I'm so glad I invested in the class." },
+      { author: "Heather", text: "After only three classes, I am an entirely different DJ. I can't wait to see how my skills grow over the next six classes! I'm so grateful for my instructor. He feels more like a mentor than a teacher." },
+      { author: "Matt", text: "I can't speak more highly of this course. I am so happy with how much I learned, the length of the course, the quality of equipment, and the stellar instructor." },
+    ],
   },
 };

@@ -71,6 +71,15 @@ export type NYProgramContent = {
   faqs: Faq[];
   instructorGridItems: InstructorGridItem[];
   testimonials: TestimonialItem[];
+  // Real, working PayPal checkout (see the DJ Class product entry in
+  // modern-ny-classes-content.ts) - reuses the exact same hosted-button
+  // mechanism mia's own real course-schedule pages already use, rather
+  // than a fabricated "enroll" link, since this one product doc's real
+  // buttons already exist and work.
+  courseSchedule?: {
+    bodyHtml: string;
+    paypalButtons?: import("../components/PayPalHostedButtons").PayPalButton[];
+  };
 };
 
 export const NY_PROGRAMS: Record<string, NYProgramContent> = {

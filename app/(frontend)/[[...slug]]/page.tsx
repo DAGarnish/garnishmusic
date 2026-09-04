@@ -508,6 +508,7 @@ export default async function CatchAllPage({ params }: Args) {
         faqs={content.faqs}
         instructorGridItems={content.instructorGridItems}
         testimonials={content.testimonials}
+        courseSchedule={content.courseSchedule}
         relatedPosts={[]}
         eduDomain="edu.garnishmusicproduction.com"
       />
