@@ -202,9 +202,19 @@ export default function ModernCoursePage({
       {intro.length > 0 && (
         <section className="max-w-[900px] mx-auto px-6 md:px-10 py-16 space-y-5">
           {intro.map((p, i) => (
-            <p key={i} className="text-[var(--gmpm-text-dim)] leading-relaxed">
-              {p}
-            </p>
+            // dangerouslySetInnerHTML rather than a plain text node - the DJ
+            // Class page's own two closing press quotes (see
+            // NY_DJ_CLASS_PAYPAL_BUTTONS' own comment) need their real
+            // "- Jamie Jones"/"- Billboard" attributions linked out, exactly
+            // as the real page has them. Every intro string network-wide is
+            // dev-authored (hand-transcribed or run through
+            // extractCourseIntro, which already strips all HTML tags before
+            // this ever sees it), never end-user input, so this is safe.
+            <p
+              key={i}
+              className="text-[var(--gmpm-text-dim)] leading-relaxed [&_a]:text-[var(--gmpm-accent)] [&_a]:underline [&_a]:underline-offset-2"
+              dangerouslySetInnerHTML={{ __html: p }}
+            />
           ))}
         </section>
       )}

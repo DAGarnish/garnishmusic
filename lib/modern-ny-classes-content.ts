@@ -452,7 +452,11 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
       "Perfect for both beginners and those who've dabbled at home, eager to master real-world techniques on the latest professional equipment. Taught by our superior roster of professional electronic music touring DJs, the course offers a truly personal experience, with a class size limited to just four students.",
       "Successful students will be invited to join our Ibiza Bootcamp, for further training in Barcelona, and a performance in Ibiza.",
       "In-person classes provide the personal attention and feedback necessary for a high-quality learning experience - private instruction is also available online.",
-      "“I needed to brush up on some production software, so I called Garnish, as they have the best instructors” - Jamie Jones. “Garnish is taking 'spin' classes to new heights” - Billboard.",
+      // Real hrefs off the real page's own raw content (scripts/check-dj-
+      // class-quote-links.ts) - each quote is its own paragraph there too,
+      // not run together as one sentence.
+      '“I needed to brush up on some production software, so I called Garnish, as they have the best instructors” – <a href="https://jamiejones.com/" target="_blank" rel="noopener">Jamie Jones</a>',
+      '“Garnish is taking \'spin\' classes to new heights” – <a href="https://www.billboard.com/music/music-news/not-all-dj-schools-are-created-equally-how-paris-hiltons-guru-is-taking-6084609/" target="_blank" rel="noopener">Billboard</a>',
     ],
     sections: [],
     curriculum: [
