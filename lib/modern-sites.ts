@@ -95,15 +95,17 @@ const F1_LINK: FooterCourseLink = {
 // own footer), not a shorthand - confirmed against each site's own DB
 // title field directly, not guessed.
 const DEFAULT_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  F1_LINK,
   { label: "360° Garnish Music Academy", href: "/academy" },
   { label: "Electronic Music DJ Course", href: "/courses/electronic-dj-course" },
   { label: "Music Production Private Instruction", href: "/private-instruction" },
+  F1_LINK,
 ];
 
 // la's real course/program slugs (and titles) differ from pdx/hou's (see
 // LA_ROUTES in modern-site-routes.ts) - the shared ModernFooter's pdx-tuned
-// course links above 404 on la.
+// course links above 404 on la. F1 stays first here, deliberately - la is
+// F1's own real home site, unlike every other site's footer (user request
+// 2026-09-04 to move F1 last everywhere else, but not la).
 const LA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   F1_LINK,
   { label: "360° Music Production Academy", href: "/la-music-production-academy" },
@@ -113,20 +115,20 @@ const LA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
 
 // mia's real course/program slugs (and titles) also differ from pdx/hou's.
 const MIA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  F1_LINK,
   { label: "Electronic Music Academy", href: "/academy/emp-electronic-music-producer" },
   { label: "Electronic Music DJ Class", href: "/courses/electronic-dj-course" },
   { label: "Music Production Private Instruction", href: "/private-tuition" },
+  F1_LINK,
 ];
 
 // edu's real slugs and titles (its own Academy/DJ/private-instruction
 // pages, see MODERN_SITE_ROUTES.edu's own programSlugs/
 // privateInstructionSlug).
 const STAGING_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  F1_LINK,
   { label: "360° Garnish Music Academy", href: "/academy" },
   { label: "Electronic Music DJ Course", href: "/electronic-dj-course" },
   { label: "Private Instruction, Tuition & Artist Development", href: "/private-instruction" },
+  F1_LINK,
 ];
 
 // ny's real slugs and titles, confirmed against its own live nav
@@ -136,10 +138,10 @@ const STAGING_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
 // courses/* page; its label matches that product's own real title (see
 // modern-ny-classes-content.ts).
 const NY_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  F1_LINK,
   { label: "360° Garnish Music Academy", href: "/music-production-academy" },
   { label: "Electronic Music DJ Program", href: "/product/electronic-dj-class" },
   { label: "Music Production & DJ Private Instruction", href: "/private-instruction" },
+  F1_LINK,
 ];
 
 export function getFooterCourseLinks(slug: string | undefined | null): FooterCourseLink[] {
