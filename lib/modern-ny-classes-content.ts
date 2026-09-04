@@ -444,6 +444,7 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
         title: "Location & Studio Costs",
         items: [
           "In one of our labs: Add $480",
+          "In a studio facility: Add $760",
           "In an elite facility: Add $1,440",
           "At your home, studio, hotel, or online: No additional fee beyond reasonable travel costs",
         ],
