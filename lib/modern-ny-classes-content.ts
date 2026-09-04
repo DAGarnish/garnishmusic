@@ -442,22 +442,25 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     curriculumHeading: "Choose your camp.",
     curriculumAccordion: [
       {
-        title: "Songwriting Summer Camp (7/6-7/17)",
+        // Shifted from 2026's 7/6-7/17 to 2027's own real Monday-Friday
+        // calendar (user request 2026-09-04, since 2026's own camp season
+        // has already passed - see the other 3 camps' matching shift below).
+        title: "Songwriting Summer Camp (7/5-7/16)",
         bodyHtml:
           "<ul><li>Unlocking Your Inner Hit Songwriter: Crafting Melodies and Lyrics That Resonate</li><li>Songcraft to Soundcraft: Vocal & Music Production for Songwriters</li><li>Soundtrack to Success: Setting You Up for What's Next</li></ul>",
       },
       {
-        title: "Music Production Summer Camp (7/20-7/31)",
+        title: "Music Production Summer Camp (7/19-7/30)",
         bodyHtml:
           "<ul><li>Get to grips with music production software</li><li>Soundcraft: Vocal & Music Production</li><li>The Art of Mixing & Mastering</li><li>Soundtrack to Success: Setting You Up for What's Next</li></ul>",
       },
       {
-        title: "DJ Summer Camp (8/3-8/14)",
+        title: "DJ Summer Camp (8/2-8/13)",
         bodyHtml:
           "<ul><li>Pioneer Nexus Hardware & Rekordbox Software</li><li>Set Building</li><li>Mixing</li><li>FX and electronic music arrangement</li></ul>",
       },
       {
-        title: "Electronic Music Summer Camp (8/17-8/28)",
+        title: "Electronic Music Summer Camp (8/16-8/27)",
         bodyHtml: "<p>Full electronic music production curriculum.</p>",
       },
     ],
