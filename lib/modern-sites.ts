@@ -74,9 +74,14 @@ export type FooterCourseLink = { label: string; href: string };
 // request (2026-09-04) to put it in every redesigned site's own footer
 // anyway, always pointing at la's real page rather than each site getting
 // its own copy (same absolute-cross-site-link precedent as ModernHeader's
-// own CROSS_SITE_ONLY_URLS for this exact page).
+// own CROSS_SITE_ONLY_URLS for this exact page). Labeled the same way the
+// nav already does network-wide ("F1 USA Visa Eligible (LA)") rather than
+// la's own real page title ("Certificate in Music Production and
+// Songwriting") - "F1" is the recognizable hook, not the formal name, and
+// this exact label is already an established real label elsewhere in the
+// network for this exact page.
 const F1_LINK: FooterCourseLink = {
-  label: "F1",
+  label: "F1 USA Visa Eligible (LA)",
   href: "https://la.garnishmusicproduction.com/certificate-music-production-songwriting/",
 };
 
@@ -85,51 +90,56 @@ const F1_LINK: FooterCourseLink = {
 // DJ (this site's own real DJ course/product), and Private Instruction
 // (this site's own real private-instruction page) - user request
 // (2026-09-04), replacing the previous Ableton Live/Logic Pro/DJ Course/
-// Producer Program set. Each site's own real slugs below (confirmed
-// against MODERN_SITE_ROUTES/modern-ny-programs-content.ts).
+// Producer Program set. Each label is that real page's own actual title
+// (site-name suffix dropped, e.g. "| Portland" - redundant on that site's
+// own footer), not a shorthand - confirmed against each site's own DB
+// title field directly, not guessed.
 const DEFAULT_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   F1_LINK,
-  { label: "360", href: "/academy" },
-  { label: "DJ", href: "/courses/electronic-dj-course" },
-  { label: "Private Instruction", href: "/private-instruction" },
+  { label: "360° Garnish Music Academy", href: "/academy" },
+  { label: "Electronic Music DJ Course", href: "/courses/electronic-dj-course" },
+  { label: "Music Production Private Instruction", href: "/private-instruction" },
 ];
 
-// la's real course/program slugs differ from pdx/hou's (see LA_ROUTES in
-// modern-site-routes.ts) - the shared ModernFooter's pdx-tuned course links
-// above 404 on la.
+// la's real course/program slugs (and titles) differ from pdx/hou's (see
+// LA_ROUTES in modern-site-routes.ts) - the shared ModernFooter's pdx-tuned
+// course links above 404 on la.
 const LA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   F1_LINK,
-  { label: "360", href: "/la-music-production-academy" },
-  { label: "DJ", href: "/courses/dj-course" },
-  { label: "Private Instruction", href: "/music-production-private-instruction" },
+  { label: "360° Music Production Academy", href: "/la-music-production-academy" },
+  { label: "DJ Course", href: "/courses/dj-course" },
+  { label: "1-on-1 Private Instruction", href: "/music-production-private-instruction" },
 ];
 
-// mia's real course/program slugs also differ from pdx/hou's.
+// mia's real course/program slugs (and titles) also differ from pdx/hou's.
 const MIA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   F1_LINK,
-  { label: "360", href: "/academy/emp-electronic-music-producer" },
-  { label: "DJ", href: "/courses/electronic-dj-course" },
-  { label: "Private Instruction", href: "/private-tuition" },
+  { label: "Electronic Music Academy", href: "/academy/emp-electronic-music-producer" },
+  { label: "Electronic Music DJ Class", href: "/courses/electronic-dj-course" },
+  { label: "Music Production Private Instruction", href: "/private-tuition" },
 ];
 
-// edu's real slugs (its own Academy/DJ/private-instruction pages, see
-// MODERN_SITE_ROUTES.edu's own programSlugs/privateInstructionSlug).
+// edu's real slugs and titles (its own Academy/DJ/private-instruction
+// pages, see MODERN_SITE_ROUTES.edu's own programSlugs/
+// privateInstructionSlug).
 const STAGING_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   F1_LINK,
-  { label: "360", href: "/academy" },
-  { label: "DJ", href: "/electronic-dj-course" },
-  { label: "Private Instruction", href: "/private-instruction" },
+  { label: "360° Garnish Music Academy", href: "/academy" },
+  { label: "Electronic Music DJ Course", href: "/electronic-dj-course" },
+  { label: "Private Instruction, Tuition & Artist Development", href: "/private-instruction" },
 ];
 
-// ny's real slugs, confirmed against its own live nav (2026-09-04) - DJ
-// points at ny's real DJ Class product (product/electronic-dj-class, the
-// one page in this whole rebuild with real working PayPal checkout - see
-// NY_DJ_CLASS_PAYPAL_BUTTONS), not a courses/* page.
+// ny's real slugs and titles, confirmed against its own live nav
+// (2026-09-04) - DJ points at ny's real DJ Class product
+// (product/electronic-dj-class, the one page in this whole rebuild with
+// real working PayPal checkout - see NY_DJ_CLASS_PAYPAL_BUTTONS), not a
+// courses/* page; its label matches that product's own real title (see
+// modern-ny-classes-content.ts).
 const NY_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   F1_LINK,
-  { label: "360", href: "/music-production-academy" },
-  { label: "DJ", href: "/product/electronic-dj-class" },
-  { label: "Private Instruction", href: "/private-instruction" },
+  { label: "360° Garnish Music Academy", href: "/music-production-academy" },
+  { label: "Electronic Music DJ Program", href: "/product/electronic-dj-class" },
+  { label: "Music Production & DJ Private Instruction", href: "/private-instruction" },
 ];
 
 export function getFooterCourseLinks(slug: string | undefined | null): FooterCourseLink[] {
