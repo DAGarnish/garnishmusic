@@ -136,6 +136,87 @@ function NavGroup({ item }: { item: MenuNode }) {
   );
 }
 
+function isLocationsLabel(label: string): boolean {
+  return /^(other )?locations$/i.test(label.trim());
+}
+
+// "About"'s own real shape, network-wide (pdx/hou/la/mia/edu/staging all
+// clone this same structure): exactly two groups - this site's own real
+// items labeled by its own city/region name (or "Information" for edu, the
+// network-wide hub with no single city of its own), and a "Locations"/
+// "Other Locations" group linking out to every other site. The legacy
+// theme's own "About" dropdown (screenshot, user request 2026-09-04) shows
+// these as two small tabs on the left - the current location bulleted/
+// highlighted, "Locations" plain below it - with whichever one is hovered
+// showing its own real items on the right, rather than NavGroup's generic
+// side-by-side-columns layout (built for a dropdown like "Music Production
+// & DJ Programs", where every group is meant to show at once).
+function AboutNavGroup({ item }: { item: MenuNode }) {
+  const [active, setActive] = useState<"own" | "locations">("own");
+  const locationsGroup = item.children?.find((c) => isLocationsLabel(c.label));
+  const ownGroup = item.children?.find((c) => c !== locationsGroup);
+
+  // Shape doesn't match (shouldn't happen for any real site's own "About"
+  // item, but a menu could always be re-edited later) - fall back to the
+  // generic renderer rather than silently showing nothing.
+  if (!locationsGroup || !ownGroup) {
+    return <NavGroup item={item} />;
+  }
+
+  const activeGroup = active === "own" ? ownGroup : locationsGroup;
+
+  return (
+    <div className="group relative" onMouseLeave={() => setActive("own")}>
+      <button className="text-sm text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)] transition-colors">
+        {item.label}
+      </button>
+      <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity absolute left-0 top-full pt-3 z-50">
+        <div className="w-[min(90vw,480px)] max-h-[70vh] overflow-y-auto bg-[var(--gmpm-bg-raised)] border border-[var(--gmpm-line)] p-6 flex gap-x-8 shadow-2xl">
+          <div className="w-44 shrink-0 space-y-4">
+            <button
+              type="button"
+              onMouseEnter={() => setActive("own")}
+              className={`flex items-center gap-2 text-sm gmpm-mono transition-colors ${
+                active === "own" ? "text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
+              }`}
+            >
+              <span
+                className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
+                  active === "own" ? "bg-[var(--gmpm-accent)]" : "bg-transparent"
+                }`}
+                aria-hidden="true"
+              />
+              {ownGroup.label}
+            </button>
+            <button
+              type="button"
+              onMouseEnter={() => setActive("locations")}
+              className={`block text-left text-sm transition-colors ${
+                active === "locations" ? "text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
+              }`}
+            >
+              {locationsGroup.label}
+            </button>
+          </div>
+          <ul className="flex-1 space-y-2.5">
+            {activeGroup.children.map((leaf, i) => (
+              <li key={i}>
+                <Link
+                  href={leaf.url}
+                  target={leaf.newTab ? "_blank" : undefined}
+                  className="text-sm text-[var(--gmpm-text)] hover:text-[var(--gmpm-accent)] transition-colors"
+                >
+                  {leaf.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Mobile counterpart to NavGroup - a tap-to-expand accordion instead of
 // hover, since there's no hover state on touch. Nested one level deeper
 // than the desktop mega-menu's 2-column layout (which doesn't fit a phone
@@ -231,9 +312,13 @@ export default function ModernHeader({
         </Link>
 
         <nav className="gmpm-hidden-until-lg items-center gap-8">
-          {(fixedMenu || []).map((item, i) => (
-            <NavGroup key={i} item={item} />
-          ))}
+          {(fixedMenu || []).map((item, i) =>
+            item.label.trim().toLowerCase() === "about" ? (
+              <AboutNavGroup key={i} item={item} />
+            ) : (
+              <NavGroup key={i} item={item} />
+            )
+          )}
         </nav>
 
         <div className="flex items-center gap-4 shrink-0">
