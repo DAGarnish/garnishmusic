@@ -44,6 +44,8 @@ import ModernWhyUsPage from "../../../components/modern/ModernWhyUsPage";
 import ModernLegalPage from "../../../components/modern/ModernLegalPage";
 import { extractLegalDocument } from "../../../lib/modern-legal-content";
 import { extractWhyUsBlurbs } from "../../../lib/modern-why-us-content";
+import ModernOnlineMusicProductionPage from "../../../components/modern/ModernOnlineMusicProductionPage";
+import { extractOnlineMusicProductionParagraphs } from "../../../lib/modern-online-music-production-content";
 import { extractContactDetails, extractGoogleFormSrc } from "../../../lib/modern-contact-content";
 import ModernCoursePage from "../../../components/modern/ModernCoursePage";
 import {
@@ -611,6 +613,41 @@ export default async function CatchAllPage({ params }: Args) {
     if (legalDoc) {
       return (
         <ModernLegalPage site={site} title={legalDoc.title} sections={extractLegalDocument(legalDoc.wpRawContent || "")} />
+      );
+    }
+  }
+  // edu-2's real /online-music-production/ ("Do What You Love. Remotely.") -
+  // the network-wide "Live Online" hub page other cities' navs link to
+  // absolutely (see ModernHeader's own CROSS_SITE_ONLY_URLS/OWN_DOMAIN
+  // comment) rather than a per-city clone. See
+  // extractOnlineMusicProductionParagraphs' own comment for why this needs
+  // a dedicated extractor instead of the generic course-page pipeline.
+  if (site.slug === "edu" && slug.join("/") === "online-music-production") {
+    const payload = await getPayloadClient();
+    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu-2");
+    const pages = eduSite
+      ? await payload.find({
+          collection: "pages",
+          where: { and: [{ site: { equals: eduSite.id } }, { slug: { equals: "online-music-production" } }] },
+          limit: 1,
+          depth: 1,
+        })
+      : { docs: [] };
+    const doc = pages.docs[0] as any;
+    if (doc) {
+      const raw = doc.wpRawContent || "";
+      const heroImageUrl =
+        (typeof doc.titleBackgroundImage === "object" && doc.titleBackgroundImage?.url) ||
+        (typeof doc.featuredImage === "object" && doc.featuredImage?.url) ||
+        undefined;
+      return (
+        <ModernOnlineMusicProductionPage
+          site={site}
+          title={doc.title}
+          heroImageUrl={heroImageUrl}
+          paragraphs={extractOnlineMusicProductionParagraphs(raw)}
+          video={extractVideoEmbeds(raw)[0] || null}
+        />
       );
     }
   }
