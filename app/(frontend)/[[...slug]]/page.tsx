@@ -29,6 +29,7 @@ import { BlockRenderer } from "../../../components/blocks/BlockRenderer";
 import { createTtlCache } from "../../../lib/ttl-cache";
 import ModernHomePage from "../../../components/modern/ModernHomePage";
 import ModernEduHomePage from "../../../components/modern/ModernEduHomePage";
+import ModernNYHomePage from "../../../components/modern/ModernNYHomePage";
 import ModernBlogTopicPage from "../../../components/modern/ModernBlogTopicPage";
 import ModernBlogPostPage from "../../../components/modern/ModernBlogPostPage";
 import { TOPIC_POST_CATEGORY_SLUGS } from "../../../lib/modern-edu-blog";
@@ -465,6 +466,15 @@ export default async function CatchAllPage({ params }: Args) {
     // content is.
     if (site.slug === "edu") {
       return <ModernEduHomePage site={site} />;
+    }
+    // ny's own homepage rebuild (previewed under "staging" - see
+    // ModernNYHomePage's own comment) hand-codes every real value instead of
+    // extracting them from wpRawContent like ModernHomePage does for every
+    // other per-city site, so it gets its own component too, same reasoning
+    // as edu's above just for a different cause (no legacy content to
+    // extract from at all, rather than a fundamentally different page shape).
+    if (site.slug === "staging") {
+      return <ModernNYHomePage site={site} />;
     }
     return <ModernHomePage site={site} />;
   }

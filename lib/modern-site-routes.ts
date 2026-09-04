@@ -245,3 +245,29 @@ const STAGING_ROUTES: ModernSiteRoutes = {
 };
 
 MODERN_SITE_ROUTES.edu = STAGING_ROUTES;
+
+// ny's real site route config - a from-scratch modern rebuild of its real
+// homepage (see ModernNYHomePage), previewed under the "staging" slug
+// (site id 29, freed up by edu's own promotion above) the same way
+// pdx/hou/la/mia/edu each cycled through it in turn before their own
+// promotions (see MIA_ROUTES/STAGING_ROUTES' own comments above). Unlike
+// edu's own staging build, this one deliberately does NOT clone or
+// reference any of ny's real WPBakery-authored page content - every real
+// value on the homepage (copy, images, testimonials, course cards) was
+// hand-transcribed once into ModernNYHomePage itself, per explicit request
+// (2026-09-04) to leave all of that legacy markup behind on ny. Only the
+// homepage is built so far - programSlugs/instructorSlugs are
+// intentionally empty until those pages get the same treatment, so nav
+// links to them fall through to a 404 rather than rendering ny's own
+// legacy content under the staging domain.
+const NY_ROUTES: ModernSiteRoutes = {
+  // Matches ny's real nav (its "Contact" > "Manhattan" link) - not yet a
+  // real page on staging, so this 404s until /contact-map is built here too.
+  contactSlug: "contact-map",
+  privateInstructionSlug: "private-instruction",
+  instructorsSlug: "instructors",
+  programSlugs: [],
+  instructorSlugs: [],
+};
+
+MODERN_SITE_ROUTES.staging = NY_ROUTES;

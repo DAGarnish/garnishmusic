@@ -25,9 +25,11 @@ export const MODERN_SITE_SLUGS = new Set(Object.keys(MODERN_SITE_ROUTES));
 // partner logo pick, ...) - that pattern is exactly how the partner logos
 // stayed lime-green on staging after the theme rollout: the theme rolled
 // out, but a second, separate "is this site cream-themed" check elsewhere
-// didn't get updated along with it.
+// didn't get updated along with it. ny's own from-scratch homepage rebuild
+// (previewed under "staging" again - see ModernNYHomePage and
+// MODERN_SITE_ROUTES' own NY_ROUTES comment) follows suit too.
 export function isCreamThemeSite(slug: string): boolean {
-  return slug === "pdx" || slug === "mia" || slug === "la" || slug === "edu";
+  return slug === "pdx" || slug === "mia" || slug === "la" || slug === "edu" || slug === "staging";
 }
 
 // The course-schedule/pricing-disclosure widget and Add-to-Cart suppression
@@ -111,9 +113,22 @@ const STAGING_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
   { label: "Producer Program", href: "/programs/ableton-producer" },
 ];
 
+// ny's real course/program slugs, confirmed against its own live nav
+// (2026-09-04): Ableton Live has no "-live"/"-course" suffix here (just
+// /courses/ableton, unlike every other site's own variant of that slug),
+// and its real Producer Program page is /programs/ableton-producer-program
+// (not pdx/hou's bare /ableton-producer).
+const NY_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
+  { label: "Ableton Live", href: "/courses/ableton" },
+  { label: "Logic Pro", href: "/courses/logic-pro" },
+  { label: "DJ Course", href: "/courses/electronic-dj-course" },
+  { label: "Producer Program", href: "/programs/ableton-producer-program" },
+];
+
 export function getFooterCourseLinks(slug: string | undefined | null): FooterCourseLink[] {
   if (slug === "la") return LA_FOOTER_COURSE_LINKS;
   if (slug === "mia") return MIA_FOOTER_COURSE_LINKS;
   if (slug === "edu") return STAGING_FOOTER_COURSE_LINKS;
+  if (slug === "staging") return NY_FOOTER_COURSE_LINKS;
   return DEFAULT_FOOTER_COURSE_LINKS;
 }

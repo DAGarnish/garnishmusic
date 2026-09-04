@@ -8,19 +8,19 @@
 // part after the pipe is the real, human city name a visitor expects to
 // read, so it's read from there rather than reverse-engineered from the
 // slug (which is a 2-3 letter airport-style code, not a place name).
-// "staging" (edu's own network-wide-hub homepage preview - see
-// ModernEduHomePage) and "edu" itself have no single city, and neither
-// site.name follows the "Garnish Music Production School | <City>" pattern
-// every per-city site's does (both are "...School, Worldwide" - a comma,
-// not a pipe) - getCityName's own split falls through to
-// site.slug.toUpperCase() for them with no override, which is how
-// ModernCoursePage's "Course — STAGING" eyebrow leaked through before this
-// existed. Every page on these two sites already independently hardcodes
-// "Worldwide" as the human-readable equivalent (ModernEduHomePage's own
-// hero, ModernFooter's cityName prop, ...), so this makes that the single
-// source of truth instead.
+// edu itself has no single city, and its site.name doesn't follow the
+// "Garnish Music Production School | <City>" pattern every per-city site's
+// does (it's "...School, Worldwide" - a comma, not a pipe) - getCityName's
+// own split falls through to site.slug.toUpperCase() for it with no
+// override, which is how ModernCoursePage's "Course — EDU" eyebrow would
+// otherwise leak through. Every page on edu already independently
+// hardcodes "Worldwide" as the human-readable equivalent (ModernEduHomePage's
+// own hero, ModernFooter's cityName prop, ...), so this makes that the
+// single source of truth instead. "staging" itself gets no override -
+// whichever site currently previews there (ny's own rebuild as of
+// 2026-09-04 - see ModernNYHomePage) has a real "| City" name that the
+// normal split below already handles correctly.
 const CITY_NAME_OVERRIDES: Record<string, string> = {
-  staging: "Worldwide",
   edu: "Worldwide",
 };
 
@@ -32,12 +32,14 @@ export function getCityName(site: { name?: string; slug?: string }): string {
   return city || slug.toUpperCase();
 }
 
-// "staging" is edu's own network-wide-hub homepage preview (see
-// ModernEduHomePage) - "STAGING" is meaningless in the header mark real
-// visitors see, and edu itself has no single city.
+// edu itself has no single city - "EDU" reads better in the header mark
+// than its bare slug would anyway, but there's no slug this trivial for it
+// to fall back to correctly. "staging" gets its own override for whichever
+// site is currently previewing there (see CITY_NAME_OVERRIDES' own comment)
+// - ny's real abbreviation is "NYC", not the bare uppercased slug "STAGING".
 const CITY_ABBR_OVERRIDES: Record<string, string> = {
-  staging: "EDU",
   edu: "EDU",
+  staging: "NYC",
 };
 
 export function getCityAbbr(site: { slug?: string }): string {
