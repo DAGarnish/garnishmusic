@@ -50,7 +50,11 @@ export default function ModernLegalPage({
       <section className="max-w-[900px] mx-auto px-6 md:px-10 pb-24 space-y-10">
         {sections.map((s, i) => (
           <div key={i}>
-            <h2 className="gmpm-display font-bold text-xl mb-3">{s.heading}</h2>
+            {/* /gift/'s own single section has no real heading of its own
+                (see extractPlainBodyHtml) - the page's own <h1> above
+                already carries the title, so an empty <h2> would just be a
+                blank line. */}
+            {s.heading && <h2 className="gmpm-display font-bold text-xl mb-3">{s.heading}</h2>}
             <div
               className="prose-modern text-[var(--gmpm-text-dim)] leading-relaxed [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
               dangerouslySetInnerHTML={{ __html: s.bodyHtml }}

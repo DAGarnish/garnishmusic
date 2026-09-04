@@ -65,6 +65,17 @@ function legalBodyToHtml(chunk: string): string {
   return parts.join("");
 }
 
+// edu-2's own /gift/ page - just two bare paragraphs plus a WooCommerce
+// [variation-dropdow] shortcode (no real checkout for this network), no
+// <h3>/<h4> headings at all, so extractLegalDocument's own heading-to-
+// heading slicing finds zero sections. Reuses the same paragraph/list-to-
+// HTML conversion it already applies per-section, just applied once to the
+// whole raw body instead - cleanInlineHtml's shortcode strip already drops
+// the WooCommerce tag on its own.
+export function extractPlainBodyHtml(wpRawContent: string): string {
+  return legalBodyToHtml(wpRawContent || "");
+}
+
 export type LegalSection = { heading: string; bodyHtml: string };
 
 export function extractLegalDocument(wpRawContent: string): LegalSection[] {

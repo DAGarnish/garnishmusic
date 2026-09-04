@@ -43,7 +43,7 @@ import ModernContactPage from "../../../components/modern/ModernContactPage";
 import ModernEduContactPage from "../../../components/modern/ModernEduContactPage";
 import ModernWhyUsPage from "../../../components/modern/ModernWhyUsPage";
 import ModernLegalPage from "../../../components/modern/ModernLegalPage";
-import { extractLegalDocument } from "../../../lib/modern-legal-content";
+import { extractLegalDocument, extractPlainBodyHtml } from "../../../lib/modern-legal-content";
 import { extractWhyUsBlurbs } from "../../../lib/modern-why-us-content";
 import ModernOnlineMusicProductionPage from "../../../components/modern/ModernOnlineMusicProductionPage";
 import { extractOnlineMusicProductionParagraphs } from "../../../lib/modern-online-music-production-content";
@@ -643,6 +643,44 @@ export default async function CatchAllPage({ params }: Args) {
     if (legalDoc) {
       return (
         <ModernLegalPage site={site} title={legalDoc.title} sections={extractLegalDocument(legalDoc.wpRawContent || "")} />
+      );
+    }
+  }
+  // edu-2's real /gift/ ("Gift Certificate") - linked absolutely from every
+  // other modern site's own "DJ & More"/"Express Classes" nav group (see
+  // e.g. staging's own mainMenu), but 404ing on edu itself since edu only
+  // clones edu-2's nav, not its ~100 pages (same cross-site lookup every
+  // other edu-2-only page above needs). No real checkout exists for this
+  // network (edu-2's own [variation-dropdow] WooCommerce shortcode has
+  // nothing to render against here), so the CTA below points at edu's own
+  // real /connect/ instead of a broken buy button.
+  if (site.slug === "edu" && slug.join("/") === "gift") {
+    const payload = await getPayloadClient();
+    const eduSite = (await getAllSitesCached()).find((s: any) => s.slug === "edu-2");
+    const giftPages = eduSite
+      ? await payload.find({
+          collection: "pages",
+          where: { and: [{ site: { equals: eduSite.id } }, { slug: { equals: "gift" } }] },
+          limit: 1,
+          depth: 1,
+        })
+      : { docs: [] };
+    const giftDoc = giftPages.docs[0] as any;
+    if (giftDoc) {
+      const heroImageUrl =
+        (typeof giftDoc.titleBackgroundImage === "object" && giftDoc.titleBackgroundImage?.url) ||
+        (typeof giftDoc.featuredImage === "object" && giftDoc.featuredImage?.url) ||
+        undefined;
+      const bodyHtml =
+        extractPlainBodyHtml(giftDoc.wpRawContent || "") +
+        '<p class="mb-4"><a href="/connect/" class="text-[var(--gmpm-accent)] underline underline-offset-2">Contact us</a> to arrange a gift certificate.</p>';
+      return (
+        <ModernLegalPage
+          site={site}
+          title={giftDoc.title}
+          heroImageUrl={heroImageUrl}
+          sections={[{ heading: "", bodyHtml }]}
+        />
       );
     }
   }
