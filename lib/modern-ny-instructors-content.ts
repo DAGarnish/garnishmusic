@@ -123,6 +123,33 @@ export const NY_INSTRUCTOR_BIOS: Record<string, NYInstructorBio> = {
 <p>With a residency at Good Judy and Mother's Milk events, and performances at NYC staples like Bossa Nova Civic Club, SILO, Mood Ring, Wonderville, Rash, Newtown Radio, Equinox, and more, they bring real-world club experience and a community-focused perspective to their craft.</p>
 <p>As they join Garnish New York, Alex is excited to share their hands-on approach to DJing—focusing on foundational techniques, creative mixing, and developing a unique sound behind the decks. Their goal is to help students build confidence, understand the art of reading a crowd, and bring their own personality to every set.</p>`,
   },
+  // The remaining 3 of ny's own complete real 16-person roster (site 14
+  // pages with portfolioCategories set, confirmed via
+  // scripts/find-all-ny-instructors.ts) - missing from this file until now
+  // even though their real bio pages already existed, same gap Chris Veras/
+  // Alex Hell-n had (user request 2026-09-04 to find and add whoever else
+  // was missing).
+  "courses/bossy-boots": {
+    name: "Bossy Boots",
+    role: "DJ, movement teacher and multidisciplinary artist",
+    photoUrl: `${S3}Bossy-Boots.jpg`,
+    bioHtml: `<p>Bossy Boots/Elinah is a DJ, movement teacher and multidisciplinary artist. Elinah has always had a passion for music, dancing and nightlife. DJing favorite tunes, and making people dance is all tied together.</p>
+<p>Elinah runs a biweekly DJ party @she.they.dj, representing upcoming DJs, prioritizing women, non-binary and trans people in the music community.</p>`,
+  },
+  "courses/zoro-gold": {
+    name: "Zoro Gold",
+    role: "DJ, nightlife manager and educator",
+    photoUrl: `${S3}ZoroGold.jpeg`,
+    bioHtml: `<p>Born and raised in NYC, Zoro has spent several years working in nightlife as a manager, DJ, and educator. Inspired by her multidisciplinary background she found her love in hosting and throwing parties, managing all aspects at once.</p>
+<p>Empowered by the sense of liberation, community, and her love for the music, she pursued a DJ adventure of her own. With the goal of learning more about the art form and the industry she worked in, she taught herself how to spin both digital and vinyl. Feeling grateful for what her community had shared with her she began offering mentorship to friends. Reminded how reciprocal the cycle of learning and teaching is, her goal is to share this art-form with more people, and to make it as accessible as possible.</p>
+<p>Pulling from her real-world experience as both a DJ and venue manager she provides students with a comprehensive and well rounded education. Having spent many nights open to close running parties of her own she knows what makes or breaks a set, and prepares students for best and worst case scenarios. She is a firm believer in the power of music as a healing tool to help ground ourselves in our bodies and the community around us.</p>`,
+  },
+  "courses/anderson-bedasi": {
+    name: "Anderson Bedasi",
+    role: "DJ and producer (aka Rebel Muzik)",
+    photoUrl: `${S3}Anderson-Bedasi.jpeg`,
+    bioHtml: `<p>Anderson Bedasi is a DJ and producer that goes by the stage name Rebel Muzik, originally from the Caribbean (Trinidad &amp; Tobago) he now resides in NYC and has toured most of the states and many countries across the globe. Anderson is an open format DJ but also specializes in Electronic, Reggae, Dancehall, Soca and produces them as well, you can find his releases on any digital streaming platform under Rebel Muzik.</p>`,
+  },
 };
 
 // The real /instructors directory listing - ny's own real page at this
