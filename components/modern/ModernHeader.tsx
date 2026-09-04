@@ -136,70 +136,65 @@ function NavGroup({ item }: { item: MenuNode }) {
   );
 }
 
-function isLocationsLabel(label: string): boolean {
-  return /^(other )?locations$/i.test(label.trim());
+// A top-level item whose own children are ALL themselves named groups of
+// real leaf links (not bare links) - "About" (2 groups: this site's own
+// city/hub items, plus "Locations"/"Other Locations") and the "Programs"-
+// style item ("Accredited", "Comprehensive Programs", "Beginner Classes",
+// "Intermediate Classes", "DJ & More", ...) both share exactly this shape
+// network-wide, under whatever top-level label each site happens to use
+// ("Programs" on la, "Music Production & DJ Courses" on pdx/hou, "Music
+// Production & DJ Programs" on staging, ...) - detected structurally
+// instead of by exact label text for that reason. "Contact"/"Instructors"
+// (bare links or leaf children with no sub-children of their own) never
+// match, so they keep NavGroup's plain single-column list. Confirmed
+// against every site's own real menu (scripts/check-nav-shapes.ts).
+function isTabbedGroupShape(item: MenuNode): boolean {
+  return item.children.length > 0 && item.children.every((c) => c.children && c.children.length > 0);
 }
 
-// "About"'s own real shape, network-wide (pdx/hou/la/mia/edu/staging all
-// clone this same structure): exactly two groups - this site's own real
-// items labeled by its own city/region name (or "Information" for edu, the
-// network-wide hub with no single city of its own), and a "Locations"/
-// "Other Locations" group linking out to every other site. The legacy
-// theme's own "About" dropdown (screenshot, user request 2026-09-04) shows
-// these as two small tabs on the left - the current location bulleted/
-// highlighted, "Locations" plain below it - with whichever one is hovered
-// showing its own real items on the right, rather than NavGroup's generic
-// side-by-side-columns layout (built for a dropdown like "Music Production
-// & DJ Programs", where every group is meant to show at once).
-function AboutNavGroup({ item }: { item: MenuNode }) {
-  const [active, setActive] = useState<"own" | "locations">("own");
-  const locationsGroup = item.children?.find((c) => isLocationsLabel(c.label));
-  const ownGroup = item.children?.find((c) => c !== locationsGroup);
-
-  // Shape doesn't match (shouldn't happen for any real site's own "About"
-  // item, but a menu could always be re-edited later) - fall back to the
-  // generic renderer rather than silently showing nothing.
-  if (!locationsGroup || !ownGroup) {
-    return <NavGroup item={item} />;
-  }
-
-  const activeGroup = active === "own" ? ownGroup : locationsGroup;
+// Two (About) or several (Programs) small tabs on the left - the first one
+// bulleted/highlighted like the legacy theme's own "you are here" marker,
+// the rest plain below it - with whichever is hovered showing its own real
+// items on the right. Matches the legacy theme's own "About" dropdown
+// (screenshot, user request 2026-09-04), rolled out to any other dropdown
+// sharing that same shape (see isTabbedGroupShape) - most directly
+// "Programs", per a follow-up request the same day to copy this same
+// interaction there too - rather than NavGroup's generic side-by-side-
+// columns layout (which showed every group at once).
+function TabbedNavGroup({ item }: { item: MenuNode }) {
+  const groups = item.children;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const active = groups[activeIndex];
 
   return (
-    <div className="group relative" onMouseLeave={() => setActive("own")}>
+    <div className="group relative" onMouseLeave={() => setActiveIndex(0)}>
       <button className="text-sm text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)] transition-colors">
         {item.label}
       </button>
       <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity absolute left-0 top-full pt-3 z-50">
-        <div className="w-[min(90vw,480px)] max-h-[70vh] overflow-y-auto bg-[var(--gmpm-bg-raised)] border border-[var(--gmpm-line)] p-6 flex gap-x-8 shadow-2xl">
-          <div className="w-44 shrink-0 space-y-4">
-            <button
-              type="button"
-              onMouseEnter={() => setActive("own")}
-              className={`flex items-center gap-2 text-sm gmpm-mono transition-colors ${
-                active === "own" ? "text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
-              }`}
-            >
-              <span
-                className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
-                  active === "own" ? "bg-[var(--gmpm-accent)]" : "bg-transparent"
+        <div className="w-[min(90vw,520px)] max-h-[70vh] overflow-y-auto bg-[var(--gmpm-bg-raised)] border border-[var(--gmpm-line)] p-6 flex gap-x-8 shadow-2xl">
+          <div className="w-48 shrink-0 space-y-4">
+            {groups.map((g, i) => (
+              <button
+                key={i}
+                type="button"
+                onMouseEnter={() => setActiveIndex(i)}
+                className={`flex items-center gap-2 text-sm text-left w-full transition-colors ${
+                  i === activeIndex ? "gmpm-mono text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
                 }`}
-                aria-hidden="true"
-              />
-              {ownGroup.label}
-            </button>
-            <button
-              type="button"
-              onMouseEnter={() => setActive("locations")}
-              className={`block text-left text-sm transition-colors ${
-                active === "locations" ? "text-[var(--gmpm-accent)]" : "text-[var(--gmpm-text-dim)] hover:text-[var(--gmpm-accent)]"
-              }`}
-            >
-              {locationsGroup.label}
-            </button>
+              >
+                <span
+                  className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${
+                    i === activeIndex ? "bg-[var(--gmpm-accent)]" : "bg-transparent"
+                  }`}
+                  aria-hidden="true"
+                />
+                {g.label}
+              </button>
+            ))}
           </div>
           <ul className="flex-1 space-y-2.5">
-            {activeGroup.children.map((leaf, i) => (
+            {active.children.map((leaf, i) => (
               <li key={i}>
                 <Link
                   href={leaf.url}
@@ -313,11 +308,7 @@ export default function ModernHeader({
 
         <nav className="gmpm-hidden-until-lg items-center gap-8">
           {(fixedMenu || []).map((item, i) =>
-            item.label.trim().toLowerCase() === "about" ? (
-              <AboutNavGroup key={i} item={item} />
-            ) : (
-              <NavGroup key={i} item={item} />
-            )
+            isTabbedGroupShape(item) ? <TabbedNavGroup key={i} item={item} /> : <NavGroup key={i} item={item} />
           )}
         </nav>
 
