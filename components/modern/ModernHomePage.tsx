@@ -249,7 +249,17 @@ export default async function ModernHomePage({ site }: { site: any }) {
         </section>
       )}
 
-      <ModernAccordionSection eyebrow="About" heading="Why choose us?" items={accordionItems} />
+      {/* Removed from la specifically per request (2026-09-04) - la was the
+          only site whose own raw content actually populated accordionItems
+          here (its real tabs: "Why Choose Garnish?" - the same
+          compare-graphic-cream.png asset now used standalone on mia's
+          homepage, see that section's own comment - plus the ASBA/BBA/MBA
+          degree program blurbs); every other site's homepage already
+          rendered nothing here (ModernAccordionSection's own `if
+          (!items.length) return null`), so this only ever changes la. */}
+      {site.slug !== "la" && (
+        <ModernAccordionSection eyebrow="About" heading="Why choose us?" items={accordionItems} />
+      )}
 
       {offerings.length > 0 && (
         <section id="programs" className="max-w-[1400px] mx-auto px-6 md:px-10 pt-16 md:pt-24">
