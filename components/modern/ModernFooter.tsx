@@ -26,7 +26,7 @@ export default function ModernFooter({
         </div>
 
         <div>
-          <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-3">Courses</div>
+          <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-3">Featured Offerings</div>
           <ul className="space-y-2 text-sm text-[var(--gmpm-text-dim)]">
             {courseLinks.map((link) => {
               // F1 is the one cross-site link here (la's own real
