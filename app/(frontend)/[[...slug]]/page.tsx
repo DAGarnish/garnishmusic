@@ -34,6 +34,7 @@ import { NY_PROGRAMS } from "../../../lib/modern-ny-programs-content";
 import { NY_CLASSES } from "../../../lib/modern-ny-classes-content";
 import { NY_INSTRUCTOR_BIOS, NY_INSTRUCTOR_DIRECTORY } from "../../../lib/modern-ny-instructors-content";
 import { NY_CONTACTS } from "../../../lib/modern-ny-contact-content";
+import { NY_PAYMENTS } from "../../../lib/modern-ny-payments-content";
 import ModernBlogTopicPage from "../../../components/modern/ModernBlogTopicPage";
 import ModernBlogPostPage from "../../../components/modern/ModernBlogPostPage";
 import { TOPIC_POST_CATEGORY_SLUGS } from "../../../lib/modern-edu-blog";
@@ -564,6 +565,20 @@ export default async function CatchAllPage({ params }: Args) {
         heroLocationsLabel="NYC Locations in Manhattan & Brooklyn"
         secondContact={NY_CONTACTS.brooklyn}
         secondContactLabel="Brooklyn"
+      />
+    );
+  }
+  // ny's three real payment pages (/payments/, /pay/, /payments-stripe/) -
+  // see modern-ny-payments-content.ts's own comment for why these render
+  // through ModernLegalPage rather than ModernCoursePage.
+  if (site.slug === "staging" && NY_PAYMENTS[slug.join("/")]) {
+    const content = NY_PAYMENTS[slug.join("/")];
+    return (
+      <ModernLegalPage
+        site={site}
+        title={content.title}
+        heroImageUrl={content.heroImageUrl}
+        sections={content.sections}
       />
     );
   }

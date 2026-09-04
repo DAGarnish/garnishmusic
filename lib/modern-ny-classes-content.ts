@@ -483,4 +483,32 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
       { author: "Matt", text: "I can't speak more highly of this course. I am so happy with how much I learned, the length of the course, the quality of equipment, and the stellar instructor." },
     ],
   },
+
+  // ny's real WooCommerce "Name Your Price" product (id 178, slug
+  // "product/payment", queried directly via scripts/dump-ny-payment-
+  // product-full.ts - not scraped) - a bare custom-amount Add to Cart
+  // widget with no real content of its own beyond this short description,
+  // used for deposits/balances/anything without its own fixed-price
+  // product. No real image on the product itself, so this reuses private-
+  // instruction's own real studio photo rather than inventing one. No live
+  // custom-amount checkout exists on this rebuild (unlike DJ Class's real
+  // PayPal buttons above, there's no existing integration to reuse here),
+  // so enrollLink routes to /contact-map same as every other page with no
+  // working checkout of its own.
+  "product/payment": {
+    title: "Your Payment",
+    heroImageUrl: `${S3}Music-Production-Private-Tuition-Studio-1.jpg`,
+    intro: [
+      "Add the amount you wish to pay in the box below. If you wish to pay in installments, choose 'Affirm Pay over time' at checkout.",
+      "Also, add the student's name and email address in the 'Additional Information' box at check out if they are different from the payer's.",
+      "Thanks for booking!",
+    ],
+    sections: [],
+    curriculum: [],
+    curriculumAccordion: [],
+    pricing: { priceLine: "£50.00 default - enter your own amount at checkout", enrollLink: "/contact-map" },
+    faqs: [],
+    instructorGridItems: [],
+    testimonials: [],
+  },
 };

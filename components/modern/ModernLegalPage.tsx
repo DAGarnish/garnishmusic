@@ -13,18 +13,30 @@ import type { LegalSection } from "../../lib/modern-legal-content";
 export default function ModernLegalPage({
   site,
   title,
+  heroImageUrl,
   sections,
 }: {
   site: any;
   title: string;
+  // ny's own real /pay/ page has a real hero photo (unlike edu's /tc/ and
+  // /privacy-policy/, this component's other two callers) - optional so
+  // those keep their plain heading-only header unchanged.
+  heroImageUrl?: string;
   sections: LegalSection[];
 }) {
   return (
     <div className="gmpm-root min-h-screen">
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} siteSlug={site.slug} />
 
-      <section className="gmpm-grid-bg">
-        <div className="max-w-[900px] mx-auto px-6 md:px-10 pt-24 pb-16 md:pt-32 md:pb-20">
+      <section className="relative overflow-hidden gmpm-grid-bg">
+        {heroImageUrl && (
+          <div className="absolute inset-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-60" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--gmpm-bg)] via-[var(--gmpm-bg)]/55 to-[var(--gmpm-bg)]/10" />
+          </div>
+        )}
+        <div className="relative max-w-[900px] mx-auto px-6 md:px-10 pt-24 pb-16 md:pt-32 md:pb-20">
           <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-6 flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-[var(--gmpm-accent)]" />
             {getCityName(site)}
