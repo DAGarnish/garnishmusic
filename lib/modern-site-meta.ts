@@ -16,10 +16,9 @@
 // otherwise leak through. Every page on edu already independently
 // hardcodes "Worldwide" as the human-readable equivalent (ModernEduHomePage's
 // own hero, ModernFooter's cityName prop, ...), so this makes that the
-// single source of truth instead. "staging" itself gets no override -
-// whichever site currently previews there (ny's own rebuild as of
-// 2026-09-04 - see ModernNYHomePage) has a real "| City" name that the
-// normal split below already handles correctly.
+// single source of truth instead. "ny" itself gets no override here - its
+// own site.name has a real "| New York" suffix that the normal split below
+// already handles correctly (see ModernNYHomePage).
 const CITY_NAME_OVERRIDES: Record<string, string> = {
   edu: "Worldwide",
 };
@@ -34,12 +33,12 @@ export function getCityName(site: { name?: string; slug?: string }): string {
 
 // edu itself has no single city - "EDU" reads better in the header mark
 // than its bare slug would anyway, but there's no slug this trivial for it
-// to fall back to correctly. "staging" gets its own override for whichever
-// site is currently previewing there (see CITY_NAME_OVERRIDES' own comment)
-// - ny's real abbreviation is "NYC", not the bare uppercased slug "STAGING".
+// to fall back to correctly. ny's own real abbreviation is "NYC" (three
+// letters), not the bare uppercased two-letter slug "NY" the fallback
+// below would otherwise produce.
 const CITY_ABBR_OVERRIDES: Record<string, string> = {
   edu: "EDU",
-  staging: "NYC",
+  ny: "NYC",
 };
 
 export function getCityAbbr(site: { slug?: string }): string {

@@ -474,13 +474,14 @@ export default async function CatchAllPage({ params }: Args) {
     if (site.slug === "edu") {
       return <ModernEduHomePage site={site} />;
     }
-    // ny's own homepage rebuild (previewed under "staging" - see
-    // ModernNYHomePage's own comment) hand-codes every real value instead of
-    // extracting them from wpRawContent like ModernHomePage does for every
-    // other per-city site, so it gets its own component too, same reasoning
+    // ny's own homepage rebuild (previewed under "staging" before its own
+    // cutover, 2026-09-04, same pattern pdx/hou/la/mia/edu each cycled
+    // through - see ModernNYHomePage's own comment) hand-codes every real
+    // value instead of extracting them from wpRawContent like ModernHomePage
+    // does for every other per-city site, so it gets its own component too, same reasoning
     // as edu's above just for a different cause (no legacy content to
     // extract from at all, rather than a fundamentally different page shape).
-    if (site.slug === "staging") {
+    if (site.slug === "ny") {
       return <ModernNYHomePage site={site} />;
     }
     return <ModernHomePage site={site} />;
@@ -493,8 +494,8 @@ export default async function CatchAllPage({ params }: Args) {
   // (intro/curriculum/FAQ/pricing/instructors) is exactly what that
   // template already renders. Checked ahead of the generic
   // modernTemplatedSlugs branch below, which would otherwise try (and
-  // fail) to find a page doc staging doesn't have.
-  if (site.slug === "staging" && (NY_PROGRAMS[slug.join("/")] || NY_CLASSES[slug.join("/")])) {
+  // fail) to find a page doc ny doesn't have.
+  if (site.slug === "ny" && (NY_PROGRAMS[slug.join("/")] || NY_CLASSES[slug.join("/")])) {
     const content = NY_PROGRAMS[slug.join("/")] || NY_CLASSES[slug.join("/")];
     return (
       <ModernCoursePage
@@ -536,10 +537,10 @@ export default async function CatchAllPage({ params }: Args) {
   // own comment - ny's real /instructors/ page is itself a stale empty
   // placeholder, so this directory is built from the 11 real bio pages
   // instead) - the listing page here, individual bios just below.
-  if (site.slug === "staging" && slug.join("/") === "instructors") {
+  if (site.slug === "ny" && slug.join("/") === "instructors") {
     return <ModernInstructorsPage site={site} instructors={[]} directory={NY_INSTRUCTOR_DIRECTORY} />;
   }
-  if (site.slug === "staging" && NY_INSTRUCTOR_BIOS[slug.join("/")]) {
+  if (site.slug === "ny" && NY_INSTRUCTOR_BIOS[slug.join("/")]) {
     const bio = NY_INSTRUCTOR_BIOS[slug.join("/")];
     return (
       <ModernInstructorBioPage
@@ -556,10 +557,10 @@ export default async function CatchAllPage({ params }: Args) {
   // Manhattan first, then Brooklyn (see modern-ny-contact-content.ts's own
   // comment). /brooklyn used to be its own separate page; it now redirects
   // here since the nav only links to the combined page.
-  if (site.slug === "staging" && slug.join("/") === "brooklyn") {
+  if (site.slug === "ny" && slug.join("/") === "brooklyn") {
     redirect("/contact-map");
   }
-  if (site.slug === "staging" && slug.join("/") === "contact-map") {
+  if (site.slug === "ny" && slug.join("/") === "contact-map") {
     return (
       <ModernContactPage
         site={site}
@@ -574,7 +575,7 @@ export default async function CatchAllPage({ params }: Args) {
   // ny's three real payment pages (/payments/, /pay/, /payments-stripe/) -
   // see modern-ny-payments-content.ts's own comment for why these render
   // through ModernLegalPage rather than ModernCoursePage.
-  if (site.slug === "staging" && NY_PAYMENTS[slug.join("/")]) {
+  if (site.slug === "ny" && NY_PAYMENTS[slug.join("/")]) {
     const content = NY_PAYMENTS[slug.join("/")];
     return (
       <ModernLegalPage

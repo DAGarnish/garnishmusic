@@ -26,10 +26,11 @@ export const MODERN_SITE_SLUGS = new Set(Object.keys(MODERN_SITE_ROUTES));
 // stayed lime-green on staging after the theme rollout: the theme rolled
 // out, but a second, separate "is this site cream-themed" check elsewhere
 // didn't get updated along with it. ny's own from-scratch homepage rebuild
-// (previewed under "staging" again - see ModernNYHomePage and
-// MODERN_SITE_ROUTES' own NY_ROUTES comment) follows suit too.
+// (previewed under "staging" before its own cutover, 2026-09-04 - see
+// ModernNYHomePage and MODERN_SITE_ROUTES' own NY_ROUTES comment) follows
+// suit too.
 export function isCreamThemeSite(slug: string): boolean {
-  return slug === "pdx" || slug === "mia" || slug === "la" || slug === "edu" || slug === "staging";
+  return slug === "pdx" || slug === "mia" || slug === "la" || slug === "edu" || slug === "ny";
 }
 
 // The course-schedule/pricing-disclosure widget and Add-to-Cart suppression
@@ -148,6 +149,6 @@ export function getFooterCourseLinks(slug: string | undefined | null): FooterCou
   if (slug === "la") return LA_FOOTER_COURSE_LINKS;
   if (slug === "mia") return MIA_FOOTER_COURSE_LINKS;
   if (slug === "edu") return STAGING_FOOTER_COURSE_LINKS;
-  if (slug === "staging") return NY_FOOTER_COURSE_LINKS;
+  if (slug === "ny") return NY_FOOTER_COURSE_LINKS;
   return DEFAULT_FOOTER_COURSE_LINKS;
 }
