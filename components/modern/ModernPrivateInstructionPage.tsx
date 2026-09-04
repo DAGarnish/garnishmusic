@@ -4,11 +4,12 @@ import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
+import ModernPricingLocationBlocks from "./ModernPricingLocationBlocks";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import { getContactHref } from "../../lib/modern-sites";
 import type { MenuNode } from "../menu-html";
 import type { Faq } from "../../lib/modern-course-content";
-import type { PrivateInstructionContent } from "../../lib/modern-private-instruction-content";
+import { splitPrivateInstructionPricing, type PrivateInstructionContent } from "../../lib/modern-private-instruction-content";
 
 export default function ModernPrivateInstructionPage({
   site,
@@ -21,6 +22,7 @@ export default function ModernPrivateInstructionPage({
   content: PrivateInstructionContent;
   faqs: Faq[];
 }) {
+  const { pricing, location } = splitPrivateInstructionPricing(content.pricingItems);
   return (
     <div className="gmpm-root min-h-screen">
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={getCityAbbr(site)} siteSlug={site.slug} />
@@ -38,35 +40,33 @@ export default function ModernPrivateInstructionPage({
         </div>
       </section>
 
-      <section className="max-w-[900px] mx-auto px-6 md:px-10 py-16 grid md:grid-cols-2 gap-12">
-        <div>
+      {(content.intro || content.onlineNote) && (
+        <section className="max-w-[900px] mx-auto px-6 md:px-10 pt-16">
           {content.intro && (
-            <p className="text-[var(--gmpm-text-dim)] leading-relaxed mb-6">{content.intro}</p>
+            <p className="text-[var(--gmpm-text-dim)] leading-relaxed mb-4">{content.intro}</p>
           )}
           {content.onlineNote && (
             <p className="text-[var(--gmpm-text-dim)] leading-relaxed">{content.onlineNote}</p>
           )}
-        </div>
+        </section>
+      )}
 
-        {content.pricingItems.length > 0 && (
-          <div className="gmpm-corner border border-[var(--gmpm-line)] p-8 h-fit">
-            <div className="gmpm-mono text-[11px] uppercase text-[var(--gmpm-accent)] mb-4">Pricing</div>
-            <ul className="space-y-3 mb-6">
-              {content.pricingItems.map((item, i) => (
-                <li key={i} className="text-sm text-[var(--gmpm-text)]">
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Link
-              href={getContactHref(site.slug)}
-              className="inline-block gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
-            >
-              Send us a message
-            </Link>
-          </div>
-        )}
-      </section>
+      {(pricing.length > 0 || location.length > 0) && (
+        <section className="max-w-[1100px] mx-auto px-6 md:px-10 py-16">
+          <ModernPricingLocationBlocks
+            blocks={[
+              { icon: "pricing", title: "Pricing", items: pricing },
+              { icon: "location", title: "Location & Studio Costs", items: location },
+            ]}
+          />
+          <Link
+            href={getContactHref(site.slug)}
+            className="mt-8 inline-block gmpm-mono text-xs uppercase px-6 py-3 bg-[var(--gmpm-accent)] text-[var(--gmpm-accent-contrast)] font-medium hover:bg-[var(--gmpm-accent-dim)] transition-colors"
+          >
+            Send us a message
+          </Link>
+        </section>
+      )}
 
       <ModernFaqAccordion faqs={faqs} />
 

@@ -99,6 +99,10 @@ export type NYProgramContent = {
   // for this exact kind of short-item module breakdown, instead of one
   // accordion row per module.
   whatYouWillLearn?: CurriculumModule[];
+  // private-instruction's own base-price-vs-location-cost split (see
+  // ModernPricingLocationBlocks' own comment) - undefined for every other
+  // NY entry.
+  pricingLocationBlocks?: import("../components/modern/ModernPricingLocationBlocks").PricingLocationBlock[];
 };
 
 export const NY_PROGRAMS: Record<string, NYProgramContent> = {

@@ -11,6 +11,7 @@ import ModernTestimonialCarousel from "./ModernTestimonialCarousel";
 import ModernCourseScheduleAccordion from "./ModernCourseScheduleAccordion";
 import ModernCurriculumAccordion from "./ModernCurriculumAccordion";
 import ModernComparisonTable from "./ModernComparisonTable";
+import ModernPricingLocationBlocks, { type PricingLocationBlock } from "./ModernPricingLocationBlocks";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import type { MenuNode } from "../menu-html";
 import { stripHardcodedWhiteText } from "../../lib/modern-course-content";
@@ -54,6 +55,7 @@ export default function ModernCoursePage({
   hideStudentStories = false,
   hideVideo = false,
   centerVideoBesideIntro = false,
+  pricingLocationBlocks,
 }: {
   site: any;
   title: string;
@@ -127,6 +129,11 @@ export default function ModernCoursePage({
   // against the text column's height instead - opt-in so mia's own shorter-
   // intro pairing (already top-aligned correctly) is untouched.
   centerVideoBesideIntro?: boolean;
+  // ny's own private-instruction page (the only ModernCoursePage caller
+  // with location-dependent add-on costs to show - see
+  // ModernPricingLocationBlocks' own comment) - undefined everywhere else,
+  // which renders nothing extra.
+  pricingLocationBlocks?: PricingLocationBlock[];
 }) {
   // See the "Student stories" section below for what this gates.
   const showsInstructorsInSections = sections.some((s) => /instructors|collaborators/i.test(s.heading));
@@ -436,6 +443,12 @@ export default function ModernCoursePage({
       <ModernAccordionSection eyebrow={secondaryAccordionEyebrow} heading={secondaryAccordionHeading} items={secondaryAccordion} />
 
       <ModernFaqAccordion faqs={faqs} />
+
+      {pricingLocationBlocks && pricingLocationBlocks.some((b) => b.items.length > 0) && (
+        <section className="max-w-[1100px] mx-auto px-6 md:px-10 py-16 border-t border-[var(--gmpm-line)]">
+          <ModernPricingLocationBlocks blocks={pricingLocationBlocks} />
+        </section>
+      )}
 
       {pricing.enrollLink && (
         <section

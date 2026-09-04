@@ -61,3 +61,25 @@ export function extractPrivateInstructionContent(wpRawContent: string): PrivateI
 
   return { intro, pricingItems: pricingItems.length > 0 ? pricingItems : miaPricingItems, onlineNote };
 }
+
+// Splits the flat pricingItems list into "what it costs" vs "what it costs
+// extra depending on where you have it" (see ModernPricingLocationBlocks'
+// own comment) - every real location-dependent bullet found across the
+// network so far ("At our acoustically treated pro studio...", "At your
+// home/studio/hotel...", "In a classroom at our facility...") opens with
+// one of these same few words, so a simple prefix match is enough rather
+// than hardcoding per-site item text. pdx/hou have no such bullets at all,
+// so their split just returns everything in the pricing group.
+const LOCATION_ITEM_RE = /^(at |in a |in an |in the |in one of |in our )/i;
+
+export function splitPrivateInstructionPricing(pricingItems: string[]): {
+  pricing: string[];
+  location: string[];
+} {
+  const pricing: string[] = [];
+  const location: string[] = [];
+  for (const item of pricingItems) {
+    (LOCATION_ITEM_RE.test(item) ? location : pricing).push(item);
+  }
+  return { pricing, location };
+}

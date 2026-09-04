@@ -4,6 +4,7 @@ import ModernHeader from "./ModernHeader";
 import ModernFooter from "./ModernFooter";
 import ModernFaqAccordion from "./ModernFaqAccordion";
 import ModernTypewriterHeading from "./ModernTypewriterHeading";
+import ModernPricingLocationBlocks from "./ModernPricingLocationBlocks";
 import { getCityName, getCityAbbr } from "../../lib/modern-site-meta";
 import { getContactHref } from "../../lib/modern-sites";
 import type { MenuNode } from "../menu-html";
@@ -62,19 +63,17 @@ export default function ModernEduPrivateInstructionPage({
       )}
 
       {content.pricingBlocks.length > 0 && (
-        <section className="max-w-[900px] mx-auto px-6 md:px-10 pb-16 grid sm:grid-cols-2 gap-px bg-[var(--gmpm-line)] border border-[var(--gmpm-line)]">
-          {content.pricingBlocks.map((block, i) => (
-            <div key={i} className="bg-[var(--gmpm-bg)] p-8">
-              <div className="gmpm-mono text-[11px] uppercase text-[var(--gmpm-accent)] mb-4">{block.title}</div>
-              <ul className="space-y-3">
-                {block.items.map((item, j) => (
-                  <li key={j} className="text-sm text-[var(--gmpm-text)]">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <section className="max-w-[1100px] mx-auto px-6 md:px-10 pb-16">
+          <ModernPricingLocationBlocks
+            blocks={content.pricingBlocks.map((block) => ({
+              // The "IN PERSON OPTION" block is the one whose costs vary by
+              // where the lesson happens (lab/studio/elite facility/home) -
+              // every other real block on this page is straight pricing.
+              icon: /in.person|location/i.test(block.title) ? "location" : "pricing",
+              title: block.title,
+              items: block.items,
+            }))}
+          />
         </section>
       )}
 

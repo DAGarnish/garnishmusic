@@ -417,7 +417,6 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     heroImageUrl: `${S3}Music-Production-Private-Tuition-Studio-1.jpg`,
     intro: [
       "For specific schedules and learning needs, we offer private one-to-one (or two, three...) lessons for most classes, including Electronic Music DJ, Ableton Live, Logic Pro, Pro Tools, Mixing & Mastering, Sound Design, Songwriting, Piano, Singing and much more - for anyone who wants a bespoke experience, can't commit to our schedule, or wants a private, discrete setting in one of our labs, studios, elite facilities, at your place, or online.",
-      "A 1 x 24-hour package is $1,800 plus location costs where applicable (add 50% for each additional person; payment plans available). In one of our labs adds $480, elite facilities add $1,440; at your home, studio, hotel, or online there's no additional fee beyond reasonable travel costs.",
     ],
     sections: [],
     curriculum: [],
@@ -425,6 +424,31 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     pricing: { priceLine: "24-hour package: $1,800 + location costs where applicable", enrollLink: "/contact-map" },
     faqs: [],
     instructorGridItems: [],
+    // Same real numbers as before (2026-09-04), now split into the same
+    // "what it costs" vs "what it costs extra depending on where you have
+    // it" pair of icon-led cards every other site's own private-instruction
+    // page uses (see ModernPricingLocationBlocks' own comment) instead of
+    // one prose paragraph.
+    pricingLocationBlocks: [
+      {
+        icon: "pricing",
+        title: "Pricing",
+        items: [
+          "24-hour package: $1,800",
+          "Add 50% for each additional person",
+          "Payment plans available",
+        ],
+      },
+      {
+        icon: "location",
+        title: "Location & Studio Costs",
+        items: [
+          "In one of our labs: Add $480",
+          "In an elite facility: Add $1,440",
+          "At your home, studio, hotel, or online: No additional fee beyond reasonable travel costs",
+        ],
+      },
+    ],
     testimonials: [
       { author: "Ryan Payne", text: "My time with at Garnish was great. The instructors provided excellent easy to understand techniques and ways to operate the software. I am definitely going to sign up for more sessions and would love to work with both of them again. Thank you!" },
       { author: "Lenny Nicholson", text: "Great learning environment. Instructors are very personable and patient." },
