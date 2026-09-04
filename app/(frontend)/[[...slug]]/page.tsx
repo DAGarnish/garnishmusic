@@ -31,6 +31,9 @@ import ModernHomePage from "../../../components/modern/ModernHomePage";
 import ModernEduHomePage from "../../../components/modern/ModernEduHomePage";
 import ModernNYHomePage from "../../../components/modern/ModernNYHomePage";
 import { NY_PROGRAMS } from "../../../lib/modern-ny-programs-content";
+import { NY_CLASSES } from "../../../lib/modern-ny-classes-content";
+import { NY_INSTRUCTOR_BIOS, NY_INSTRUCTOR_DIRECTORY } from "../../../lib/modern-ny-instructors-content";
+import { NY_CONTACTS } from "../../../lib/modern-ny-contact-content";
 import ModernBlogTopicPage from "../../../components/modern/ModernBlogTopicPage";
 import ModernBlogPostPage from "../../../components/modern/ModernBlogPostPage";
 import { TOPIC_POST_CATEGORY_SLUGS } from "../../../lib/modern-edu-blog";
@@ -479,16 +482,17 @@ export default async function CatchAllPage({ params }: Args) {
     }
     return <ModernHomePage site={site} />;
   }
-  // ny's own real "Comprehensive Programs" (see NY_ROUTES and
-  // lib/modern-ny-programs-content.ts's own comment) - hand-transcribed
-  // content fed straight into the same ModernCoursePage every other
-  // modern site's real course pages already use, rather than a bespoke
-  // component, since this shape (intro/curriculum/FAQ/pricing/instructors)
-  // is exactly what that template already renders. Checked ahead of the
-  // generic modernTemplatedSlugs branch below, which would otherwise try
-  // (and fail) to find a page doc staging doesn't have.
-  if (site.slug === "staging" && NY_PROGRAMS[slug.join("/")]) {
-    const content = NY_PROGRAMS[slug.join("/")];
+  // ny's own real "Comprehensive Programs" and "Express Classes" (see
+  // NY_ROUTES and lib/modern-ny-programs-content.ts / modern-ny-classes-
+  // content.ts's own comments) - hand-transcribed content fed straight
+  // into the same ModernCoursePage every other modern site's real course
+  // pages already use, rather than a bespoke component, since this shape
+  // (intro/curriculum/FAQ/pricing/instructors) is exactly what that
+  // template already renders. Checked ahead of the generic
+  // modernTemplatedSlugs branch below, which would otherwise try (and
+  // fail) to find a page doc staging doesn't have.
+  if (site.slug === "staging" && (NY_PROGRAMS[slug.join("/")] || NY_CLASSES[slug.join("/")])) {
+    const content = NY_PROGRAMS[slug.join("/")] || NY_CLASSES[slug.join("/")];
     return (
       <ModernCoursePage
         site={site}
@@ -508,6 +512,33 @@ export default async function CatchAllPage({ params }: Args) {
         eduDomain="edu.garnishmusicproduction.com"
       />
     );
+  }
+  // ny's own real instructor roster (see modern-ny-instructors-content.ts's
+  // own comment - ny's real /instructors/ page is itself a stale empty
+  // placeholder, so this directory is built from the 11 real bio pages
+  // instead) - the listing page here, individual bios just below.
+  if (site.slug === "staging" && slug.join("/") === "instructors") {
+    return <ModernInstructorsPage site={site} instructors={[]} directory={NY_INSTRUCTOR_DIRECTORY} />;
+  }
+  if (site.slug === "staging" && NY_INSTRUCTOR_BIOS[slug.join("/")]) {
+    const bio = NY_INSTRUCTOR_BIOS[slug.join("/")];
+    return (
+      <ModernInstructorBioPage
+        site={site}
+        name={bio.name}
+        role={bio.role}
+        photoUrl={bio.photoUrl}
+        bioHtml={bio.bioHtml}
+        backHref="/instructors"
+      />
+    );
+  }
+  // ny's own two real studio locations (see modern-ny-contact-content.ts's
+  // own comment) - checked ahead of the generic modernRoutes.contactSlug
+  // branch below, which only ever matches one contactSlug value (ny's own
+  // real nav has two separate real contact pages, Manhattan and Brooklyn).
+  if (site.slug === "staging" && NY_CONTACTS[slug.join("/")]) {
+    return <ModernContactPage site={site} contact={NY_CONTACTS[slug.join("/")]} />;
   }
   // The homepage's own "Browse by topic" tiles (ModernEduHomePage) link
   // here - a real archive of every published post in that topic, not a
