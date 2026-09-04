@@ -10,16 +10,7 @@ import { COMPARISON_VARIANTS } from "../../lib/modern-course-content";
 // happened to reference it. Uses the "18427" generic 5-row variant (every
 // page checked shares this content, per that file's own comment) with the
 // real per-site city abbreviation rather than a hardcoded "LA".
-export default function ModernComparisonTable({
-  cityAbbr,
-  centered = false,
-}: {
-  cityAbbr: string;
-  // staging-only (see ModernCoursePage's own caller) - user request
-  // (2026-09-03) to center this section there specifically, without
-  // touching pdx/hou/la/mia's already-approved left-aligned look.
-  centered?: boolean;
-}) {
+export default function ModernComparisonTable({ cityAbbr }: { cityAbbr: string }) {
   // The "18427" variant's own last row is transcribed verbatim from la's
   // original graphic ("Exclusive LA Events & Master Classes") - real for
   // la itself, but wrong for every other site this same generic variant
@@ -29,15 +20,15 @@ export default function ModernComparisonTable({
   const rows = COMPARISON_VARIANTS["18427"].map((row) =>
     row === "Exclusive LA Events & Master Classes" ? `Exclusive ${cityAbbr} Events & Master Classes` : row
   );
+  // Centered network-wide (user request 2026-09-04) - this used to default
+  // to left-aligned everywhere except edu/mia, which left a large uneven
+  // gap on the right of the table's own 900px box at any viewport wider
+  // than that on every other site (la/pdx/hou).
   return (
-    <section
-      className={`max-w-[1400px] mx-auto px-6 md:px-10 ${centered ? "py-12 md:py-16" : "py-16 md:py-20"} ${centered ? "text-center" : ""}`}
-    >
+    <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-12 md:py-16 text-center">
       <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Why Garnish</div>
-      <h2 className={`gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-8 ${centered ? "mx-auto" : ""}`}>
-        Why choose Garnish?
-      </h2>
-      <div className={`max-w-[900px] gmpm-corner border border-[var(--gmpm-line)] text-left ${centered ? "mx-auto" : ""}`}>
+      <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-8 mx-auto">Why choose Garnish?</h2>
+      <div className="max-w-[900px] gmpm-corner border border-[var(--gmpm-line)] text-left mx-auto">
         <div className="grid grid-cols-[1fr_88px_88px] items-center gap-4 px-5 py-4">
           <span className="gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">Side-by-Side Overview</span>
           <span className="justify-self-center gmpm-mono text-xs uppercase text-[var(--gmpm-accent)]">

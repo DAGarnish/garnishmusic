@@ -11,8 +11,7 @@ import type { WhyUsBlurb } from "../../lib/modern-why-us-content";
 // the real content shape (4 plain <strong>Label:</strong> paragraphs, no
 // shortcode structure at all). Also carries the same "Why choose Garnish?"
 // comparison table every course page gets (ModernComparisonTable, centered
-// here the same way - see that component's own `centered` prop comment) -
-// user request, made right after that section shipped, to build a
+// network-wide) - user request, made right after that section shipped, to build a
 // standalone page around it.
 export default function ModernWhyUsPage({
   site,
@@ -65,7 +64,7 @@ export default function ModernWhyUsPage({
         </section>
       )}
 
-      <ModernComparisonTable cityAbbr={getCityAbbr(site)} centered />
+      <ModernComparisonTable cityAbbr={getCityAbbr(site)} />
 
       <ModernFooter siteName={site.name} cityName={getCityName(site)} siteSlug={site.slug} />
     </div>
