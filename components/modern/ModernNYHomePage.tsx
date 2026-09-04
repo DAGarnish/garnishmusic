@@ -156,11 +156,11 @@ export default function ModernNYHomePage({ site }: { site: any }) {
       <ModernHero
         // Same real photo edu's own homepage header uses (its own real
         // /why-us/ page's titleBackgroundImage, "whychooseus-10.png") -
-        // user request (2026-09-04) - with the small "LAB" door sign
-        // near the top erased (media id 4254, own copy so edu's original
-        // is untouched) since it read as an odd, out-of-place location
-        // label on ny's own header.
-        heroImageUrl="https://s3.us-east-2.amazonaws.com/garnishmusic-media/ny-homepage-hero-no-lab-sign.png"
+        // user request (2026-09-04) - with the small "LAB" door sign near
+        // the top erased, and the banner's real "us.garnishmusicproduction.com"
+        // text changed to "edu." (own copy, so edu's own /why-us/ page
+        // keeps the original, unedited photo).
+        heroImageUrl="https://s3.us-east-2.amazonaws.com/garnishmusic-media/ny-homepage-hero-us-to-edu.png"
         // ny's hero section is much taller than edu's own header (this
         // stats grid included) - object-cover on a full-height image
         // scales/crops it tighter than the same photo gets on edu's

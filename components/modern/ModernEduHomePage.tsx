@@ -126,17 +126,13 @@ export default async function ModernEduHomePage({ site }: { site: any }) {
   // Same real photo ModernWhyUsPage's own hero uses (edu's real /why-us/
   // page, "whychooseus-10.png") - user request (2026-09-03) to give the
   // homepage the same image+gradient hero treatment, no dedicated
-  // "worldwide" photo of its own existing to reach for instead.
-  const whyUsPage = await payload.find({
-    collection: "pages",
-    where: { and: [{ site: { equals: 15 } }, { slug: { equals: "why-us" } }] },
-    limit: 1,
-    depth: 1,
-  });
-  const heroImageUrl =
-    typeof (whyUsPage.docs[0] as any)?.titleBackgroundImage === "object"
-      ? (whyUsPage.docs[0] as any).titleBackgroundImage?.url
-      : undefined;
+  // "worldwide" photo of its own existing to reach for instead. Own edited
+  // copy (media id created via scripts/upload-fixed-hero-images.ts) with
+  // the banner's real "us.garnishmusicproduction.com" text changed to
+  // "edu." - user request (2026-09-04), since this homepage header isn't
+  // US-specific like the original photo's own real signage implies. The
+  // real /why-us/ page itself keeps the original, unedited photo.
+  const heroImageUrl = "https://s3.us-east-2.amazonaws.com/garnishmusic-media/edu-homepage-hero-us-to-edu.png";
 
   return (
     <div className="gmpm-root min-h-screen">
