@@ -78,7 +78,13 @@ export default function ModernInstructorsPage({
                   <p className="text-[var(--gmpm-text-dim)] mb-4">{inst.title}</p>
                 )}
                 {inst.bioExcerptHtml && (
-                  <p
+                  // bioExcerptHtml is itself a full "<p>...</p>" fragment
+                  // (see NY_INSTRUCTOR_DIRECTORY's own regex extraction) -
+                  // a div wrapper here, not another <p>, since nesting a
+                  // <p> inside a <p> is invalid HTML that browsers silently
+                  // reparse (auto-closing the outer one), causing a
+                  // hydration mismatch against React's own expected tree.
+                  <div
                     className="text-sm text-[var(--gmpm-text-dim)] leading-relaxed max-w-2xl mb-4 [&_a]:text-[var(--gmpm-accent)] [&_strong]:text-[var(--gmpm-text)]"
                     dangerouslySetInnerHTML={{ __html: inst.bioExcerptHtml }}
                   />
