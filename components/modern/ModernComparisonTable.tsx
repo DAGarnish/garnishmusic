@@ -10,31 +10,61 @@ import { COMPARISON_VARIANTS } from "../../lib/modern-course-content";
 // happened to reference it. Uses the "18427" generic 5-row variant (every
 // page checked shares this content, per that file's own comment) with the
 // real per-site city abbreviation rather than a hardcoded "LA".
-export default function ModernComparisonTable({ cityAbbr }: { cityAbbr: string }) {
+// English->Spanish row translation, keyed by the exact English label this
+// same "18427" variant always produces (after the per-site Exclusive-{city}
+// swap below) - only mia's courses/curso-de-dj-espanol page passes
+// isSpanish=true (see page.tsx), so this only ever runs there.
+const ROW_TRANSLATIONS: Record<string, string> = {
+  "Real-time Feedback & Collaboration": "Retroalimentación y Colaboración en Tiempo Real",
+  "Fully Equipped Pro Studios": "Estudios Profesionales Totalmente Equipados",
+  "Ableton & Apple Certified Training Center": "Centro de Capacitación Certificado por Ableton y Apple",
+  "Award Winning Instructors": "Instructores Galardonados",
+};
+
+export default function ModernComparisonTable({
+  cityAbbr,
+  isSpanish = false,
+}: {
+  cityAbbr: string;
+  isSpanish?: boolean;
+}) {
   // The "18427" variant's own last row is transcribed verbatim from la's
   // original graphic ("Exclusive LA Events & Master Classes") - real for
   // la itself, but wrong for every other site this same generic variant
   // now renders on, so its own "LA" gets the same per-site swap the
   // "Garnish LA" label above already gets elsewhere (see page.tsx's own
   // sections-fix loop for the embedded-table version of this same fix).
-  const rows = COMPARISON_VARIANTS["18427"].map((row) =>
-    row === "Exclusive LA Events & Master Classes" ? `Exclusive ${cityAbbr} Events & Master Classes` : row
-  );
+  const rows = COMPARISON_VARIANTS["18427"].map((row) => {
+    const englishRow =
+      row === "Exclusive LA Events & Master Classes" ? `Exclusive ${cityAbbr} Events & Master Classes` : row;
+    if (!isSpanish) return englishRow;
+    return (
+      ROW_TRANSLATIONS[row] ?? `Eventos y Clases Magistrales Exclusivas de ${cityAbbr}`
+    );
+  });
   // Centered network-wide (user request 2026-09-04) - this used to default
   // to left-aligned everywhere except edu/mia, which left a large uneven
   // gap on the right of the table's own 900px box at any viewport wider
   // than that on every other site (la/pdx/hou).
   return (
     <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-12 md:py-16 text-center">
-      <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">Why Garnish</div>
-      <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-8 mx-auto">Why choose Garnish?</h2>
+      <div className="gmpm-mono text-xs uppercase text-[var(--gmpm-accent)] mb-3">
+        {isSpanish ? "Por Qué Garnish" : "Why Garnish"}
+      </div>
+      <h2 className="gmpm-display font-bold text-3xl md:text-4xl max-w-2xl mb-8 mx-auto">
+        {isSpanish ? "¿Por qué elegir Garnish?" : "Why choose Garnish?"}
+      </h2>
       <div className="max-w-[900px] gmpm-corner border border-[var(--gmpm-line)] text-left mx-auto">
         <div className="grid grid-cols-[1fr_88px_88px] items-center gap-4 px-5 py-4">
-          <span className="gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">Side-by-Side Overview</span>
+          <span className="gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">
+            {isSpanish ? "Comparación Directa" : "Side-by-Side Overview"}
+          </span>
           <span className="justify-self-center gmpm-mono text-xs uppercase text-[var(--gmpm-accent)]">
             Garnish {cityAbbr}
           </span>
-          <span className="justify-self-center gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">Others</span>
+          <span className="justify-self-center gmpm-mono text-xs uppercase text-[var(--gmpm-text-dim)]">
+            {isSpanish ? "Otros" : "Others"}
+          </span>
         </div>
         {rows.map((label, i) => (
           <div

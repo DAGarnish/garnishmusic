@@ -461,7 +461,7 @@ export default function ModernCoursePage({
           staging (ny) opted out entirely, network-wide, per user request
           (2026-09-04) - every other modern site keeps it. */}
       {!hasEmbeddedComparisonTable && site.slug !== "staging" && (
-        <ModernComparisonTable cityAbbr={getCityAbbr(site)} />
+        <ModernComparisonTable cityAbbr={getCityAbbr(site)} isSpanish={isSpanish} />
       )}
 
       <ModernRelatedPosts posts={relatedPosts} eduDomain={eduDomain} isSpanish={isSpanish} />
