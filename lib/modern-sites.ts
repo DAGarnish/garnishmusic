@@ -70,59 +70,66 @@ export function getTalkToUsHref(slug: string | undefined | null): string {
 
 export type FooterCourseLink = { label: string; href: string };
 
+// F1's real program (the accredited certificate) only exists on la - user
+// request (2026-09-04) to put it in every redesigned site's own footer
+// anyway, always pointing at la's real page rather than each site getting
+// its own copy (same absolute-cross-site-link precedent as ModernHeader's
+// own CROSS_SITE_ONLY_URLS for this exact page).
+const F1_LINK: FooterCourseLink = {
+  label: "F1",
+  href: "https://la.garnishmusicproduction.com/certificate-music-production-songwriting/",
+};
+
+// Footer's "Courses" column, network-wide: F1 (la's real accredited
+// program, see F1_LINK above), 360 (this site's own real Academy program),
+// DJ (this site's own real DJ course/product), and Private Instruction
+// (this site's own real private-instruction page) - user request
+// (2026-09-04), replacing the previous Ableton Live/Logic Pro/DJ Course/
+// Producer Program set. Each site's own real slugs below (confirmed
+// against MODERN_SITE_ROUTES/modern-ny-programs-content.ts).
 const DEFAULT_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  { label: "Ableton Live", href: "/courses/ableton-live" },
-  { label: "Logic Pro", href: "/courses/logic-pro" },
-  { label: "DJ Course", href: "/courses/electronic-dj-course" },
-  { label: "Producer Program", href: "/ableton-producer" },
+  F1_LINK,
+  { label: "360", href: "/academy" },
+  { label: "DJ", href: "/courses/electronic-dj-course" },
+  { label: "Private Instruction", href: "/private-instruction" },
 ];
 
 // la's real course/program slugs differ from pdx/hou's (see LA_ROUTES in
 // modern-site-routes.ts) - the shared ModernFooter's pdx-tuned course links
-// above 404 on la. Real destinations confirmed by request (2026-09-03).
+// above 404 on la.
 const LA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  { label: "Ableton Live", href: "/courses/ableton-live-course" },
-  { label: "Logic Pro", href: "/courses/logic-pro-course" },
-  { label: "DJ Course", href: "/courses/dj-course" },
-  { label: "Producer Program", href: "/programs/logic-production-program" },
+  F1_LINK,
+  { label: "360", href: "/la-music-production-academy" },
+  { label: "DJ", href: "/courses/dj-course" },
+  { label: "Private Instruction", href: "/music-production-private-instruction" },
 ];
 
-// mia's real course/program slugs also differ from pdx/hou's - confirmed by
-// audit (2026-09-03) that 3 of the 4 default links 404 on mia (DJ Course
-// happens to already match). Producer Program has two real mia candidates
-// (ableton-producer-program and logic-producer-program); Ableton confirmed
-// by request rather than assumed to mirror la's Logic choice.
+// mia's real course/program slugs also differ from pdx/hou's.
 const MIA_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  { label: "Ableton Live", href: "/courses/ableton-live-course" },
-  { label: "Logic Pro", href: "/courses/logic-course" },
-  { label: "DJ Course", href: "/courses/electronic-dj-course" },
-  { label: "Producer Program", href: "/programs/ableton-producer-program" },
+  F1_LINK,
+  { label: "360", href: "/academy/emp-electronic-music-producer" },
+  { label: "DJ", href: "/courses/electronic-dj-course" },
+  { label: "Private Instruction", href: "/private-tuition" },
 ];
 
-// staging's real slugs mostly match pdx/hou's defaults (Ableton Live/Logic
-// Pro both confirmed live at the same /courses/* paths - staging's own nav
-// links there directly, auto-collected by collectNavCourseSlugs), except
-// Producer Program (edu's real page is at /programs/ableton-producer, see
-// MODERN_SITE_ROUTES.staging.programSlugs, not pdx/hou's bare
-// /ableton-producer) and DJ Course (edu's real page is /electronic-dj-course,
-// no "courses/" prefix - also wired into programSlugs).
+// edu's real slugs (its own Academy/DJ/private-instruction pages, see
+// MODERN_SITE_ROUTES.edu's own programSlugs/privateInstructionSlug).
 const STAGING_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  { label: "Ableton Live", href: "/courses/ableton-live" },
-  { label: "Logic Pro", href: "/courses/logic-pro" },
-  { label: "DJ Course", href: "/electronic-dj-course" },
-  { label: "Producer Program", href: "/programs/ableton-producer" },
+  F1_LINK,
+  { label: "360", href: "/academy" },
+  { label: "DJ", href: "/electronic-dj-course" },
+  { label: "Private Instruction", href: "/private-instruction" },
 ];
 
-// ny's real course/program slugs, confirmed against its own live nav
-// (2026-09-04): Ableton Live has no "-live"/"-course" suffix here (just
-// /courses/ableton, unlike every other site's own variant of that slug),
-// and its real Producer Program page is /programs/ableton-producer-program
-// (not pdx/hou's bare /ableton-producer).
+// ny's real slugs, confirmed against its own live nav (2026-09-04) - DJ
+// points at ny's real DJ Class product (product/electronic-dj-class, the
+// one page in this whole rebuild with real working PayPal checkout - see
+// NY_DJ_CLASS_PAYPAL_BUTTONS), not a courses/* page.
 const NY_FOOTER_COURSE_LINKS: FooterCourseLink[] = [
-  { label: "Ableton Live", href: "/courses/ableton" },
-  { label: "Logic Pro", href: "/courses/logic-pro" },
-  { label: "DJ Course", href: "/courses/electronic-dj-course" },
-  { label: "Producer Program", href: "/programs/ableton-producer-program" },
+  F1_LINK,
+  { label: "360", href: "/music-production-academy" },
+  { label: "DJ", href: "/product/electronic-dj-class" },
+  { label: "Private Instruction", href: "/private-instruction" },
 ];
 
 export function getFooterCourseLinks(slug: string | undefined | null): FooterCourseLink[] {

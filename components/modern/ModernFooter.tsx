@@ -28,11 +28,26 @@ export default function ModernFooter({
         <div>
           <div className="gmpm-mono text-[10px] uppercase text-[var(--gmpm-accent)] mb-3">Courses</div>
           <ul className="space-y-2 text-sm text-[var(--gmpm-text-dim)]">
-            {courseLinks.map((link) => (
-              <li key={link.href}>
-                <Link href={link.href} className="hover:text-[var(--gmpm-text)]">{link.label}</Link>
-              </li>
-            ))}
+            {courseLinks.map((link) => {
+              // F1 is the one cross-site link here (la's own real
+              // accredited program, see F1_LINK in lib/modern-sites.ts) -
+              // opened in a new tab like every other absolute cross-site
+              // link network-wide (e.g. the nav's own "F1 USA Visa Eligible
+              // (LA)" item).
+              const isExternal = link.href.startsWith("http");
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener" : undefined}
+                    className="hover:text-[var(--gmpm-text)]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
