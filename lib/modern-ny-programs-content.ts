@@ -4,6 +4,7 @@ import type {
   CoursePricing,
   Faq,
   AccordionModule,
+  ScheduleBlock,
 } from "./modern-course-content";
 import type { InstructorGridItem } from "../components/modern/ModernInstructorGrid";
 import type { TestimonialItem } from "../scripts/wp-shortcode-render";
@@ -78,6 +79,10 @@ export type NYProgramContent = {
   // buttons already exist and work.
   courseSchedule?: {
     bodyHtml: string;
+    // Real per-cohort date/time/location rows (see NY_CLASSES' own
+    // "product/electronic-dj-class" entry) - takes priority over bodyHtml
+    // in ModernCourseScheduleAccordion when set.
+    scheduleBlocks?: ScheduleBlock[];
     paypalButtons?: import("../components/PayPalHostedButtons").PayPalButton[];
   };
 };

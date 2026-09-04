@@ -136,6 +136,36 @@
   box-sizing: border-box;
 }
 
+/* ModernHeader's own desktop nav / "Talk to us" button, replacing Tailwind's
+   bare `hidden` utility (still `hidden lg:flex`/`hidden sm:inline-block`
+   would work in isolation) - PayPal's own hosted-buttons SDK (see
+   PayPalHostedButtons, rendered inside ModernCourseScheduleAccordion once a
+   visitor opens that accordion) injects a global, unscoped
+   `.hidden { display: none !important; }` rule of its own into the page the
+   moment its script loads, which - being !important - permanently wins over
+   Tailwind's un-important `.lg\:flex`/`.sm\:inline-block` responsive
+   overrides on any element that also carries the literal class "hidden".
+   Confirmed live: the header's nav and CTA button vanish above both
+   breakpoints the instant the schedule accordion (and its PayPal buttons)
+   render. Renaming these two elements' own hidden-by-default class sidesteps
+   the collision entirely, regardless of what PayPal's SDK injects. */
+.gmpm-hidden-until-lg {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .gmpm-hidden-until-lg {
+    display: flex;
+  }
+}
+.gmpm-hidden-until-sm {
+  display: none;
+}
+@media (min-width: 640px) {
+  .gmpm-hidden-until-sm {
+    display: inline-block;
+  }
+}
+
 .gmpm-display {
   font-family: var(--gmpm-font-display);
   letter-spacing: var(--gmpm-display-tracking);

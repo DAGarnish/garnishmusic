@@ -556,6 +556,44 @@ export const NY_CLASSES: Record<string, NYProgramContent> = {
     // buttons below (courseSchedule.paypalButtons) instead of a link.
     pricing: { priceLine: "36 lab hours - $950 + $500 registration (14+ days out) / $1,050 + $600 otherwise - $500 off in 2026", enrollLink: null },
     courseSchedule: {
+      // Real per-cohort dates off the real page's own "Schedules" widget
+      // (not part of the product's own wpRawContent - a separate real-time
+      // element the earlier hand-transcription missed entirely, confirmed
+      // live 2026-09-04). One block per lettered cohort row, in the same
+      // order as the real page, with the same "Next Class" cohort flagged.
+      scheduleBlocks: [
+        { html: "<p>N) 7/12 – 9/6 | Sundays | 2.15p – 6.15p | 9 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>O) 7/13 – 8/19 | Mondays/Wednesdays | 2.30p – 6.30p | 9 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>P) 7/14 – 8/20 | Tuesdays/Thursdays | 2.30p – 5.30p | 9 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>Q) 7/18 – 9/12 | Saturdays | 2.15p – 6.15p | 9 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>R) 8/3 – 9/9 | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>S) 8/18 – 9/29 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>T) 9/7 – 10/14 | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: true },
+        { html: "<p>U) 9/19 – 12/5 | Saturdays | 2.30p – 5.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>V) 9/20 – 12/6 | Sundays | 2.30p – 5.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>W) 9/22 – 10/29 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>X) 10/19 – 11/25 | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>Y) 11/3 – 12/10 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>Z) 11/10 – 12/22 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p style=\"font-weight:600;\">2027</p>", isNextCohort: false },
+        { html: "<p>A) 1/2 – 2/27 | Saturdays | 2.15p – 6.15p | 9 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>B) 1/3 – 2/28 | Sundays | 2.15p – 6.15p | 9 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>C) 1/12 – 2/16 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>D) 2/23 – 4/1 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>E) 3/1 – 4/7 | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>F) 3/17 – 4/26 | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>G) 4/6 – 5/15 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>H) 5/3 – 6/9 (skipping Memorial Day) | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>I) 5/8 – 7/3 (skipping Juneteenth) | Saturdays | 2.15p – 6.15p | 9 Classes in Brooklyn</p>", isNextCohort: false },
+        { html: "<p>J) 5/16 – 7/11 (skipping Independence Day) | Sundays | 2.15p – 6.15p | 9 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>K) 5/29 – 7/24 (skipping Juneteenth) | Saturdays | 2.15p – 6.15p | 9 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>L) 6/21 – 7/28 | Mondays/Wednesdays | 6.30p – 9.30p | 12 Classes in Manhattan</p>", isNextCohort: false },
+        { html: "<p>M) 6/22 – 7/29 | Tuesdays/Thursdays | 6.30p – 9.30p | 12 Classes in Brooklyn</p>", isNextCohort: false },
+        {
+          html: "<p>For one-to-one lessons, including Open Format DJ lessons, see <a href=\"/private-instruction\">DJ Private Instruction</a>, and connect with a specialist on that page.</p>",
+          isNextCohort: false,
+        },
+      ],
       bodyHtml:
         "<p>New cohorts run year-round in both Manhattan and Brooklyn, typically 9-12 sessions over 2 months, weekday evenings or weekend afternoons. For one-to-one lessons, including Open Format DJ lessons, see <a href=\"/private-instruction\">DJ Private Instruction</a>.</p>",
       paypalButtons: NY_DJ_CLASS_PAYPAL_BUTTONS,

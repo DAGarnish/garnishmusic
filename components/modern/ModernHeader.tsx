@@ -230,7 +230,7 @@ export default function ModernHeader({
           )}
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-8">
+        <nav className="gmpm-hidden-until-lg items-center gap-8">
           {(fixedMenu || []).map((item, i) => (
             <NavGroup key={i} item={item} />
           ))}
@@ -241,7 +241,7 @@ export default function ModernHeader({
             href={talkToUsHref}
             target={talkToUsHref.startsWith("http") ? "_blank" : undefined}
             rel={talkToUsHref.startsWith("http") ? "noopener" : undefined}
-            className="hidden sm:inline-block gmpm-mono text-xs uppercase px-4 py-2 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)] hover:bg-[var(--gmpm-accent)] hover:text-[var(--gmpm-accent-contrast)] transition-colors"
+            className="gmpm-hidden-until-sm gmpm-mono text-xs uppercase px-4 py-2 border border-[var(--gmpm-accent)] text-[var(--gmpm-accent)] hover:bg-[var(--gmpm-accent)] hover:text-[var(--gmpm-accent-contrast)] transition-colors"
           >
             Talk to us
           </Link>
