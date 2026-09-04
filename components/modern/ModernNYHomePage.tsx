@@ -154,7 +154,10 @@ export default function ModernNYHomePage({ site }: { site: any }) {
       <ModernHeader menu={site.mainMenu as MenuNode[] | null} cityAbbr={cityAbbr} siteSlug={site.slug} />
 
       <ModernHero
-        heroImageUrl="https://s3.us-east-2.amazonaws.com/garnishmusic-media/Music-Production-Private-Tuition-Studio-1.jpg"
+        // Same real photo edu's own homepage header uses (its own real
+        // /why-us/ page's titleBackgroundImage, "whychooseus-10.png") -
+        // user request (2026-09-04).
+        heroImageUrl="https://s3.us-east-2.amazonaws.com/garnishmusic-media/whychooseus-10.png"
         cityName={cityName}
         stats={HERO_STATS}
         contactHref={contactSlug ? `/${contactSlug}` : undefined}
