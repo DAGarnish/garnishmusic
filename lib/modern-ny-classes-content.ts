@@ -1,5 +1,6 @@
 import type { NYProgramContent } from "./modern-ny-programs-content";
 import type { PayPalButton } from "../components/PayPalHostedButtons";
+import { NY_INSTRUCTOR_BIOS } from "./modern-ny-instructors-content";
 
 // Same real, already-working hosted-button ids page.tsx's own
 // NY_DJ_CLASS_PAYPAL_BUTTONS uses for this exact product on the legacy
@@ -34,10 +35,21 @@ const CORE_INSTRUCTOR_NAMES = [
   "Heinrich Zwahlen",
 ];
 
-const CORE_INSTRUCTORS = CORE_INSTRUCTOR_NAMES.map((name) => ({
-  name,
-  href: `/courses/${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
-}));
+// Missing imageUrl (ModernInstructorGrid's own comment: silently omits the
+// <img> entirely rather than a broken-image icon, leaving just an empty
+// gray square) - this used to only set name/href with href guessed by
+// slugifying the name, which also produced the wrong bio-page link for 3 of
+// these 8 (charles-chicky-reeves, nick-gallick, heinrich-zwahlen - none of
+// which exist; the real slugs are charles-reeves, nick-gallick-2, heinrich-
+// dr-hz-zwahlen). Each of these 8 names already has a real bio entry in
+// NY_INSTRUCTOR_BIOS with the correct real slug and photo, so both href and
+// imageUrl are looked up from there by name instead of reconstructed.
+const CORE_INSTRUCTORS = CORE_INSTRUCTOR_NAMES.map((name) => {
+  const bioEntry = Object.entries(NY_INSTRUCTOR_BIOS).find(([, bio]) => bio.name === name);
+  if (!bioEntry) throw new Error(`No NY_INSTRUCTOR_BIOS entry for "${name}"`);
+  const [slug, bio] = bioEntry;
+  return { name, href: `/${slug}`, imageUrl: bio.photoUrl };
+});
 
 // User request (2026-09-04): check how "similar programs in the network"
 // present their own "what you'll cover" content, and match it. Checked
