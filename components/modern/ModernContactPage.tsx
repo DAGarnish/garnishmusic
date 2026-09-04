@@ -62,11 +62,11 @@ export default function ModernContactPage({
           )}
         </div>
 
-        <div className="bg-[var(--gmpm-bg)] min-h-[360px]">
+        <div className="bg-[var(--gmpm-bg)] min-h-[360px] min-w-0">
           {contact.mapEmbedSrc && (
             <iframe
               src={contact.mapEmbedSrc}
-              className="w-full h-full min-h-[360px] grayscale invert-[92%] hue-rotate-180"
+              className="block w-full h-full min-h-[360px] grayscale invert-[92%] hue-rotate-180"
               style={{ border: 0 }}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
